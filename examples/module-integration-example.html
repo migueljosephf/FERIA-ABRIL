@@ -1,0 +1,39 @@
+<!--
+    EJEMPLO DE INTEGRACIÓN DEL VERIFICADOR DE MÓDULOS
+    Agregar este script al final de cada dashboard del sistema antes de </body>
+    
+    Este script verifica si el módulo está activo antes de permitir el acceso.
+    Si el módulo está desactivado, muestra un mensaje de mantenimiento.
+-->
+
+<!-- Sistema de Verificación de Módulos -->
+<script src="../js/module-checker.js"></script>
+<script>
+    // Verificar acceso al módulo específico
+    document.addEventListener('DOMContentLoaded', function() {
+        // Para portería-dashboard.html
+        if (window.location.pathname.includes('porteria-dashboard.html')) {
+            moduleChecker.verifyModuleAccess('porteria');
+        }
+        
+        // Para tesorería-dashboard.html
+        else if (window.location.pathname.includes('tesoreria-dashboard.html')) {
+            moduleChecker.verifyModuleAccess('tesoreria');
+        }
+        
+        // Para comedor.html
+        else if (window.location.pathname.includes('comedor.html')) {
+            moduleChecker.verifyModuleAccess('comedor');
+        }
+        
+        // Para inventario-cafeteria.html
+        else if (window.location.pathname.includes('inventario-cafeteria.html')) {
+            moduleChecker.verifyModuleAccess('cafeteria');
+        }
+        
+        // Agregar más módulos según sea necesario...
+        
+        // También puedes dejar la detección automática:
+        // moduleChecker.verifyModuleAccess(); // Detecta automáticamente
+    });
+</script>
