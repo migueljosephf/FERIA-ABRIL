@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Escolar - Orientación Vocacional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Sistema de Diseño Unificado -->
+    <link rel="stylesheet" href="../css/design-system.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Sistema Central de Comunicación -->
+    <script src="../js/systemDataManager.js"></script>
+    <script src="../js/systemBridge.js"></script>
+    
+    <style>
+        :root {
+            --orientacion-color: #8e44ad;
+            --orientacion-light: #f3e8f8;
+            --orientacion-dark: #6c3483;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--orientacion-color), var(--orientacion-dark));
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: var(--orientacion-color);
+            font-size: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--orientacion-color);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Sections */
+        .content-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--orientacion-light);
+        }
+
+        .section-title {
+            color: var(--orientacion-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--orientacion-color);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-orientacion {
+            background: var(--orientacion-color);
+            color: white;
+        }
+
+        .btn-orientacion:hover {
+            background: var(--orientacion-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: var(--orientacion-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tr:hover {
+            background: var(--orientacion-light);
+        }
+
+        /* Interest Areas */
+        .interest-areas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .interest-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--orientacion-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .interest-item:hover {
+            background: var(--orientacion-color);
+            color: white;
+        }
+
+        .interest-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-graduation-cap"></i> Orientación</h2>
+            <p>Orientación Vocacional</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-action="showSection" data-section="dashboardSection">
+                    <i class="fas fa-tachometer-alt"></i> Panel Principal
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="estudiantesSection">
+                    <i class="fas fa-users"></i> Estudiantes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="cuestionarioSection">
+                    <i class="fas fa-clipboard-list"></i> Cuestionario
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="carrerasSection">
+                    <i class="fas fa-briefcase"></i> Carreras
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="charlasSection">
+                    <i class="fas fa-chalkboard-teacher"></i> Charlas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="logout">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-graduation-cap"></i> Orientación Vocacional</h1>
+            <div class="user-info">
+                <span id="userRole">Orientación Vocacional</span>
+                <button class="btn btn-danger" onclick="orientacionDashboard.logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <section id="dashboardSection" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-tachometer-alt"></i> Panel Principal
+                </h2>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3 id="totalEstudiantes">0</h3>
+                    <p>Estudiantes Orientados</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3 id="totalCuestionarios">0</h3>
+                    <p>Cuestionarios Aplicados</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h3 id="totalCharlas">0</h3>
+                    <p>Charlas Realizadas</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-briefcase"></i>
+                    <h3 id="totalCarreras">0</h3>
+                    <p>Carreras Registradas</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estudiantes Section -->
+        <section id="estudiantesSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i> Registro de Estudiantes
+                </h2>
+                <button class="btn btn-orientacion" onclick="orientacionDashboard.nuevoEstudiante()">
+                    <i class="fas fa-plus"></i> Nuevo Estudiante
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Grado</th>
+                            <th>Intereses</th>
+                            <th>Carrera Recomendada</th>
+                            <th>Fecha Orientación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="estudiantesTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Cuestionario Section -->
+        <section id="cuestionarioSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-clipboard-list"></i> Cuestionario de Intereses
+                </h2>
+            </div>
+            
+            <form id="cuestionarioForm">
+                <div class="form-group">
+                    <label for="nombreEstudiante">Nombre del Estudiante:</label>
+                    <input type="text" id="nombreEstudiante" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gradoEstudiante">Grado:</label>
+                    <select id="gradoEstudiante" class="form-control" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="4to-secundaria">4to Secundaria</option>
+                        <option value="5to-secundaria">5to Secundaria</option>
+                        <option value="6to-secundaria">6to Secundaria</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Áreas de Interés (seleccione todas las que apliquen):</label>
+                    <div class="interest-areas">
+                        <div class="interest-item">
+                            <input type="checkbox" id="tecno" value="tecnologia">
+                            <label for="tecno">Tecnología</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="salud" value="salud">
+                            <label for="salud">Salud</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="educacion" value="educacion">
+                            <label for="educacion">Educación</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="negocios" value="negocios">
+                            <label for="negocios">Negocios</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="arte" value="arte">
+                            <label for="arte">Arte y Diseño</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="deportes" value="deportes">
+                            <label for="deportes">Deportes</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="ingenieria" value="ingenieria">
+                            <label for="ingenieria">Ingeniería</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="ciencias" value="ciencias">
+                            <label for="ciencias">Ciencias</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="habilidades">Habilidades Destacadas:</label>
+                    <textarea id="habilidades" class="form-control" rows="3" placeholder="Describa las habilidades principales del estudiante..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="metas">Metas Profesionales:</label>
+                    <textarea id="metas" class="form-control" rows="3" placeholder="¿Qué le gustaría ser en el futuro?"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-orientacion">
+                    <i class="fas fa-save"></i> Guardar Cuestionario
+                </button>
+            </form>
+        </section>
+
+        <!-- Carreras Section -->
+        <section id="carrerasSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-briefcase"></i> Base de Datos de Carreras
+                </h2>
+                <button class="btn btn-orientacion" onclick="orientacionDashboard.nuevaCarrera()">
+                    <i class="fas fa-plus"></i> Nueva Carrera
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Carrera</th>
+                            <th>Área</th>
+                            <th>Universidades</th>
+                            <th>Duración</th>
+                            <th>Requisitos</th>
+                            <th>Demanda Laboral</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="carrerasTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Charlas Section -->
+        <section id="charlasSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chalkboard-teacher"></i> Charlas Universitarias
+                </h2>
+                <button class="btn btn-orientacion" onclick="orientacionDashboard.nuevaCharla()">
+                    <i class="fas fa-plus"></i> Nueva Charla
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Institución</th>
+                            <th>Tema</th>
+                            <th>Expositor</th>
+                            <th>Participantes</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="charlasTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        class OrientacionDashboard {
+            constructor() {
+                this.currentUser = null;
+                this.systemDataManager = null;
+                this.estudiantes = [];
+                this.cuestionarios = [];
+                this.carreras = [];
+                this.charlas = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.loadUserData();
+                this.setupEventListeners();
+                this.loadInitialData();
+                this.updateStats();
+            }
+
+            loadUserData() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const username = urlParams.get('user') || 'orientacion';
+                this.currentUser = { username, name: 'Orientación Vocacional', role: 'orientacion' };
+                
+                if (typeof window.systemDataManager !== 'undefined') {
+                    this.systemDataManager = window.systemDataManager;
+                }
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const action = link.dataset.action;
+                        const section = link.dataset.section;
+                        this.handleAction(action, { section });
+                    });
+                });
+
+                // Form submission
+                const cuestionarioForm = document.getElementById('cuestionarioForm');
+                if (cuestionarioForm) {
+                    cuestionarioForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.guardarCuestionario();
+                    });
+                }
+            }
+
+            handleAction(action, data = {}) {
+                switch (action) {
+                    case 'showSection':
+                        this.showSection(data.section);
+                        break;
+                    case 'logout':
+                        this.logout();
+                        break;
+                    default:
+                        console.log('Acción no reconocida:', action);
+                }
+            }
+
+            showSection(sectionId) {
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Show selected section
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+
+                // Update nav active state
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+
+                // Load section-specific data
+                if (sectionId === 'estudiantesSection') {
+                    this.loadEstudiantes();
+                } else if (sectionId === 'carrerasSection') {
+                    this.loadCarreras();
+                } else if (sectionId === 'charlasSection') {
+                    this.loadCharlas();
+                }
+            }
+
+            loadInitialData() {
+                const storedEstudiantes = localStorage.getItem('orientacion_estudiantes');
+                const storedCuestionarios = localStorage.getItem('orientacion_cuestionarios');
+                const storedCarreras = localStorage.getItem('orientacion_carreras');
+                const storedCharlas = localStorage.getItem('orientacion_charlas');
+                
+                if (storedEstudiantes) {
+                    this.estudiantes = JSON.parse(storedEstudiantes);
+                }
+                
+                if (storedCuestionarios) {
+                    this.cuestionarios = JSON.parse(storedCuestionarios);
+                }
+                
+                if (storedCarreras) {
+                    this.carreras = JSON.parse(storedCarreras);
+                }
+                
+                if (storedCharlas) {
+                    this.charlas = JSON.parse(storedCharlas);
+                }
+
+                // Cargar datos iniciales si no existen
+                if (this.carreras.length === 0) {
+                    this.loadCarrerasIniciales();
+                }
+            }
+
+            loadCarrerasIniciales() {
+                this.carreras = [
+                    {
+                        id: 'car_1',
+                        nombre: 'Ingeniería de Sistemas',
+                        area: 'Tecnología',
+                        universidades: 'UASD, INTEC, PUCMM, UNAPEC',
+                        duracion: '4 años',
+                        requisitos: 'Bachiller en Ciencias, Matemática avanzada',
+                        demanda: 'Alta'
+                    },
+                    {
+                        id: 'car_2',
+                        nombre: 'Medicina',
+                        area: 'Salud',
+                        universidades: 'UASD, INTEC, PUCMM, UNIBE',
+                        duracion: '6 años',
+                        requisitos: 'Bachiller en Ciencias, Química, Biología',
+                        demanda: 'Muy Alta'
+                    },
+                    {
+                        id: 'car_3',
+                        nombre: 'Administración de Empresas',
+                        area: 'Negocios',
+                        universidades: 'UASD, INTEC, PUCMM, UNAPEC',
+                        duracion: '4 años',
+                        requisitos: 'Bachiller en cualquier área',
+                        demanda: 'Alta'
+                    },
+                    {
+                        id: 'car_4',
+                        nombre: 'Diseño Gráfico',
+                        area: 'Arte y Diseño',
+                        universidades: 'UNAPEC, APEC, UASD',
+                        duracion: '4 años',
+                        requisitos: 'Bachiller, Portafolio de trabajos',
+                        demanda: 'Media'
+                    }
+                ];
+                
+                this.saveCarreras();
+            }
+
+            guardarCuestionario() {
+                const nombre = document.getElementById('nombreEstudiante').value;
+                const grado = document.getElementById('gradoEstudiante').value;
+                const habilidades = document.getElementById('habilidades').value;
+                const metas = document.getElementById('metas').value;
+                
+                // Obtener intereses seleccionados
+                const intereses = [];
+                document.querySelectorAll('.interest-item input[type="checkbox"]:checked').forEach(checkbox => {
+                    intereses.push(checkbox.value);
+                });
+
+                // Recomendar carrera basada en intereses
+                const carreraRecomendada = this.recomendarCarrera(intereses);
+
+                const cuestionario = {
+                    id: 'cues_' + Date.now(),
+                    nombre,
+                    grado,
+                    intereses,
+                    habilidades,
+                    metas,
+                    carreraRecomendada,
+                    fecha: new Date().toISOString().split('T')[0],
+                    timestamp: new Date().toISOString()
+                };
+
+                this.cuestionarios.push(cuestionario);
+                this.saveCuestionarios();
+
+                // Agregar a estudiantes si no existe
+                const estudianteExistente = this.estudiantes.find(e => e.nombre === nombre && e.grado === grado);
+                if (!estudianteExistente) {
+                    this.estudiantes.push({
+                        id: 'est_' + Date.now(),
+                        nombre,
+                        grado,
+                        intereses: intereses.join(', '),
+                        carreraRecomendada,
+                        fechaOrientacion: cuestionario.fecha,
+                        estado: 'En proceso'
+                    });
+                    this.saveEstudiantes();
+                }
+
+                this.showToast('Cuestionario guardado correctamente', 'success');
+                document.getElementById('cuestionarioForm').reset();
+                this.updateStats();
+            }
+
+            recomendarCarrera(intereses) {
+                const recomendaciones = {
+                    'tecnologia': ['Ingeniería de Sistemas', 'Ingeniería de Software', 'Ciencias de la Computación'],
+                    'salud': ['Medicina', 'Enfermería', 'Psicología', 'Farmacia'],
+                    'educacion': ['Pedagogía', 'Educación Inicial', 'Educación Especial'],
+                    'negocios': ['Administración de Empresas', 'Contabilidad', 'Mercadeo', 'Finanzas'],
+                    'arte': ['Diseño Gráfico', 'Arquitectura', 'Artes Plásticas', 'Música'],
+                    'deportes': ['Educación Física', 'Entrenamiento Deportivo', 'Kinesiología'],
+                    'ingenieria': ['Ingeniería Civil', 'Ingeniería Industrial', 'Ingeniería Eléctrica'],
+                    'ciencias': ['Biología', 'Química', 'Física', 'Matemáticas']
+                };
+
+                let carrerasRecomendadas = [];
+                intereses.forEach(interes => {
+                    if (recomendaciones[interes]) {
+                        carrerasRecomendadas = carrerasRecomendadas.concat(recomendaciones[interes]);
+                    }
+                });
+
+                // Eliminar duplicados y seleccionar aleatoriamente
+                carrerasRecomendadas = [...new Set(carrerasRecomendadas)];
+                return carrerasRecomendadas.length > 0 ? 
+                    carrerasRecomendadas[Math.floor(Math.random() * carrerasRecomendadas.length)] : 
+                    'Por definir';
+            }
+
+            nuevoEstudiante() {
+                this.showSection('cuestionarioSection');
+            }
+
+            nuevaCarrera() {
+                Swal.fire({
+                    title: 'Nueva Carrera',
+                    html: `
+                        <div style="text-align: left;">
+                            <div class="form-group">
+                                <label>Nombre de la Carrera:</label>
+                                <input type="text" id="carreraNombre" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Área:</label>
+                                <select id="carreraArea" class="swal2-input">
+                                    <option value="Tecnología">Tecnología</option>
+                                    <option value="Salud">Salud</option>
+                                    <option value="Negocios">Negocios</option>
+                                    <option value="Arte y Diseño">Arte y Diseño</option>
+                                    <option value="Educación">Educación</option>
+                                    <option value="Ingeniería">Ingeniería</option>
+                                    <option value="Ciencias">Ciencias</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Universidades:</label>
+                                <input type="text" id="carreraUniversidades" class="swal2-input" placeholder="Ej: UASD, INTEC, PUCMM">
+                            </div>
+                            <div class="form-group">
+                                <label>Duración:</label>
+                                <input type="text" id="carreraDuracion" class="swal2-input" placeholder="Ej: 4 años">
+                            </div>
+                            <div class="form-group">
+                                <label>Requisitos:</label>
+                                <input type="text" id="carreraRequisitos" class="swal2-input" placeholder="Requisitos de ingreso">
+                            </div>
+                            <div class="form-group">
+                                <label>Demanda Laboral:</label>
+                                <select id="carreraDemanda" class="swal2-input">
+                                    <option value="Muy Alta">Muy Alta</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Baja">Baja</option>
+                                </select>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'Guardar',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const nombre = document.getElementById('carreraNombre').value;
+                        const area = document.getElementById('carreraArea').value;
+                        const universidades = document.getElementById('carreraUniversidades').value;
+                        const duracion = document.getElementById('carreraDuracion').value;
+                        const requisitos = document.getElementById('carreraRequisitos').value;
+                        const demanda = document.getElementById('carreraDemanda').value;
+                        
+                        if (!nombre || !area || !universidades || !duracion || !requisitos) {
+                            Swal.showValidationMessage('Por favor complete todos los campos');
+                            return false;
+                        }
+                        
+                        return { nombre, area, universidades, duracion, requisitos, demanda };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const carrera = {
+                            id: 'car_' + Date.now(),
+                            ...result.value
+                        };
+                        
+                        this.carreras.push(carrera);
+                        this.saveCarreras();
+                        this.loadCarreras();
+                        this.updateStats();
+                        this.showToast('Carrera agregada correctamente', 'success');
+                    }
+                });
+            }
+
+            nuevaCharla() {
+                Swal.fire({
+                    title: 'Nueva Charla',
+                    html: `
+                        <div style="text-align: left;">
+                            <div class="form-group">
+                                <label>Fecha:</label>
+                                <input type="date" id="charlaFecha" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Institución:</label>
+                                <input type="text" id="charlaInstitucion" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tema:</label>
+                                <input type="text" id="charlaTema" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Expositor:</label>
+                                <input type="text" id="charlaExpositor" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Participantes:</label>
+                                <input type="number" id="charlaParticipantes" class="swal2-input" required>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'Guardar',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const fecha = document.getElementById('charlaFecha').value;
+                        const institucion = document.getElementById('charlaInstitucion').value;
+                        const tema = document.getElementById('charlaTema').value;
+                        const expositor = document.getElementById('charlaExpositor').value;
+                        const participantes = document.getElementById('charlaParticipantes').value;
+                        
+                        if (!fecha || !institucion || !tema || !expositor || !participantes) {
+                            Swal.showValidationMessage('Por favor complete todos los campos');
+                            return false;
+                        }
+                        
+                        return { fecha, institucion, tema, expositor, participantes };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const charla = {
+                            id: 'char_' + Date.now(),
+                            ...result.value,
+                            estado: 'Programada'
+                        };
+                        
+                        this.charlas.push(charla);
+                        this.saveCharlas();
+                        this.loadCharlas();
+                        this.updateStats();
+                        this.showToast('Charla programada correctamente', 'success');
+                    }
+                });
+            }
+
+            saveEstudiantes() {
+                localStorage.setItem('orientacion_estudiantes', JSON.stringify(this.estudiantes));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarEstudianteOrientado) {
+                    this.estudiantes.forEach(estudiante => {
+                        this.systemDataManager.guardarEstudianteOrientado(estudiante);
+                    });
+                }
+            }
+
+            saveCuestionarios() {
+                localStorage.setItem('orientacion_cuestionarios', JSON.stringify(this.cuestionarios));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarCuestionarioVocacional) {
+                    this.cuestionarios.forEach(cuestionario => {
+                        this.systemDataManager.guardarCuestionarioVocacional(cuestionario);
+                    });
+                }
+            }
+
+            saveCarreras() {
+                localStorage.setItem('orientacion_carreras', JSON.stringify(this.carreras));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarCarrera) {
+                    this.carreras.forEach(carrera => {
+                        this.systemDataManager.guardarCarrera(carrera);
+                    });
+                }
+            }
+
+            saveCharlas() {
+                localStorage.setItem('orientacion_charlas', JSON.stringify(this.charlas));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarCharlaUniversitaria) {
+                    this.charlas.forEach(charla => {
+                        this.systemDataManager.guardarCharlaUniversitaria(charla);
+                    });
+                }
+            }
+
+            updateStats() {
+                document.getElementById('totalEstudiantes').textContent = this.estudiantes.length;
+                document.getElementById('totalCuestionarios').textContent = this.cuestionarios.length;
+                document.getElementById('totalCharlas').textContent = this.charlas.length;
+                document.getElementById('totalCarreras').textContent = this.carreras.length;
+            }
+
+            loadEstudiantes() {
+                const tbody = document.getElementById('estudiantesTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.estudiantes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay estudiantes registrados</td></tr>';
+                    return;
+                }
+
+                this.estudiantes.forEach(estudiante => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${estudiante.nombre}</td>
+                        <td>${estudiante.grado}</td>
+                        <td>${estudiante.intereses}</td>
+                        <td>${estudiante.carreraRecomendada}</td>
+                        <td>${estudiante.fechaOrientacion}</td>
+                        <td>
+                            <span class="status-badge status-${estudiante.estado === 'Completado' ? 'success' : 'warning'}">
+                                ${estudiante.estado}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="orientacionDashboard.verEstudiante('${estudiante.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            loadCarreras() {
+                const tbody = document.getElementById('carrerasTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.carreras.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay carreras registradas</td></tr>';
+                    return;
+                }
+
+                this.carreras.forEach(carrera => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${carrera.nombre}</td>
+                        <td>${carrera.area}</td>
+                        <td>${carrera.universidades}</td>
+                        <td>${carrera.duracion}</td>
+                        <td>${carrera.requisitos}</td>
+                        <td>
+                            <span class="status-badge status-${carrera.demanda === 'Muy Alta' || carrera.demanda === 'Alta' ? 'success' : 'warning'}">
+                                ${carrera.demanda}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="orientacionDashboard.verCarrera('${carrera.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            loadCharlas() {
+                const tbody = document.getElementById('charlasTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.charlas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay charlas programadas</td></tr>';
+                    return;
+                }
+
+                this.charlas.forEach(charla => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${charla.fecha}</td>
+                        <td>${charla.institucion}</td>
+                        <td>${charla.tema}</td>
+                        <td>${charla.expositor}</td>
+                        <td>${charla.participantes}</td>
+                        <td>
+                            <span class="status-badge status-${charla.estado === 'Completada' ? 'success' : 'warning'}">
+                                ${charla.estado}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="orientacionDashboard.verCharla('${charla.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            verEstudiante(id) {
+                const estudiante = this.estudiantes.find(e => e.id === id);
+                if (estudiante) {
+                    Swal.fire({
+                        title: 'Detalles del Estudiante',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Nombre:</strong> ${estudiante.nombre}</p>
+                                <p><strong>Grado:</strong> ${estudiante.grado}</p>
+                                <p><strong>Intereses:</strong> ${estudiante.intereses}</p>
+                                <p><strong>Carrera Recomendada:</strong> ${estudiante.carreraRecomendada}</p>
+                                <p><strong>Fecha de Orientación:</strong> ${estudiante.fechaOrientacion}</p>
+                                <p><strong>Estado:</strong> ${estudiante.estado}</p>
+                            </div>
+                        `,
+                        icon: 'info'
+                    });
+                }
+            }
+
+            verCarrera(id) {
+                const carrera = this.carreras.find(c => c.id === id);
+                if (carrera) {
+                    Swal.fire({
+                        title: 'Detalles de la Carrera',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Nombre:</strong> ${carrera.nombre}</p>
+                                <p><strong>Área:</strong> ${carrera.area}</p>
+                                <p><strong>Universidades:</strong> ${carrera.universidades}</p>
+                                <p><strong>Duración:</strong> ${carrera.duracion}</p>
+                                <p><strong>Requisitos:</strong> ${carrera.requisitos}</p>
+                                <p><strong>Demanda Laboral:</strong> ${carrera.demanda}</p>
+                            </div>
+                        `,
+                        icon: 'info'
+                    });
+                }
+            }
+
+            verCharla(id) {
+                const charla = this.charlas.find(c => c.id === id);
+                if (charla) {
+                    Swal.fire({
+                        title: 'Detalles de la Charla',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Fecha:</strong> ${charla.fecha}</p>
+                                <p><strong>Institución:</strong> ${charla.institucion}</p>
+                                <p><strong>Tema:</strong> ${charla.tema}</p>
+                                <p><strong>Expositor:</strong> ${charla.expositor}</p>
+                                <p><strong>Participantes:</strong> ${charla.participantes}</p>
+                                <p><strong>Estado:</strong> ${charla.estado}</p>
+                            </div>
+                        `,
+                        icon: 'info'
+                    });
+                }
+            }
+
+            showToast(message, type = 'info') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    icon: type,
+                    title: message
+                });
+            }
+
+            logout() {
+                Swal.fire({
+                    title: 'Cerrar Sesión',
+                    text: '¿Estás seguro de que deseas cerrar sesión?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#8e44ad',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: 'Sí, cerrar sesión',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '../index.html';
+                    }
+                });
+            }
+        }
+
+        // Initialize dashboard
+        let orientacionDashboard;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            orientacionDashboard = new OrientacionDashboard();
+            window.orientacionDashboard = orientacionDashboard;
+        });
+    </script>
+</body>
+</html>

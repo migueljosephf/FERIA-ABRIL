@@ -1,0 +1,3735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información General - Colegio Emma Balaguer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #233849 0%, #343236 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .main-header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid #4a6fa5;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+
+        .site-name {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .school-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+
+        .system-name {
+            font-size: 0.95rem;
+            color: #4a6fa5;
+            font-weight: 600;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2c3e50;
+        }
+
+        .back-link {
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(74, 111, 165, 0.3);
+        }
+
+        /* Contenido principal */
+        .main-content {
+            padding: 30px 0;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Banner informativo */
+        .info-banner {
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80') center/cover;
+            opacity: 0.1;
+        }
+
+        .info-banner h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .info-banner p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            line-height: 1.8;
+        }
+
+        /* Secciones mejoradas */
+        .sections-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #4a6fa5;
+        }
+
+        .section-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .section-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+        }
+
+        .section-card p {
+            color: #5d6d7e;
+            line-height: 1.7;
+        }
+
+        /* Estadísticas mejoradas */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(74, 111, 165, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #4a6fa5, #2c4a7a);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #4a6fa5;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Filtros mejorados */
+        .category-filters {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .category-btn {
+            background: white;
+            border: 2px solid #e8eff7;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .category-btn:hover {
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(74, 111, 165, 0.3);
+            border-color: transparent;
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+            box-shadow: 0 10px 25px rgba(74, 111, 165, 0.3);
+            border-color: transparent;
+        }
+
+        /* Grid de eventos mejorado */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .event-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.2);
+            position: relative;
+        }
+
+        .event-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 5px solid #4a6fa5;
+        }
+
+        .event-content {
+            padding: 25px;
+        }
+
+        .event-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            color: #4a6fa5;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border: 2px solid #e8eff7;
+        }
+
+        .event-category i {
+            font-size: 1rem;
+        }
+
+        .event-category.reunion { background: #fff3cd; color: #856404; border-color: #ffeaa7; }
+        .event-category.misa { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .event-category.festivo { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .event-category.taller { background: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        .event-category.notas { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }
+        .event-category.actividad { background: #cce5ff; color: #004085; border-color: #b8daff; }
+        .event-category.deportes { background: #d1f7c4; color: #0d5c1e; border-color: #c1f0b3; }
+        .event-category.cultural { background: #f0d4ff; color: #5a0d8c; border-color: #e6c3ff; }
+        .event-category.academico { background: #ffe4cc; color: #cc5500; border-color: #ffd9b3; }
+        .event-category.comunicado { background: #e8f4fc; color: #2c4a7a; border-color: #d1ecf1; }
+
+        .event-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+
+        .event-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f4f8;
+        }
+
+        .event-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #5d6d7e;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .event-date i {
+            color: #4a6fa5;
+            font-size: 1.1rem;
+        }
+
+        .event-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #5d6d7e;
+            font-size: 0.95rem;
+        }
+
+        .event-location i {
+            color: #e74c3c;
+        }
+
+        .event-description {
+            color: #5d6d7e;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            max-height: 120px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .event-description::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .event-description::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .event-description::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .event-description::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .event-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f4f8;
+        }
+
+        .event-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .event-tag {
+            background: #f0f4f8;
+            color: #4a6fa5;
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #e8eff7;
+            transition: all 0.3s ease;
+        }
+
+        .event-tag:hover {
+            background: #4a6fa5;
+            color: white;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Botones mejorados */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(74, 111, 165, 0.4);
+        }
+
+        .btn-secondary {
+            background: #5d6d7e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4a6fa5;
+            transform: translateY(-3px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a6fa5;
+            color: #4a6fa5;
+        }
+
+        .btn-outline:hover {
+            background: #4a6fa5;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+            transform: translateY(-3px);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #2980b9, #1c6ea4);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 10px;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .tooltip-container {
+            position: relative;
+        }
+
+        .tooltip-text {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            margin-bottom: 5px;
+            display: none;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            display: block;
+        }
+
+        .tooltip-text.delete {
+            background: #e74c3c;
+        }
+
+        .tooltip-text.info {
+            background: #3498db;
+        }
+
+        /* Panel de administración mejorado */
+        .admin-panel {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 35px;
+            margin-top: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: none;
+            border: 2px solid rgba(74, 111, 165, 0.1);
+        }
+
+        .admin-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4a6fa5;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e8eff7;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        .scrollable-textarea {
+            width: 100%;
+            min-height: 150px;
+            max-height: 300px;
+            padding: 15px;
+            border: 2px solid #e8eff7;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            line-height: 1.6;
+            resize: vertical;
+            overflow-y: auto;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .scrollable-textarea::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .scrollable-textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .scrollable-textarea::-webkit-scrollbar-thumb {
+            background: #4a6fa5;
+            border-radius: 10px;
+        }
+
+        .scrollable-textarea::-webkit-scrollbar-thumb:hover {
+            background: #2c4a7a;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .scrollable-textarea:focus {
+            outline: none;
+            border-color: #4a6fa5;
+            background: white;
+            box-shadow: 0 8px 20px rgba(74, 111, 165, 0.15);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+
+        /* MODAL MEJORADO CON TODAS LAS NUEVAS FUNCIONALIDADES */
+        .event-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(30px);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 25px;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #e74c3c;
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            position: relative;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 25px 25px 0 0;
+            border-bottom: 5px solid #4a6fa5;
+        }
+
+        .modal-image-placeholder {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            border-radius: 25px 25px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+        }
+
+        .modal-body {
+            padding: 40px;
+        }
+
+        .modal-header-content {
+            margin-bottom: 30px;
+        }
+
+        .modal-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            color: #4a6fa5;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border: 2px solid #e8eff7;
+        }
+
+        .modal-title {
+            color: #2c3e50;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            font-weight: 700;
+        }
+
+        .modal-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 15px;
+            border-left: 5px solid #4a6fa5;
+        }
+
+        .modal-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #5d6d7e;
+        }
+
+        .modal-meta-item i {
+            color: #4a6fa5;
+            font-size: 1.2rem;
+            width: 25px;
+        }
+
+        .modal-meta-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .modal-meta-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .modal-section {
+            margin-bottom: 30px;
+        }
+
+        .modal-section-title {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8eff7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-description {
+            line-height: 1.8;
+            color: #5d6d7e;
+            font-size: 1.1rem;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #f0f4f8;
+            white-space: pre-line;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Sección de votación */
+        .voting-section {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid #e8eff7;
+        }
+
+        .voting-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .vote-stat {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e8eff7;
+        }
+
+        .vote-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .vote-label {
+            color: #4a6fa5;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .vote-stat.asistentes .vote-number { color: #2ecc71; }
+        .vote-stat.no-asistentes .vote-number { color: #e74c3c; }
+        .vote-stat.total .vote-number { color: #4a6fa5; }
+
+        .voting-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .vote-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .vote-btn i {
+            font-size: 1.5rem;
+        }
+
+        .vote-btn.asistir {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .vote-btn.asistir:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+        }
+
+        .vote-btn.no-asistir {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .vote-btn.no-asistir:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .vote-btn.selected {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Sección de compartir/invitaciones */
+        .share-section {
+            background: #e8f4fc;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid #cce5ff;
+        }
+
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e8eff7;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .share-option:hover {
+            border-color: #4a6fa5;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .share-option i {
+            color: #4a6fa5;
+            font-size: 2rem;
+        }
+
+        .share-option.whatsapp i { color: #25D366; }
+        .share-option.facebook i { color: #1877F2; }
+        .share-option.gmail i { color: #EA4335; }
+        .share-option.link i { color: #4a6fa5; }
+
+        .share-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .share-desc {
+            color: #5d6d7e;
+            font-size: 0.85rem;
+        }
+
+        .invitation-link {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .invitation-link input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e8eff7;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+        }
+
+        .invitation-link button {
+            padding: 12px 20px;
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .invitation-link button:hover {
+            background: #2c4a7a;
+            transform: translateY(-2px);
+        }
+
+        /* Sección de comentarios MEJORADA */
+        .comments-section {
+            background: #f9f7ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid #e6e0ff;
+        }
+
+        .comment-form {
+            margin-bottom: 25px;
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e8eff7;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            min-height: 100px;
+            resize: vertical;
+            margin-bottom: 15px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #4a6fa5;
+            box-shadow: 0 5px 15px rgba(74, 111, 165, 0.1);
+        }
+
+        .comment-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .comments-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .comments-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .comments-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .comments-list::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .comment-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid #f0f4f8;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .comment-item.is-reply {
+            margin-left: 40px;
+            margin-top: 10px;
+            background: #f8fafc;
+            border-left: 4px solid #4a6fa5;
+        }
+
+        .comment-item.is-admin-reply {
+            background: #f0f9ff;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .comment-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .comment-avatar.admin {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .comment-author-info h4 {
+            color: #2c3e50;
+            font-size: 1rem;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-badge {
+            background: #2ecc71;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .comment-author-info span {
+            color: #95a5a6;
+            font-size: 0.85rem;
+        }
+
+        .comment-time {
+            color: #95a5a6;
+            font-size: 0.85rem;
+        }
+
+        .comment-content {
+            color: #5d6d7e;
+            line-height: 1.6;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+
+        .reply-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reply-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .delete-comment-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .delete-comment-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .reply-form {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px solid #e8eff7;
+            display: none;
+        }
+
+        .reply-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e8eff7;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            min-height: 80px;
+            resize: vertical;
+            margin-bottom: 10px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .reply-input:focus {
+            outline: none;
+            border-color: #4a6fa5;
+            box-shadow: 0 3px 10px rgba(74, 111, 165, 0.1);
+        }
+
+        .reply-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* NOTIFICACIÓN INSTANTÁNEA */
+        .instant-notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s;
+            max-width: 350px;
+        }
+
+        .instant-notification.error {
+            background: #e74c3c;
+        }
+
+        .instant-notification.info {
+            background: #3498db;
+        }
+
+        .instant-notification.warning {
+            background: #f39c12;
+        }
+
+        .instant-notification i {
+            font-size: 1.2rem;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+
+        .no-comments i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Sección de recordatorios */
+        .reminder-section {
+            background: #fff9e6;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid #ffeaa7;
+        }
+
+        .reminder-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .reminder-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #f0f4f8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reminder-option:hover {
+            border-color: #4a6fa5;
+            transform: translateY(-3px);
+        }
+
+        .reminder-option.selected {
+            border-color: #2ecc71;
+            background: #f0fff4;
+        }
+
+        .reminder-option i {
+            color: #4a6fa5;
+            font-size: 1.3rem;
+        }
+
+        .reminder-time {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .reminder-desc {
+            color: #5d6d7e;
+            font-size: 0.9rem;
+        }
+
+        .set-reminder-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .set-reminder-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(74, 111, 165, 0.3);
+        }
+
+        .modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-tag {
+            background: #f0f4f8;
+            color: #4a6fa5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 2px solid #e8eff7;
+            transition: all 0.3s ease;
+        }
+
+        .modal-tag:hover {
+            background: #4a6fa5;
+            color: white;
+        }
+
+        .modal-priority {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            z-index: 1;
+        }
+
+        .modal-priority.urgente {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .modal-priority.alta {
+            background: #f39c12;
+            color: white;
+        }
+
+        .modal-priority.normal {
+            background: #2ecc71;
+            color: white;
+        }
+
+        /* Barra de búsqueda */
+        .search-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 15px 25px;
+            border: 2px solid #e8eff7;
+            border-radius: 15px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #4a6fa5;
+            background: white;
+            box-shadow: 0 5px 20px rgba(74, 111, 165, 0.1);
+        }
+
+        /* Calendario de eventos */
+        .calendar-section {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f4f8;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .calendar-day {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #e8eff7;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            border-color: #4a6fa5;
+            transform: translateY(-5px);
+        }
+
+        .calendar-date {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .calendar-events {
+            color: #5d6d7e;
+            font-size: 0.9rem;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 30px;
+            }
+            
+            .events-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+            
+            .site-name {
+                display: none;
+            }
+            
+            .info-banner {
+                padding: 30px 20px;
+            }
+            
+            .info-banner h1 {
+                font-size: 2rem;
+            }
+            
+            .sections-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .events-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .category-filters {
+                overflow-x: auto;
+                padding-bottom: 15px;
+                justify-content: flex-start;
+            }
+            
+            .modal-content {
+                margin: 10px;
+            }
+            
+            .modal-body {
+                padding: 25px;
+            }
+            
+            .modal-image {
+                height: 200px;
+            }
+            
+            .modal-title {
+                font-size: 1.8rem;
+            }
+            
+            .modal-meta-grid {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+            
+            .voting-buttons {
+                flex-direction: column;
+            }
+            
+            .vote-btn {
+                min-width: 100%;
+            }
+            
+            .share-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .reminder-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .instant-notification {
+                top: 80px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+            
+            .comment-item.is-reply {
+                margin-left: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .info-banner h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .event-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .modal-image {
+                height: 150px;
+            }
+            
+            .modal-title {
+                font-size: 1.5rem;
+            }
+            
+            .comment-item.is-reply {
+                margin-left: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header mejorado -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div class="site-name">
+                            <span class="school-name">EMMA BALAGUER DE VALLEJO</span>
+                            <span class="system-name">SGE</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-section">
+                    <a href="index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal mejorado -->
+    <main class="container main-content">
+        <!-- Banner informativo mejorado -->
+        <div class="info-banner">
+            <h1><i class="fas fa-info-circle"></i> Centro de Información General</h1>
+            <p>Todo lo que necesitas saber sobre eventos, actividades, calendario escolar, comunicaciones importantes y más del Colegio Emma Balaguer</p>
+        </div>
+
+        <!-- Secciones informativas -->
+        <div class="sections-container">
+            <div class="section-card">
+                <h3><i class="fas fa-calendar-alt"></i> Calendario Escolar</h3>
+                <p>Consulta todas las fechas importantes del año académico 2026, incluyendo periodos de evaluaciones, vacaciones y eventos especiales.</p>
+            </div>
+            <div class="section-card">
+                <h3><i class="fas fa-bullhorn"></i> Comunicados Oficiales</h3>
+                <p>Mantente informado sobre los anuncios y comunicaciones importantes de la dirección y administración del colegio.</p>
+            </div>
+            <div class="section-card">
+                <h3><i class="fas fa-newspaper"></i> Noticias Institucionales</h3>
+                <p>Descubre las últimas novedades, logros y acontecimientos relevantes de nuestra comunidad educativa.</p>
+            </div>
+        </div>
+
+        <!-- Estadísticas mejoradas -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number" id="totalEvents">0</span>
+                <span class="stat-label">Eventos Programados</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="upcomingEvents">0</span>
+                <span class="stat-label">Próximos Eventos</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="thisMonth">0</span>
+                <span class="stat-label">Eventos Este Mes</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="thisWeek">0</span>
+                <span class="stat-label">Esta Semana</span>
+            </div>
+        </div>
+
+        <!-- Barra de búsqueda -->
+        <div class="search-container">
+            <i class="fas fa-search" style="color: #4a6fa5; font-size: 1.2rem;"></i>
+            <input type="text" id="searchInput" class="search-box" placeholder="Buscar eventos, actividades, comunicados...">
+            <button class="btn btn-outline" id="clearSearch">
+                <i class="fas fa-times"></i> Limpiar
+            </button>
+        </div>
+
+        <!-- Calendario de eventos próximos -->
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <h3><i class="fas fa-calendar-day"></i> Próximos 7 Días</h3>
+                <span id="currentWeek"></span>
+            </div>
+            <div class="calendar-grid" id="calendarContainer">
+                <!-- Calendario se cargará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Filtros de categorías mejorados -->
+        <div class="category-filters">
+            <button class="category-btn active" data-category="todos">
+                <i class="fas fa-th-list"></i> Todos
+            </button>
+            <button class="category-btn" data-category="reunion">
+                <i class="fas fa-users"></i> Reuniones
+            </button>
+            <button class="category-btn" data-category="misa">
+                <i class="fas fa-church"></i> Misas
+            </button>
+            <button class="category-btn" data-category="festivo">
+                <i class="fas fa-flag"></i> Festivos
+            </button>
+            <button class="category-btn" data-category="taller">
+                <i class="fas fa-chalkboard-teacher"></i> Talleres
+            </button>
+            <button class="category-btn" data-category="notas">
+                <i class="fas fa-file-alt"></i> Entrega Notas
+            </button>
+            <button class="category-btn" data-category="actividad">
+                <i class="fas fa-calendar-check"></i> Actividades
+            </button>
+            <button class="category-btn" data-category="comunicado">
+                <i class="fas fa-bullhorn"></i> Comunicados
+            </button>
+        </div>
+
+        <!-- Grid de eventos mejorado -->
+        <div class="events-grid" id="eventsContainer">
+            <!-- Los eventos se cargarán aquí dinámicamente -->
+        </div>
+
+        <!-- Panel de administración mejorado -->
+        <div class="admin-panel" id="adminPanel">
+            <h3><i class="fas fa-cogs"></i> Panel de Administración de Eventos</h3>
+            <form id="eventForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventTitle"><i class="fas fa-heading"></i> Título del Evento *</label>
+                        <input type="text" id="eventTitle" required placeholder="Ej: Reunión de Padres 2026">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventCategory"><i class="fas fa-tag"></i> Categoría *</label>
+                        <select id="eventCategory" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="reunion">Reunión</option>
+                            <option value="misa">Misa</option>
+                            <option value="festivo">Día Festivo</option>
+                            <option value="taller">Taller</option>
+                            <option value="notas">Entrega de Notas</option>
+                            <option value="actividad">Actividad</option>
+                            <option value="comunicado">Comunicado Oficial</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventDate"><i class="far fa-calendar-alt"></i> Fecha *</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTime"><i class="far fa-clock"></i> Hora</label>
+                        <input type="time" id="eventTime" placeholder="Ej: 08:00 AM">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventLocation"><i class="fas fa-map-marker-alt"></i> Ubicación</label>
+                        <input type="text" id="eventLocation" placeholder="Ej: Auditorio Principal">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventImage"><i class="far fa-image"></i> URL de la Imagen</label>
+                        <input type="text" id="eventImage" placeholder="https://ejemplo.com/imagen.jpg">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventDescription"><i class="far fa-edit"></i> Descripción Detallada *</label>
+                    <textarea id="eventDescription" class="scrollable-textarea" required 
+                              placeholder="Describe detalladamente el evento, incluyendo objetivos, participantes, requisitos, etc..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventTags"><i class="fas fa-tags"></i> Etiquetas</label>
+                        <input type="text" id="eventTags" placeholder="padres, estudiantes, profesores, academico">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventPriority"><i class="fas fa-exclamation-circle"></i> Prioridad</label>
+                        <select id="eventPriority">
+                            <option value="normal">Normal</option>
+                            <option value="alta">Alta</option>
+                            <option value="urgente">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Evento
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="clearForm">
+                        <i class="fas fa-broom"></i> Limpiar Formulario
+                    </button>
+                    <button type="button" class="btn btn-outline" id="cancelForm">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Botón para agregar nuevo evento -->
+        <div style="text-align: center; margin-top: 50px; margin-bottom: 30px;" id="addEventBtnContainer">
+            <button class="btn btn-primary" id="showAdminPanel" style="padding: 15px 40px; font-size: 1.1rem;">
+                <i class="fas fa-plus-circle"></i> Agregar Nuevo Evento
+            </button>
+        </div>
+    </main>
+
+    <!-- MODAL CON TODAS LAS NUEVAS FUNCIONALIDADES -->
+    <div class="event-modal" id="eventModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="modal-header">
+                <div id="modalPriorityBadge" class="modal-priority"></div>
+                
+                <div id="modalImageContainer">
+                    <!-- La imagen se cargará dinámicamente -->
+                </div>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-header-content">
+                    <div id="modalCategoryBadge" class="modal-category"></div>
+                    <h1 id="modalTitle" class="modal-title"></h1>
+                </div>
+                
+                <div class="modal-meta-grid">
+                    <div class="modal-meta-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <div>
+                            <div class="modal-meta-label">FECHA</div>
+                            <div class="modal-meta-value" id="modalDate"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-meta-item" id="modalTimeContainer">
+                        <i class="far fa-clock"></i>
+                        <div>
+                            <div class="modal-meta-label">HORA</div>
+                            <div class="modal-meta-value" id="modalTime"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-meta-item" id="modalLocationContainer">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <div class="modal-meta-label">UBICACIÓN</div>
+                            <div class="modal-meta-value" id="modalLocation"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-meta-item">
+                        <i class="fas fa-tag"></i>
+                        <div>
+                            <div class="modal-meta-label">CATEGORÍA</div>
+                            <div class="modal-meta-value" id="modalCategoryName"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">
+                        <i class="fas fa-info-circle"></i> Descripción Detallada
+                    </h3>
+                    <div class="modal-description" id="modalDescription"></div>
+                </div>
+                
+                <!-- Sección de votación/confirmación de asistencia -->
+                <div class="voting-section">
+                    <h3 class="modal-section-title">
+                        <i class="fas fa-vote-yea"></i> Confirmación de Asistencia
+                    </h3>
+                    
+                    <div class="voting-stats">
+                        <div class="vote-stat asistentes">
+                            <span class="vote-number" id="modalAsistentes">0</span>
+                            <span class="vote-label">ASISTIRÁN</span>
+                        </div>
+                        <div class="vote-stat no-asistentes">
+                            <span class="vote-number" id="modalNoAsistentes">0</span>
+                            <span class="vote-label">NO ASISTIRÁN</span>
+                        </div>
+                        <div class="vote-stat total">
+                            <span class="vote-number" id="modalTotalVotos">0</span>
+                            <span class="vote-label">TOTAL VOTOS</span>
+                        </div>
+                    </div>
+                    
+                    <div class="voting-buttons">
+                        <button class="vote-btn asistir" data-vote="asistir">
+                            <i class="fas fa-check-circle"></i>
+                            <span>SÍ ASISTIRÉ</span>
+                        </button>
+                        <button class="vote-btn no-asistir" data-vote="no-asistir">
+                            <i class="fas fa-times-circle"></i>
+                            <span>NO ASISTIRÉ</span>
+                        </button>
+                    </div>
+                    
+                    <div id="userVoteStatus" style="text-align: center; margin-top: 15px; color: #5d6d7e; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Aún no has votado
+                    </div>
+                </div>
+                
+                <!-- Sección de compartir/invitaciones -->
+                <div class="share-section">
+                    <h3 class="modal-section-title">
+                        <i class="fas fa-share-alt"></i> Compartir Evento
+                    </h3>
+                    
+                    <div class="share-options">
+                        <div class="share-option whatsapp" data-platform="whatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                            <div class="share-label">WhatsApp</div>
+                            <div class="share-desc">Compartir por mensaje</div>
+                        </div>
+                        <div class="share-option facebook" data-platform="facebook">
+                            <i class="fab fa-facebook"></i>
+                            <div class="share-label">Facebook</div>
+                            <div class="share-desc">Publicar en red social</div>
+                        </div>
+                        <div class="share-option gmail" data-platform="gmail">
+                            <i class="fas fa-envelope"></i>
+                            <div class="share-label">Gmail</div>
+                            <div class="share-desc">Enviar por Gmail</div>
+                        </div>
+                        <div class="share-option link" data-platform="link">
+                            <i class="fas fa-link"></i>
+                            <div class="share-label">Copiar Enlace</div>
+                            <div class="share-desc">Compartir enlace directo</div>
+                        </div>
+                    </div>
+                    
+                    <div class="invitation-link" style="display: none;" id="invitationLinkContainer">
+                        <input type="text" id="invitationLinkInput" readonly>
+                        <button id="copyLinkBtn">Copiar</button>
+                    </div>
+                    
+                    <div id="shareStatus" style="text-align: center; margin-top: 15px; color: #2ecc71; font-size: 0.9rem; display: none;">
+                        <i class="fas fa-check-circle"></i> ¡Enlace copiado al portapapeles!
+                    </div>
+                </div>
+                
+                <!-- Sección de comentarios MEJORADA -->
+                <div class="comments-section">
+                    <h3 class="modal-section-title">
+                        <i class="fas fa-comments"></i> Comentarios y Preguntas
+                    </h3>
+                    
+                    <div class="comment-form">
+                        <textarea class="comment-input" id="commentInput" placeholder="Escribe tu comentario, pregunta o sugerencia sobre este evento..."></textarea>
+                        <div class="comment-form-actions">
+                            <button class="btn btn-outline" id="cancelComment">
+                                Cancelar
+                            </button>
+                            <button class="btn btn-primary" id="submitComment">
+                                <i class="fas fa-paper-plane"></i> Publicar Comentario
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="comments-list" id="commentsList">
+                        <!-- Los comentarios se cargarán dinámicamente aquí -->
+                    </div>
+                </div>
+                
+                <!-- Sección de recordatorios -->
+                <div class="reminder-section">
+                    <h3 class="modal-section-title">
+                        <i class="fas fa-bell"></i> Configurar Recordatorio
+                    </h3>
+                    
+                    <div class="reminder-options">
+                        <div class="reminder-option" data-hours="1">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <div class="reminder-time">1 hora antes</div>
+                                <div class="reminder-desc">Recibirás una notificación 1 hora antes del evento</div>
+                            </div>
+                        </div>
+                        <div class="reminder-option" data-hours="24">
+                            <i class="fas fa-calendar-day"></i>
+                            <div>
+                                <div class="reminder-time">1 día antes</div>
+                                <div class="reminder-desc">Recibirás una notificación 24 horas antes</div>
+                            </div>
+                        </div>
+                        <div class="reminder-option" data-hours="168">
+                            <i class="fas fa-calendar-week"></i>
+                            <div>
+                                <div class="reminder-time">1 semana antes</div>
+                                <div class="reminder-desc">Recibirás una notificación 7 días antes</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="set-reminder-btn" id="setReminderBtn">
+                        <i class="fas fa-bell"></i> ACTIVAR RECORDATORIO
+                    </button>
+                    
+                    <div id="reminderStatus" style="text-align: center; margin-top: 15px; color: #2ecc71; font-size: 0.9rem; display: none;">
+                        <i class="fas fa-check-circle"></i> Recordatorio configurado correctamente
+                    </div>
+                </div>
+                
+                <div class="modal-section" id="modalTagsSection">
+                    <h3 class="modal-section-title">
+                        <i class="fas fa-tags"></i> Etiquetas y Palabras Clave
+                    </h3>
+                    <div class="modal-tags" id="modalTags"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de Eventos Mejorado con Todas las Funcionalidades
+        const eventSystem = {
+            events: [
+                {
+                    id: 1,
+                    title: "Reunión General de Padres - Inicio Año Escolar 2026",
+                    category: "reunion",
+                    date: "2026-01-20",
+                    time: "09:00",
+                    location: "Auditorio Principal",
+                    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "Reunión informativa con todos los padres de familia para presentar los planes académicos, metodologías de enseñanza, y expectativas del año escolar 2026. Se abordarán temas importantes como:\n\n• Presentación del equipo docente y directivo\n• Calendario académico 2026\n• Metodologías de enseñanza innovadoras\n• Protocolos de seguridad y convivencia\n• Programa de actividades extracurriculares\n• Sistema de evaluación y seguimiento\n\nSe requiere confirmación de asistencia. Favor llegar 15 minutos antes.",
+                    tags: ["padres", "información", "académico", "orientación", "inicio de clases"],
+                    priority: "alta",
+                    capacity: 200,
+                    votes: {
+                        asistir: 0,
+                        noAsistir: 0
+                    },
+                    comments: [
+                        {
+                            id: 1,
+                            author: "Carlos Rodríguez",
+                            authorInitials: "CR",
+                            content: "¿Habrá servicio de cuidado de niños durante la reunión?",
+                            timestamp: "2026-01-10T11:20:00",
+                            role: "padre",
+                            parentId: null,
+                            replies: [
+                                {
+                                    id: 101,
+                                    author: "Dirección del Colegio",
+                                    authorInitials: "DC",
+                                    content: "Sí, habrá servicio de cuidado de niños en la sala de juegos para niños de 3 a 10 años.",
+                                    timestamp: "2026-01-10T15:30:00",
+                                    role: "administración",
+                                    parentId: 1
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "Misa de Inauguración del Año Escolar",
+                    category: "misa",
+                    date: "2026-01-20",
+                    time: "08:00",
+                    location: "Capilla del Colegio",
+                    image: "https://images.unsplash.com/photo-1541647376583-8934aaf3448a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "Ceremonia religiosa para bendecir el inicio del año escolar 2026. Participarán estudiantes, padres, docentes y personal administrativo. La misa será oficiada por el Padre Juan Pérez, capellán del colegio.\n\nPrograma:\n• Recepción de participantes (07:30)\n• Procesión de entrada (08:00)\n• Misa de inauguración (08:15)\n• Bendición de estudiantes y docentes (09:00)\n• Refrigerio comunitario (09:30)\n\nVestimenta: Uniforme escolar completo",
+                    tags: ["religioso", "comunidad", "bendición", "inauguración", "eucaristía"],
+                    priority: "normal",
+                    capacity: 150,
+                    votes: {
+                        asistir: 0,
+                        noAsistir: 0
+                    },
+                    comments: [
+                        {
+                            id: 1,
+                            author: "María González",
+                            authorInitials: "MG",
+                            content: "¿Es obligatorio llevar el uniforme escolar completo o podemos asistir con ropa formal?",
+                            timestamp: "2026-01-10T09:30:00",
+                            role: "padre",
+                            parentId: null,
+                            replies: [
+                                {
+                                    id: 101,
+                                    author: "Dirección del Colegio",
+                                    authorInitials: "DC",
+                                    content: "Para la misa de inauguración, es obligatorio el uniforme escolar completo. Es parte del protocolo del evento.",
+                                    timestamp: "2026-01-10T14:15:00",
+                                    role: "administración",
+                                    parentId: 1
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    title: "Entrega de Notas - Primer Trimestre",
+                    category: "notas",
+                    date: "2026-03-15",
+                    time: "14:00",
+                    location: "Salón de Profesores",
+                    image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "Entrega de calificaciones del primer trimestre académico 2026.\n\nHorarios por grado:\n• 14:00 - 1ro a 3ro básico\n• 15:00 - 4to a 6to básico\n• 16:00 - 7mo a 9no básico\n• 17:00 - 1ro a 3ro medio\n\nLos padres deben presentar identificación y solo podrán retirar las notas de sus hijos.",
+                    tags: ["calificaciones", "evaluación", "académico", "trimestre"],
+                    priority: "alta",
+                    votes: { asistir: 0, noAsistir: 0 },
+                    comments: []
+                },
+                {
+                    id: 4,
+                    title: "Taller de Educación Sexual para Padres",
+                    category: "taller",
+                    date: "2026-02-10",
+                    time: "18:00",
+                    location: "Sala de Conferencias",
+                    image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "Taller informativo sobre educación sexual integral dirigido a padres de familia.\n\nTemas a tratar:\n• Desarrollo emocional y sexual en adolescentes\n• Comunicación efectiva con hijos\n• Prevención de riesgos\n• Valores y autoestima\n• Recursos educativos disponibles\n\nImpartido por especialistas en psicología educativa. Cupo limitado a 50 personas.",
+                    tags: ["educación sexual", "taller", "padres", "psicología", "prevención"],
+                    priority: "normal",
+                    votes: { asistir: 0, noAsistir: 0 },
+                    comments: []
+                },
+                {
+                    id: 5,
+                    title: "Día del Estudiante - Celebración Especial",
+                    category: "festivo",
+                    date: "2026-05-11",
+                    time: "08:00-15:00",
+                    location: "Canchas y Auditorio",
+                    image: "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "Celebración del Día del Estudiante 2026 con actividades especiales:\n\n• 08:00 - Acto central en el auditorio\n• 09:30 - Juegos deportivos intercurso\n• 11:30 - Concurso de talentos\n• 13:00 - Almuerzo especial (cortesía del colegio)\n• 14:00 - Entrega de reconocimientos\n\nLos estudiantes pueden venir con ropa casual (no uniforme). Se suspenden las clases normales.",
+                    tags: ["estudiantes", "celebración", "festivo", "actividades", "recreación"],
+                    priority: "normal",
+                    votes: { asistir: 0, noAsistir: 0 },
+                    comments: []
+                },
+                {
+                    id: 6,
+                    title: "Jornada de Vacunación Estudiantil",
+                    category: "actividad",
+                    date: "2026-04-05",
+                    time: "08:00-15:00",
+                    location: "Enfermería del Colegio",
+                    image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "Jornada especial de vacunación para todos los estudiantes en coordinación con el Ministerio de Salud.\n\nVacunas disponibles:\n• Influenza estacional\n• Tétanos y difteria\n• Hepatitis B\n• Sarampión, paperas y rubéola\n\nRequisitos:\n• Traer carnet de vacunación\n• Autorización firmada por padres\n• Documento de identidad del estudiante\n\nEl personal de salud estará disponible durante toda la jornada.",
+                    tags: ["salud", "vacunación", "prevención", "enfermería", "estudiantes"],
+                    priority: "urgente",
+                    votes: { asistir: 0, noAsistir: 0 },
+                    comments: []
+                },
+                {
+                    id: 7,
+                    title: "Comunicado: Cambios en Horarios Escolares",
+                    category: "comunicado",
+                    date: "2026-01-25",
+                    time: "",
+                    location: "",
+                    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "COMUNICADO OFICIAL DE LA DIRECCIÓN\n\nA partir del lunes 28 de enero de 2026, se implementarán los siguientes cambios en los horarios escolares:\n\n1. ENTRADA GENERAL: 7:30 AM (antes 7:45 AM)\n2. SALIDA BÁSICA: 2:30 PM (sin cambios)\n3. SALIDA MEDIA: 3:30 PM (antes 3:15 PM)\n4. RECREOS: 10:00-10:20 AM y 12:30-1:00 PM\n5. SERVICIO DE TRANSPORTE: Se ajustarán los horarios de recogida\n\nEstos cambios buscan optimizar el tiempo de aprendizaje y mejorar la logística del transporte escolar.\n\nPara consultas, dirigirse a la secretaría académica en horario de oficina.",
+                    tags: ["comunicado", "horarios", "cambios", "oficial", "dirección"],
+                    priority: "alta",
+                    votes: { asistir: 0, noAsistir: 0 },
+                    comments: []
+                },
+                {
+                    id: 8,
+                    title: "Reunión Apoderados 4to Básico A",
+                    category: "reunion",
+                    date: "2026-02-15",
+                    time: "19:00",
+                    location: "Sala 4A",
+                    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                    description: "Reunión exclusiva para apoderados del 4to Básico A.\n\nTemas a tratar:\n• Evaluación del primer mes de clases\n• Proyecto especial: \"Cuidemos el Medio Ambiente\"\n• Elección de delegados de curso\n• Actividades extracurriculares programadas\n• Acuerdos de convivencia escolar\n• Información sobre salida pedagógica a museo\n\nImportante: Se requiere la asistencia de al menos un apoderado por familia.",
+                    tags: ["apoderados", "4to básico", "reunión curso", "proyecto", "convivencia"],
+                    priority: "normal",
+                    votes: { asistir: 0, noAsistir: 0 },
+                    comments: []
+                }
+            ],
+
+           
+            userVotes: {},
+            
+           
+            reminders: {},
+
+           
+            currentUser: {
+                name: "Administrador",
+                initials: "ADM",
+                role: "invitado" // Cambiar a "administración" para activar modo admin
+            },
+
+            init() {
+                this.loadFromLocalStorage();
+                this.loadEvents();
+                this.setupFilters();
+                this.setupSearch();
+                this.setupModal();
+                this.updateStats();
+                this.loadCalendar();
+                this.checkAdminAccess();
+                this.setupEventListeners();
+                this.checkReminders();
+            },
+
+            setupEventListeners() {
+                setInterval(() => {
+                    this.loadCalendar();
+                    this.updateStats();
+                    this.checkReminders();
+                }, 3600000);
+                
+                setInterval(() => {
+                    this.checkReminders();
+                }, 60000);
+            },
+
+            resetAllVotes() {
+                Swal.fire({
+                    title: '¿Reiniciar todas las votaciones?',
+                    html: `Esta acción reseteará <strong>${this.events.length} eventos</strong>.<br><br>
+                          <div style="text-align: left; background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                            <div><i class="fas fa-exclamation-circle"></i> <strong>Acciones que se realizarán:</strong></div>
+                            <div style="margin-left: 20px; margin-top: 5px;">
+                              • Todos los contadores de votación se pondrán en 0<br>
+                              • Los votos de los usuarios serán eliminados<br>
+                              • Los recordatorios se mantendrán intactos<br>
+                              • Los comentarios no se verán afectados
+                            </div>
+                          </div>
+                          <div style="color: #e74c3c; margin-top: 15px;">
+                            <i class="fas fa-exclamation-triangle"></i> Esta acción no se puede deshacer
+                          </div>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e74c3c',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: '<i class="fas fa-redo"></i> Sí, reiniciar todo',
+                    cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+                    reverseButtons: true,
+                    focusCancel: true,
+                    showLoaderOnConfirm: true,
+                    preConfirm: () => {
+                        return new Promise((resolve) => {
+                            setTimeout(() => {
+                                // Reiniciar votos en todos los eventos
+                                this.events.forEach(event => {
+                                    event.votes.asistir = 0;
+                                    event.votes.noAsistir = 0;
+                                });
+                                
+                                // Limpiar votos de usuarios
+                                this.userVotes = {};
+                                
+                                // Guardar cambios
+                                this.saveToLocalStorage();
+                                resolve();
+                            }, 1000);
+                        });
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Recargar eventos
+                        const activeCategory = document.querySelector('.category-btn.active').getAttribute('data-category');
+                        const searchTerm = document.getElementById('searchInput').value;
+                        this.loadEvents(activeCategory, searchTerm);
+                        
+                        // Actualizar estadísticas
+                        this.updateStats();
+                        
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            html: `Se han reiniciado las votaciones de <strong>${this.events.length} eventos</strong>.<br><br>
+                                  <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px;">
+                                    <i class="fas fa-check-circle"></i> Todos los contadores están ahora en 0
+                                  </div>`,
+                            icon: 'success',
+                            confirmButtonText: 'Aceptar',
+                            confirmButtonColor: '#2ecc71'
+                        });
+                        
+                        // Mostrar notificación instantánea
+                        this.showInstantNotification('success', 'Votaciones reiniciadas', 
+                            `Se reiniciaron ${this.events.length} eventos correctamente`);
+                    }
+                });
+            },
+
+            resetEventVotes(eventId) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+
+                const totalVotes = event.votes.asistir + event.votes.noAsistir;
+                
+                Swal.fire({
+                    title: '¿Reiniciar votaciones?',
+                    html: `<strong>"${event.title}"</strong><br>
+                          <div style="text-align: center; margin: 15px 0;">
+                            <div style="display: inline-block; margin: 0 10px;">
+                              <div style="font-size: 2rem; color: #2ecc71; font-weight: bold;">${event.votes.asistir}</div>
+                              <div style="font-size: 0.9rem; color: #7f8c8d;">Asistirán</div>
+                            </div>
+                            <div style="display: inline-block; margin: 0 10px;">
+                              <div style="font-size: 2rem; color: #e74c3c; font-weight: bold;">${event.votes.noAsistir}</div>
+                              <div style="font-size: 0.9rem; color: #7f8c8d;">No asistirán</div>
+                            </div>
+                            <div style="display: inline-block; margin: 0 10px;">
+                              <div style="font-size: 2rem; color: #3498db; font-weight: bold;">${totalVotes}</div>
+                              <div style="font-size: 0.9rem; color: #7f8c8d;">Total votos</div>
+                            </div>
+                          </div>`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3498db',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: 'Sí, reiniciar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reiniciar votos del evento
+                        event.votes.asistir = 0;
+                        event.votes.noAsistir = 0;
+                        
+                        // Eliminar votos de usuarios para este evento
+                        delete this.userVotes[eventId];
+                        
+                        // Guardar cambios
+                        this.saveToLocalStorage();
+                        
+                        // Recargar eventos
+                        const activeCategory = document.querySelector('.category-btn.active').getAttribute('data-category');
+                        const searchTerm = document.getElementById('searchInput').value;
+                        this.loadEvents(activeCategory, searchTerm);
+                        
+                        // Cerrar modal si está abierto
+                        const modal = document.getElementById('eventModal');
+                        if (modal.style.display === 'flex') {
+                            modal.style.display = 'none';
+                        }
+                        
+                        this.showInstantNotification('success', '¡Votaciones reiniciadas!', 
+                            `"${event.title}" - Votaciones restablecidas a 0`);
+                    }
+                });
+            },
+
+            loadEvents(filterCategory = 'todos', searchTerm = '') {
+                const container = document.getElementById('eventsContainer');
+                if (!container) return;
+
+                let filteredEvents = this.events;
+                
+                if (filterCategory !== 'todos') {
+                    filteredEvents = filteredEvents.filter(event => 
+                        event.category === filterCategory
+                    );
+                }
+
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    filteredEvents = filteredEvents.filter(event => 
+                        event.title.toLowerCase().includes(term) ||
+                        event.description.toLowerCase().includes(term) ||
+                        (event.tags && event.tags.some(tag => tag.toLowerCase().includes(term))) ||
+                        event.location?.toLowerCase().includes(term)
+                    );
+                }
+
+                filteredEvents.sort((a, b) => {
+                    const priorityOrder = { 'urgente': 0, 'alta': 1, 'normal': 2 };
+                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+                        return priorityOrder[a.priority] - priorityOrder[b.priority];
+                    }
+                    return new Date(a.date) - new Date(b.date);
+                });
+
+                if (filteredEvents.length === 0) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 50px; background: rgba(255,255,255,0.95); border-radius: 20px;">
+                            <i class="fas fa-calendar-times" style="font-size: 4rem; color: #bdc3c7; margin-bottom: 20px;"></i>
+                            <h3 style="color: #7f8c8d;">No se encontraron eventos</h3>
+                            <p style="color: #95a5a6;">Intenta con otros filtros o términos de búsqueda</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = filteredEvents.map(event => {
+                    const totalVotes = event.votes.asistir + event.votes.noAsistir;
+                    const attendancePercentage = totalVotes > 0 ? Math.round((event.votes.asistir / totalVotes) * 100) : 0;
+                    const commentsCount = this.getTotalCommentsCount(event);
+                    
+                    return `
+                    <div class="event-card" data-id="${event.id}" data-priority="${event.priority}">
+                        ${event.image ? `
+                            <img src="${event.image}" alt="${event.title}" class="event-image" onerror="this.style.display='none'">
+                        ` : `
+                            <div class="event-image" style="background: linear-gradient(135deg, #4a6fa5, #2c4a7a); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem;">
+                                <i class="fas fa-${this.getCategoryIcon(event.category)}"></i>
+                            </div>
+                        `}
+                        ${event.priority === 'urgente' ? `
+                            <div style="position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; z-index: 1;">
+                                <i class="fas fa-exclamation-triangle"></i> URGENTE
+                            </div>
+                        ` : event.priority === 'alta' ? `
+                            <div style="position: absolute; top: 15px; right: 15px; background: #f39c12; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; z-index: 1;">
+                                <i class="fas fa-exclamation-circle"></i> IMPORTANTE
+                            </div>
+                        ` : ''}
+                        
+                        <div class="event-content">
+                            <span class="event-category ${event.category}">
+                                <i class="fas fa-${this.getCategoryIcon(event.category)}"></i>
+                                ${this.getCategoryName(event.category)}
+                            </span>
+                            <h3 class="event-title">${event.title}</h3>
+                            
+                            <div class="event-meta">
+                                <div class="event-date">
+                                    <i class="far fa-calendar-alt"></i>
+                                    ${this.formatDate(event.date)}
+                                </div>
+                                ${event.location ? `
+                                    <div class="event-location">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        ${event.location}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <p class="event-description">
+                                ${event.description.substring(0, 150)}...
+                            </p>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                        <span style="font-size: 0.9rem; color: #5d6d7e;">Confirmaciones:</span>
+                                        <span style="font-weight: 600; color: #4a6fa5;">${totalVotes} votos</span>
+                                    </div>
+                                    <div style="background: #f0f4f8; height: 8px; border-radius: 4px; overflow: hidden;">
+                                        <div style="background: #2ecc71; height: 100%; width: ${attendancePercentage}%;"></div>
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #95a5a6; margin-top: 5px;">
+                                        ${attendancePercentage}% confirmó asistencia
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                        <span style="font-size: 0.9rem; color: #5d6d7e;">Comentarios:</span>
+                                        <span style="font-weight: 600; color: #4a6fa5;">${commentsCount}</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 5px; color: #95a5a6; font-size: 0.8rem;">
+                                        <i class="fas fa-comments"></i>
+                                        <span>${commentsCount === 0 ? 'Sé el primero en comentar' : commentsCount === 1 ? '1 comentario' : `${commentsCount} comentarios`}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="event-footer">
+                                <div class="event-tags">
+                                    ${event.tags && event.tags.length > 0 ? event.tags.slice(0, 3).map(tag => `
+                                        <span class="event-tag">${tag}</span>
+                                    `).join('') : ''}
+                                    ${event.tags && event.tags.length > 3 ? `<span class="event-tag">+${event.tags.length - 3}</span>` : ''}
+                                </div>
+                                
+                                <div class="event-actions">
+                                    <button class="btn btn-outline" onclick="eventSystem.openEventModal(${event.id})">
+                                        <i class="fas fa-eye"></i> Ver Detalles
+                                    </button>
+                                    ${this.isAdmin() ? `
+                                        <div class="admin-actions">
+                                            <div class="tooltip-container">
+                                                <button class="btn btn-secondary btn-sm" onclick="eventSystem.editEvent(${event.id})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <span class="tooltip-text">Editar evento</span>
+                                            </div>
+                                            <div class="tooltip-container">
+                                                <button class="btn btn-warning btn-sm" onclick="eventSystem.confirmDeleteEvent(${event.id})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                <span class="tooltip-text delete">Eliminar evento</span>
+                                            </div>
+                                            <div class="tooltip-container">
+                                                <button class="btn btn-info btn-sm" onclick="eventSystem.resetEventVotes(${event.id})">
+                                                    <i class="fas fa-redo"></i>
+                                                </button>
+                                                <span class="tooltip-text info">Reiniciar votaciones</span>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+            },
+
+            confirmDeleteEvent(eventId) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+
+                Swal.fire({
+                    title: '¿Eliminar evento?',
+                    html: `<strong>${event.title}</strong><br>
+                          <div style="text-align: left; margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                            <div><i class="far fa-calendar-alt"></i> ${this.formatDate(event.date)}</div>
+                            ${event.time ? `<div><i class="far fa-clock"></i> ${this.formatTime(event.time)}</div>` : ''}
+                            ${event.location ? `<div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>` : ''}
+                          </div>
+                          <div style="color: #e74c3c; margin-top: 15px;">
+                            <i class="fas fa-exclamation-triangle"></i> Esta acción no se puede deshacer
+                          </div>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e74c3c',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    focusCancel: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.deleteEvent(eventId);
+                    }
+                });
+            },
+
+            deleteEvent(eventId) {
+                const initialLength = this.events.length;
+                this.events = this.events.filter(event => event.id !== eventId);
+                
+                if (this.events.length < initialLength) {
+                    delete this.userVotes[eventId];
+                    delete this.reminders[eventId];
+                    
+                    this.saveToLocalStorage();
+                    
+                    const activeCategory = document.querySelector('.category-btn.active').getAttribute('data-category');
+                    const searchTerm = document.getElementById('searchInput').value;
+                    this.loadEvents(activeCategory, searchTerm);
+                    
+                    this.updateStats();
+                    this.loadCalendar();
+                    
+                    this.showInstantNotification('success', '¡Evento eliminado!', 'El evento ha sido eliminado correctamente');
+                    
+                    const modal = document.getElementById('eventModal');
+                    if (modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                    }
+                } else {
+                    this.showInstantNotification('error', 'Error', 'No se pudo eliminar el evento');
+                }
+            },
+
+            getTotalCommentsCount(event) {
+                let count = 0;
+                if (event.comments) {
+                    event.comments.forEach(comment => {
+                        count++;
+                        if (comment.replies) {
+                            count += comment.replies.length;
+                        }
+                    });
+                }
+                return count;
+            },
+
+            getCategoryIcon(category) {
+                const icons = {
+                    'reunion': 'users',
+                    'misa': 'church',
+                    'festivo': 'flag',
+                    'taller': 'chalkboard-teacher',
+                    'notas': 'file-alt',
+                    'actividad': 'calendar-check',
+                    'comunicado': 'bullhorn'
+                };
+                return icons[category] || 'calendar';
+            },
+
+            getCategoryName(category) {
+                const names = {
+                    'reunion': 'Reunión',
+                    'misa': 'Misa',
+                    'festivo': 'Día Festivo',
+                    'taller': 'Taller',
+                    'notas': 'Entrega de Notas',
+                    'actividad': 'Actividad',
+                    'comunicado': 'Comunicado Oficial'
+                };
+                return names[category] || category;
+            },
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                const options = {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                };
+                return date.toLocaleDateString('es-ES', options);
+            },
+
+            formatTime(timeString) {
+                if (!timeString) return 'No especificada';
+                if (timeString.toLowerCase().includes('todo el día')) return 'Todo el día';
+                
+                const [hours, minutes] = timeString.split(':');
+                const hour = parseInt(hours);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const displayHour = hour % 12 || 12;
+                return `${displayHour}:${minutes} ${ampm}`;
+            },
+
+            formatDateTime(timestamp) {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diff = now - date;
+                
+                if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
+                    const hours = date.getHours().toString().padStart(2, '0');
+                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                    return `Hoy a las ${hours}:${minutes}`;
+                }
+                
+                if (diff < 48 * 60 * 60 * 1000 && date.getDate() === now.getDate() - 1) {
+                    const hours = date.getHours().toString().padStart(2, '0');
+                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                    return `Ayer a las ${hours}:${minutes}`;
+                }
+                
+                return date.toLocaleDateString('es-ES', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            },
+
+            setupFilters() {
+                const filterButtons = document.querySelectorAll('.category-btn');
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        const category = button.getAttribute('data-category');
+                        const searchTerm = document.getElementById('searchInput').value;
+                        this.loadEvents(category, searchTerm);
+                        this.updateStats();
+                    });
+                });
+            },
+
+            setupSearch() {
+                const searchInput = document.getElementById('searchInput');
+                const clearSearch = document.getElementById('clearSearch');
+
+                searchInput.addEventListener('input', (e) => {
+                    const category = document.querySelector('.category-btn.active').getAttribute('data-category');
+                    this.loadEvents(category, e.target.value);
+                });
+
+                clearSearch.addEventListener('click', () => {
+                    searchInput.value = '';
+                    const category = document.querySelector('.category-btn.active').getAttribute('data-category');
+                    this.loadEvents(category, '');
+                });
+            },
+
+            setupModal() {
+                const modal = document.getElementById('eventModal');
+                const closeBtn = document.getElementById('closeModal');
+
+                closeBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                    }
+                });
+            },
+
+            openEventModal(eventId) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+
+                const modal = document.getElementById('eventModal');
+                const imageContainer = document.getElementById('modalImageContainer');
+                const priorityBadge = document.getElementById('modalPriorityBadge');
+                const categoryBadge = document.getElementById('modalCategoryBadge');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalDate = document.getElementById('modalDate');
+                const modalTime = document.getElementById('modalTime');
+                const modalTimeContainer = document.getElementById('modalTimeContainer');
+                const modalLocation = document.getElementById('modalLocation');
+                const modalLocationContainer = document.getElementById('modalLocationContainer');
+                const modalCategoryName = document.getElementById('modalCategoryName');
+                const modalDescription = document.getElementById('modalDescription');
+                const modalTags = document.getElementById('modalTags');
+                const modalTagsSection = document.getElementById('modalTagsSection');
+                
+                const modalAsistentes = document.getElementById('modalAsistentes');
+                const modalNoAsistentes = document.getElementById('modalNoAsistentes');
+                const modalTotalVotos = document.getElementById('modalTotalVotos');
+                const userVoteStatus = document.getElementById('userVoteStatus');
+                const voteButtons = document.querySelectorAll('.vote-btn');
+                
+                const shareOptions = document.querySelectorAll('.share-option');
+                const invitationLinkContainer = document.getElementById('invitationLinkContainer');
+                const invitationLinkInput = document.getElementById('invitationLinkInput');
+                const copyLinkBtn = document.getElementById('copyLinkBtn');
+                const shareStatus = document.getElementById('shareStatus');
+                
+                const commentInput = document.getElementById('commentInput');
+                const cancelComment = document.getElementById('cancelComment');
+                const submitComment = document.getElementById('submitComment');
+                const commentsList = document.getElementById('commentsList');
+                
+                const reminderOptions = document.querySelectorAll('.reminder-option');
+                const setReminderBtn = document.getElementById('setReminderBtn');
+                const reminderStatus = document.getElementById('reminderStatus');
+
+                // Configurar imagen
+                if (event.image) {
+                    imageContainer.innerHTML = `
+                        <img src="${event.image}" alt="${event.title}" class="modal-image" 
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"modal-image-placeholder\"><i class=\"fas fa-${this.getCategoryIcon(event.category)}\"></i></div>'">
+                    `;
+                } else {
+                    imageContainer.innerHTML = `
+                        <div class="modal-image-placeholder">
+                            <i class="fas fa-${this.getCategoryIcon(event.category)}"></i>
+                        </div>
+                    `;
+                }
+
+                // Configurar prioridad
+                priorityBadge.className = `modal-priority ${event.priority}`;
+                priorityBadge.textContent = event.priority === 'urgente' ? 'URGENTE' : 
+                                           event.priority === 'alta' ? 'IMPORTANTE' : 
+                                           'INFORMATIVO';
+
+                // Configurar categoría
+                categoryBadge.innerHTML = `
+                    <i class="fas fa-${this.getCategoryIcon(event.category)}"></i>
+                    ${this.getCategoryName(event.category)}
+                `;
+                categoryBadge.className = `modal-category ${event.category}`;
+
+                // Configurar título
+                modalTitle.textContent = event.title;
+
+                // Configurar fecha
+                modalDate.textContent = this.formatDate(event.date);
+
+                // Configurar hora
+                if (event.time && event.time.trim()) {
+                    modalTime.textContent = this.formatTime(event.time);
+                    modalTimeContainer.style.display = 'flex';
+                } else {
+                    modalTimeContainer.style.display = 'none';
+                }
+
+                // Configurar ubicación
+                if (event.location && event.location.trim()) {
+                    modalLocation.textContent = event.location;
+                    modalLocationContainer.style.display = 'flex';
+                } else {
+                    modalLocationContainer.style.display = 'none';
+                }
+
+                // Configurar categoría en metadata
+                modalCategoryName.textContent = this.getCategoryName(event.category);
+
+                // Configurar descripción
+                modalDescription.textContent = event.description;
+
+                // Configurar etiquetas
+                if (event.tags && event.tags.length > 0) {
+                    modalTags.innerHTML = event.tags.map(tag => 
+                        `<span class="modal-tag">${tag}</span>`
+                    ).join('');
+                    modalTagsSection.style.display = 'block';
+                } else {
+                    modalTagsSection.style.display = 'none';
+                }
+
+                // Configurar estadísticas de votación
+                const totalVotes = event.votes.asistir + event.votes.noAsistir;
+                modalAsistentes.textContent = event.votes.asistir;
+                modalNoAsistentes.textContent = event.votes.noAsistir;
+                modalTotalVotos.textContent = totalVotes;
+
+                // Configurar estado del voto del usuario
+                const userVote = this.userVotes[eventId];
+                if (userVote) {
+                    userVoteStatus.innerHTML = `
+                        <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+                        Ya has votado: <strong>${userVote === 'asistir' ? 'SÍ ASISTIRÉ' : 'NO ASISTIRÉ'}</strong>
+                    `;
+                    voteButtons.forEach(btn => {
+                        if (btn.dataset.vote === userVote) {
+                            btn.classList.add('selected');
+                        } else {
+                            btn.classList.remove('selected');
+                        }
+                    });
+                } else {
+                    userVoteStatus.innerHTML = '<i class="fas fa-info-circle"></i> Aún no has votado';
+                    voteButtons.forEach(btn => btn.classList.remove('selected'));
+                }
+
+                // Configurar sistema de compartir
+                const eventUrl = `${window.location.origin}${window.location.pathname}?event=${eventId}`;
+                const shareText = `¡Te invito al evento "${event.title}" del Colegio Emma Balaguer! 🎓\n\n📅 ${this.formatDate(event.date)}\n🕒 ${this.formatTime(event.time)}\n📍 ${event.location || 'Por confirmar'}\n\nMás información: ${eventUrl}`;
+                
+                shareOptions.forEach(option => {
+                    option.onclick = () => {
+                        const platform = option.dataset.platform;
+                        
+                        switch(platform) {
+                            case 'whatsapp':
+                                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+                                break;
+                                
+                            case 'facebook':
+                                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(eventUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+                                break;
+                                
+                            case 'gmail':
+                                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=&su=${encodeURIComponent('Invitación: ' + event.title)}&body=${encodeURIComponent(shareText)}`;
+                                window.open(gmailUrl, '_blank');
+                                break;
+                                
+                            case 'link':
+                                invitationLinkInput.value = eventUrl;
+                                invitationLinkContainer.style.display = 'flex';
+                                break;
+                        }
+                    };
+                });
+
+                copyLinkBtn.onclick = () => {
+                    invitationLinkInput.select();
+                    document.execCommand('copy');
+                    shareStatus.style.display = 'block';
+                    setTimeout(() => {
+                        shareStatus.style.display = 'none';
+                    }, 3000);
+                };
+
+                // Configurar sistema de comentarios
+                commentInput.value = '';
+                this.loadComments(eventId, commentsList);
+                
+                cancelComment.onclick = () => {
+                    commentInput.value = '';
+                };
+                
+                submitComment.onclick = () => {
+                    const content = commentInput.value.trim();
+                    if (!content) {
+                        Swal.fire({
+                            title: 'Comentario vacío',
+                            text: 'Por favor escribe un comentario antes de publicar',
+                            icon: 'warning',
+                            confirmButtonText: 'Entendido'
+                        });
+                        return;
+                    }
+                    
+                    const newComment = {
+                        id: Date.now(),
+                        author: this.currentUser.name,
+                        authorInitials: this.currentUser.initials,
+                        content: content,
+                        timestamp: new Date().toISOString(),
+                        role: this.currentUser.role,
+                        parentId: null,
+                        replies: []
+                    };
+                    
+                    if (!event.comments) {
+                        event.comments = [];
+                    }
+                    
+                    event.comments.unshift(newComment);
+                    this.saveToLocalStorage();
+                    this.loadComments(eventId, commentsList);
+                    commentInput.value = '';
+                    
+                    this.updateCommentCounter(eventId);
+                    
+                    this.showInstantNotification('success', '¡Comentario publicado!', 'Tu comentario ha sido publicado exitosamente');
+                };
+
+                // Configurar recordatorios
+                reminderOptions.forEach(option => {
+                    option.classList.remove('selected');
+                    option.onclick = () => {
+                        reminderOptions.forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                        reminderStatus.style.display = 'none';
+                    };
+                });
+
+                const selectedReminder = this.reminders[eventId];
+                if (selectedReminder) {
+                    reminderOptions.forEach(option => {
+                        if (parseInt(option.dataset.hours) === selectedReminder.hours) {
+                            option.classList.add('selected');
+                        }
+                    });
+                    reminderStatus.style.display = 'block';
+                }
+
+                setReminderBtn.onclick = () => {
+                    const selectedOption = document.querySelector('.reminder-option.selected');
+                    if (!selectedOption) {
+                        Swal.fire({
+                            title: 'Selecciona un tiempo',
+                            text: 'Por favor selecciona cuándo deseas recibir el recordatorio',
+                            icon: 'warning',
+                            confirmButtonText: 'Entendido'
+                        });
+                        return;
+                    }
+
+                    const hours = parseInt(selectedOption.dataset.hours);
+                    this.reminders[eventId] = {
+                        hours: hours,
+                        eventId: eventId,
+                        eventTitle: event.title,
+                        eventDate: event.date,
+                        eventTime: event.time
+                    };
+
+                    this.saveToLocalStorage();
+                    
+                    reminderStatus.style.display = 'block';
+                    this.showInstantNotification('success', '¡Recordatorio configurado!', `Recibirás una notificación ${hours === 1 ? '1 hora' : hours === 24 ? '1 día' : '1 semana'} antes del evento`);
+                };
+
+                // Configurar botones de votación
+                voteButtons.forEach(btn => {
+                    btn.onclick = () => {
+                        const voteType = btn.dataset.vote;
+                        
+                        if (this.userVotes[eventId]) {
+                            const previousVote = this.userVotes[eventId];
+                            event.votes[previousVote === 'asistir' ? 'asistir' : 'noAsistir']--;
+                        }
+                        
+                        event.votes[voteType === 'asistir' ? 'asistir' : 'noAsistir']++;
+                        this.userVotes[eventId] = voteType;
+                        
+                        const totalVotesUpdated = event.votes.asistir + event.votes.noAsistir;
+                        modalAsistentes.textContent = event.votes.asistir;
+                        modalNoAsistentes.textContent = event.votes.noAsistir;
+                        modalTotalVotos.textContent = totalVotesUpdated;
+                        
+                        userVoteStatus.innerHTML = `
+                            <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+                            ¡Voto registrado! Has seleccionado: <strong>${voteType === 'asistir' ? 'SÍ ASISTIRÉ' : 'NO ASISTIRÉ'}</strong>
+                        `;
+                        
+                        voteButtons.forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        
+                        this.saveToLocalStorage();
+                        this.loadEvents();
+                        
+                        this.showInstantNotification('success', '¡Voto registrado!', 'Tu confirmación de asistencia ha sido guardada');
+                    };
+                });
+
+                // Agregar botón de eliminar en modal para administradores
+                if (this.isAdmin()) {
+                    const modalHeaderContent = document.querySelector('.modal-header-content');
+                    const existingDeleteBtn = modalHeaderContent.querySelector('.delete-modal-btn');
+                    if (!existingDeleteBtn) {
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'btn btn-warning delete-modal-btn';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Eliminar Evento';
+                        deleteBtn.style.marginTop = '15px';
+                        deleteBtn.onclick = () => {
+                            const modal = document.getElementById('eventModal');
+                            modal.style.display = 'none';
+                            setTimeout(() => {
+                                this.confirmDeleteEvent(eventId);
+                            }, 300);
+                        };
+                        modalHeaderContent.appendChild(deleteBtn);
+                    }
+                }
+
+                // Mostrar modal con animación
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    modal.style.opacity = '1';
+                }, 10);
+            },
+
+            loadComments(eventId, container) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+                
+                const comments = event.comments || [];
+                
+                if (comments.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-comments">
+                            <i class="fas fa-comment-slash"></i>
+                            <h4>No hay comentarios aún</h4>
+                            <p>Sé el primero en dejar un comentario, pregunta o sugerencia sobre este evento</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = comments.map(comment => this.renderComment(comment, eventId)).join('');
+            },
+
+            renderComment(comment, eventId) {
+                const isAdminUser = this.isAdmin();
+                const hasReplies = comment.replies && comment.replies.length > 0;
+                
+                return `
+                    <div class="comment-item" data-comment-id="${comment.id}">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <div class="comment-avatar ${comment.role === 'administración' ? 'admin' : ''}">
+                                    ${comment.authorInitials}
+                                </div>
+                                <div class="comment-author-info">
+                                    <h4>
+                                        ${comment.author}
+                                        ${comment.role === 'administración' ? '<span class="admin-badge">ADMIN</span>' : ''}
+                                    </h4>
+                                    <span>${comment.role === 'administración' ? 'Administración del Colegio' : 
+                                           comment.role === 'docente' ? 'Docente' : 'Padre/Madre de Familia'}</span>
+                                </div>
+                            </div>
+                            <div class="comment-time">
+                                ${this.formatDateTime(comment.timestamp)}
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            ${comment.content}
+                        </div>
+                        
+                        <div class="comment-actions">
+                            ${isAdminUser && comment.role !== 'administración' ? `
+                                <button class="reply-btn btn-sm" onclick="eventSystem.showReplyForm(${eventId}, ${comment.id})">
+                                    <i class="fas fa-reply"></i> Responder
+                                </button>
+                            ` : ''}
+                            
+                            ${(comment.author === this.currentUser.name || this.isAdmin()) ? `
+                                <button class="delete-comment-btn btn-sm" onclick="eventSystem.deleteComment(${eventId}, ${comment.id})">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        ${isAdminUser && comment.role !== 'administración' ? `
+                            <div class="reply-form" id="replyForm-${comment.id}">
+                                <textarea class="reply-input" id="replyInput-${comment.id}" placeholder="Escribe tu respuesta como administrador..."></textarea>
+                                <div class="reply-form-actions">
+                                    <button class="btn btn-outline btn-sm" onclick="eventSystem.hideReplyForm(${comment.id})">
+                                        Cancelar
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="eventSystem.submitReply(${eventId}, ${comment.id})">
+                                        <i class="fas fa-paper-plane"></i> Publicar Respuesta
+                                    </button>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${hasReplies ? comment.replies.map(reply => this.renderReply(reply, eventId)).join('') : ''}
+                    </div>
+                `;
+            },
+
+            renderReply(reply, eventId) {
+                return `
+                    <div class="comment-item is-reply is-admin-reply" data-comment-id="${reply.id}">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <div class="comment-avatar admin">
+                                    ${reply.authorInitials}
+                                </div>
+                                <div class="comment-author-info">
+                                    <h4>
+                                        ${reply.author}
+                                        <span class="admin-badge">ADMIN</span>
+                                    </h4>
+                                    <span>Administración del Colegio</span>
+                                </div>
+                            </div>
+                            <div class="comment-time">
+                                ${this.formatDateTime(reply.timestamp)}
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            ${reply.content}
+                        </div>
+                        
+                        ${this.isAdmin() ? `
+                            <div class="comment-actions">
+                                <button class="delete-comment-btn btn-sm" onclick="eventSystem.deleteComment(${eventId}, ${reply.id})">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            },
+
+            showReplyForm(eventId, commentId) {
+                document.querySelectorAll('.reply-form').forEach(form => {
+                    form.style.display = 'none';
+                });
+                
+                const replyForm = document.getElementById(`replyForm-${commentId}`);
+                if (replyForm) {
+                    replyForm.style.display = 'block';
+                    const replyInput = document.getElementById(`replyInput-${commentId}`);
+                    if (replyInput) {
+                        replyInput.focus();
+                    }
+                }
+            },
+
+            hideReplyForm(commentId) {
+                const replyForm = document.getElementById(`replyForm-${commentId}`);
+                if (replyForm) {
+                    replyForm.style.display = 'none';
+                    const replyInput = document.getElementById(`replyInput-${commentId}`);
+                    if (replyInput) {
+                        replyInput.value = '';
+                    }
+                }
+            },
+
+            submitReply(eventId, commentId) {
+                const replyInput = document.getElementById(`replyInput-${commentId}`);
+                const content = replyInput ? replyInput.value.trim() : '';
+                
+                if (!content) {
+                    this.showInstantNotification('error', 'Respuesta vacía', 'Por favor escribe una respuesta antes de publicar');
+                    return;
+                }
+                
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+                
+                const comment = event.comments.find(c => c.id === commentId);
+                if (!comment) return;
+                
+                const newReply = {
+                    id: Date.now(),
+                    author: this.currentUser.name,
+                    authorInitials: this.currentUser.initials,
+                    content: content,
+                    timestamp: new Date().toISOString(),
+                    role: 'administración',
+                    parentId: commentId
+                };
+                
+                if (!comment.replies) {
+                    comment.replies = [];
+                }
+                
+                comment.replies.push(newReply);
+                
+                this.saveToLocalStorage();
+                
+                const commentsList = document.getElementById('commentsList');
+                if (commentsList) {
+                    this.loadComments(eventId, commentsList);
+                }
+                
+                this.updateCommentCounter(eventId);
+                
+                this.hideReplyForm(commentId);
+                
+                this.showInstantNotification('success', '¡Respuesta publicada!', 'Tu respuesta ha sido publicada exitosamente');
+            },
+
+            deleteComment(eventId, commentId) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event || !event.comments) return;
+                
+                let commentDeleted = false;
+                
+                const initialLength = event.comments.length;
+                event.comments = event.comments.filter(comment => comment.id !== commentId);
+                
+                if (event.comments.length < initialLength) {
+                    commentDeleted = true;
+                } else {
+                    for (const comment of event.comments) {
+                        if (comment.replies) {
+                            const initialRepliesLength = comment.replies.length;
+                            comment.replies = comment.replies.filter(reply => reply.id !== commentId);
+                            if (comment.replies.length < initialRepliesLength) {
+                                commentDeleted = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (commentDeleted) {
+                    const commentsList = document.getElementById('commentsList');
+                    if (commentsList) {
+                        this.loadComments(eventId, commentsList);
+                    }
+                    
+                    this.updateCommentCounter(eventId);
+                    
+                    this.saveToLocalStorage();
+                    
+                    this.showInstantNotification('success', '¡Comentario eliminado!', 'El comentario ha sido eliminado correctamente');
+                }
+            },
+
+            showInstantNotification(type, title, message) {
+                const existingNotifications = document.querySelectorAll('.instant-notification');
+                existingNotifications.forEach(notification => notification.remove());
+                
+                const notification = document.createElement('div');
+                notification.className = `instant-notification ${type}`;
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <div>
+                        <strong>${title}</strong>
+                        <div style="font-size: 0.9rem; margin-top: 2px;">${message}</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 3000);
+            },
+
+            updateCommentCounter(eventId) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+                
+                const commentsCount = this.getTotalCommentsCount(event);
+                
+                const eventCard = document.querySelector(`.event-card[data-id="${eventId}"]`);
+                if (eventCard) {
+                    const commentCounter = eventCard.querySelector('.event-meta + .event-description + div > div:last-child span:nth-child(2)');
+                    if (commentCounter) {
+                        commentCounter.textContent = commentsCount;
+                    }
+                    
+                    const commentText = eventCard.querySelector('.event-meta + .event-description + div > div:last-child div span');
+                    if (commentText) {
+                        commentText.textContent = commentsCount === 0 ? 'Sé el primero en comentar' : 
+                                                 commentsCount === 1 ? '1 comentario' : 
+                                                 `${commentsCount} comentarios`;
+                    }
+                }
+                
+                const modalTitle = document.getElementById('modalTitle');
+                if (modalTitle && modalTitle.textContent === event.title) {
+                    const commentsList = document.getElementById('commentsList');
+                    if (commentsList) {
+                        this.loadComments(eventId, commentsList);
+                    }
+                }
+            },
+
+            checkReminders() {
+                const now = new Date();
+                
+                for (const eventId in this.reminders) {
+                    const reminder = this.reminders[eventId];
+                    const event = this.events.find(e => e.id === parseInt(eventId));
+                    
+                    if (!event) continue;
+                    
+                    const eventDate = new Date(event.date);
+                    if (event.time && event.time.trim() && !event.time.toLowerCase().includes('todo el día')) {
+                        const [hours, minutes] = event.time.split(':');
+                        eventDate.setHours(parseInt(hours), parseInt(minutes));
+                    }
+                    
+                    const timeDiff = eventDate.getTime() - now.getTime();
+                    const hoursDiff = timeDiff / (1000 * 60 * 60);
+                    
+                    if (hoursDiff > 0 && hoursDiff <= reminder.hours && hoursDiff > reminder.hours - 1) {
+                        if (Notification.permission === "granted") {
+                            new Notification(`Recordatorio: ${event.title}`, {
+                                body: `El evento ${event.title} comienza en aproximadamente ${reminder.hours} hora(s). ${event.location ? `Ubicación: ${event.location}` : ''}`,
+                                icon: 'https://cdn-icons-png.flaticon.com/512/2784/2784449.png'
+                            });
+                        } else if (Notification.permission === "default") {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === "granted") {
+                                    new Notification(`Recordatorio: ${event.title}`, {
+                                        body: `El evento ${event.title} comienza en aproximadamente ${reminder.hours} hora(s). ${event.location ? `Ubicación: ${event.location}` : ''}`,
+                                        icon: 'https://cdn-icons-png.flaticon.com/512/2784/2784449.png'
+                                    });
+                                }
+                            });
+                        }
+                        
+                        this.showInstantNotification('info', '📅 Recordatorio de Evento', 
+                            `"${event.title}" comienza en ${reminder.hours} hora(s)`);
+                        
+                        delete this.reminders[eventId];
+                        this.saveToLocalStorage();
+                    }
+                }
+            },
+
+            updateStats() {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+                const total = this.events.length;
+                const upcoming = this.events.filter(event => 
+                    new Date(event.date) >= now
+                ).length;
+                const thisMonth = this.events.filter(event => {
+                    const eventDate = new Date(event.date);
+                    return eventDate.getMonth() === currentMonth && 
+                           eventDate.getFullYear() === currentYear;
+                }).length;
+                const thisWeek = this.events.filter(event => {
+                    const eventDate = new Date(event.date);
+                    return eventDate >= now && eventDate <= oneWeekFromNow;
+                }).length;
+
+                document.getElementById('totalEvents').textContent = total;
+                document.getElementById('upcomingEvents').textContent = upcoming;
+                document.getElementById('thisMonth').textContent = thisMonth;
+                document.getElementById('thisWeek').textContent = thisWeek;
+            },
+
+            loadCalendar() {
+                const container = document.getElementById('calendarContainer');
+                const currentWeek = document.getElementById('currentWeek');
+                if (!container) return;
+
+                const now = new Date();
+                const weekDates = [];
+                
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() + i);
+                    weekDates.push(date);
+                }
+
+                const startDate = this.formatDate(weekDates[0].toISOString().split('T')[0]);
+                const endDate = this.formatDate(weekDates[6].toISOString().split('T')[0]);
+                currentWeek.textContent = `${startDate} - ${endDate}`;
+
+                container.innerHTML = weekDates.map(date => {
+                    const dateString = date.toISOString().split('T')[0];
+                    const dayEvents = this.events.filter(event => 
+                        event.date === dateString
+                    );
+
+                    return `
+                        <div class="calendar-day">
+                            <div class="calendar-date">
+                                ${date.getDate()}
+                            </div>
+                            <div style="color: #7f8c8d; margin-bottom: 10px; font-size: 0.9rem;">
+                                ${date.toLocaleDateString('es-ES', { weekday: 'short' })}
+                            </div>
+                            ${dayEvents.length > 0 ? `
+                                <div class="calendar-events">
+                                    <div style="font-weight: bold; color: #2c3e50; margin-bottom: 5px;">
+                                        ${dayEvents.length} evento${dayEvents.length > 1 ? 's' : ''}
+                                    </div>
+                                    ${dayEvents.slice(0, 2).map(event => `
+                                        <div style="margin-bottom: 5px; font-size: 0.8rem; color: #4a6fa5;">
+                                            • ${event.title.substring(0, 30)}...
+                                        </div>
+                                    `).join('')}
+                                    ${dayEvents.length > 2 ? `
+                                        <div style="font-size: 0.8rem; color: #95a5a6;">
+                                            +${dayEvents.length - 2} más...
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : `
+                                <div class="calendar-events" style="color: #bdc3c7;">
+                                    Sin eventos
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            checkAdminAccess() {
+                const adminPanel = document.getElementById('adminPanel');
+                const addEventBtn = document.getElementById('addEventBtnContainer');
+
+                if (this.isAdmin()) {
+                    adminPanel.style.display = 'block';
+                    addEventBtn.style.display = 'block';
+                    this.setupAdminPanel();
+                } else {
+                    adminPanel.style.display = 'none';
+                    addEventBtn.style.display = 'none';
+                }
+            },
+
+            isAdmin() {
+                const adminRoles = ['administración', 'admin', 'direccion', 'secretaria'];
+                return adminRoles.includes(this.currentUser.role);
+            },
+
+            setupAdminPanel() {
+                const form = document.getElementById('eventForm');
+                const clearBtn = document.getElementById('clearForm');
+                const cancelBtn = document.getElementById('cancelForm');
+                const showPanelBtn = document.getElementById('showAdminPanel');
+                const adminPanel = document.getElementById('adminPanel');
+                let editingEventId = null;
+
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('eventDate').value = today;
+                document.getElementById('eventTime').value = '08:00';
+
+                showPanelBtn.addEventListener('click', () => {
+                    adminPanel.style.display = adminPanel.style.display === 'none' ? 'block' : 'none';
+                    if (adminPanel.style.display === 'block') {
+                        adminPanel.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+
+                cancelBtn.addEventListener('click', () => {
+                    form.reset();
+                    editingEventId = null;
+                    document.getElementById('eventDate').value = today;
+                    document.getElementById('eventTime').value = '08:00';
+                    showPanelBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Nuevo Evento';
+                });
+
+                clearBtn.addEventListener('click', () => {
+                    form.reset();
+                    editingEventId = null;
+                    document.getElementById('eventDate').value = today;
+                    document.getElementById('eventTime').value = '08:00';
+                    showPanelBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Nuevo Evento';
+                });
+
+                // Agregar botón de reinicio global
+                const resetAllBtn = document.createElement('button');
+                resetAllBtn.className = 'btn btn-warning';
+                resetAllBtn.innerHTML = '<i class="fas fa-redo"></i> Reiniciar Todas las Votaciones';
+                resetAllBtn.style.marginLeft = '15px';
+                resetAllBtn.onclick = () => {
+                    this.resetAllVotes();
+                };
+                
+                const addEventBtnContainer = document.getElementById('addEventBtnContainer');
+                if (addEventBtnContainer) {
+                    addEventBtnContainer.appendChild(resetAllBtn);
+                }
+
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const newEvent = {
+                        id: editingEventId || this.events.length + 1,
+                        title: document.getElementById('eventTitle').value,
+                        category: document.getElementById('eventCategory').value,
+                        date: document.getElementById('eventDate').value,
+                        time: document.getElementById('eventTime').value,
+                        location: document.getElementById('eventLocation').value,
+                        image: document.getElementById('eventImage').value,
+                        description: document.getElementById('eventDescription').value,
+                        tags: document.getElementById('eventTags').value
+                            .split(',')
+                            .map(tag => tag.trim())
+                            .filter(tag => tag),
+                        priority: document.getElementById('eventPriority').value,
+                        votes: {
+                            asistir: 0,
+                            noAsistir: 0
+                        },
+                        comments: []
+                    };
+
+                    if (editingEventId) {
+                        const index = this.events.findIndex(e => e.id === editingEventId);
+                        if (index !== -1) {
+                            const existingEvent = this.events[index];
+                            newEvent.comments = existingEvent.comments || [];
+                            newEvent.votes = existingEvent.votes || { asistir: 0, noAsistir: 0 };
+                            
+                            this.events[index] = newEvent;
+                            this.showInstantNotification('success', '¡Éxito!', 'Evento actualizado correctamente');
+                        }
+                    } else {
+                        this.events.unshift(newEvent);
+                        this.showInstantNotification('success', '¡Éxito!', 'Evento agregado correctamente');
+                    }
+
+                    form.reset();
+                    document.getElementById('eventDate').value = today;
+                    document.getElementById('eventTime').value = '08:00';
+                    editingEventId = null;
+                    showPanelBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Nuevo Evento';
+                    
+                    this.loadEvents();
+                    this.updateStats();
+                    this.loadCalendar();
+                    this.saveToLocalStorage();
+                });
+            },
+
+            editEvent(eventId) {
+                const event = this.events.find(e => e.id === eventId);
+                if (!event) return;
+
+                document.getElementById('eventTitle').value = event.title;
+                document.getElementById('eventCategory').value = event.category;
+                document.getElementById('eventDate').value = event.date;
+                document.getElementById('eventTime').value = event.time || '';
+                document.getElementById('eventLocation').value = event.location || '';
+                document.getElementById('eventImage').value = event.image || '';
+                document.getElementById('eventDescription').value = event.description;
+                document.getElementById('eventTags').value = event.tags ? event.tags.join(', ') : '';
+                document.getElementById('eventPriority').value = event.priority || 'normal';
+
+                editingEventId = eventId;
+                
+                const adminPanel = document.getElementById('adminPanel');
+                const showPanelBtn = document.getElementById('showAdminPanel');
+                adminPanel.style.display = 'block';
+                showPanelBtn.innerHTML = '<i class="fas fa-edit"></i> Editando Evento';
+                adminPanel.scrollIntoView({ behavior: 'smooth' });
+            },
+
+            saveToLocalStorage() {
+                try {
+                    localStorage.setItem('schoolEvents', JSON.stringify(this.events));
+                    localStorage.setItem('userVotes', JSON.stringify(this.userVotes));
+                    localStorage.setItem('reminders', JSON.stringify(this.reminders));
+                } catch (error) {
+                    console.error('Error guardando datos:', error);
+                }
+            },
+
+            loadFromLocalStorage() {
+                try {
+                    const savedEvents = localStorage.getItem('schoolEvents');
+                    if (savedEvents) {
+                        const parsedEvents = JSON.parse(savedEvents);
+                        this.events = [...parsedEvents, ...this.events.filter(e => 
+                            !parsedEvents.some(saved => saved.id === e.id)
+                        )];
+                    }
+                    
+                    const savedVotes = localStorage.getItem('userVotes');
+                    if (savedVotes) {
+                        this.userVotes = JSON.parse(savedVotes);
+                    }
+                    
+                    const savedReminders = localStorage.getItem('reminders');
+                    if (savedReminders) {
+                        this.reminders = JSON.parse(savedReminders);
+                    }
+                } catch (error) {
+                    console.error('Error cargando datos:', error);
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if ("Notification" in window) {
+                if (Notification.permission === "default") {
+                    Notification.requestPermission();
+                }
+            }
+            
+            eventSystem.init();
+            
+            // Para activar modo administrador, descomenta la siguiente línea:
+            // eventSystem.currentUser.role = 'administración';
+            // eventSystem.checkAdminAccess();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Calificaciones - Portal Estudiantil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #1a2530);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        .logo h2 {
+            font-size: 16px;
+            font-weight: normal;
+            color: var(--light-color);
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .student-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .student-details h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .student-details p {
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+        
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--light-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .page-title {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto 20px;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title h2 {
+            color: var(--primary-color);
+            font-size: 26px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .period-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .period-select {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background: white;
+            font-size: 14px;
+        }
+        
+        .stats-summary {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .summary-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .summary-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .summary-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .courses-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+        }
+        
+        .course-section {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        
+        .course-header {
+            padding: 20px;
+            background: linear-gradient(to right, var(--secondary-color), #2980b9);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .course-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .course-teacher {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .course-average {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .grades-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .grades-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .grade-value {
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-align: center;
+            display: inline-block;
+            min-width: 40px;
+        }
+        
+        .grade-excellent {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+        }
+        
+        .grade-good {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .grade-regular {
+            background-color: rgba(241, 196, 15, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .grade-low {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-approved {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-pending {
+            background-color: rgba(241, 196, 15, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .status-failed {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .comments-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: #f9f9f9;
+        }
+        
+        .comments-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .teacher-comment {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .comment-teacher {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .comment-date {
+            color: #7f8c8d;
+        }
+        
+        .comment-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .no-comments {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .no-grades {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .no-grades i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        
+        .action-buttons {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 25px 0;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-logo h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .student-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .page-title {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .course-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .grades-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+        
+        /* Estilos para la impresión de calificaciones */
+        @media print {
+            .back-btn, .period-selector, .action-buttons, footer {
+                display: none !important;
+            }
+            
+            .course-section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <h1>SGE</h1>
+                <h2>Portal Estudiantil - Mis Calificaciones</h2>
+            </div>
+            <div class="student-info">
+                <div class="student-avatar">JP</div>
+                <div class="student-details">
+                    <h3>Juan Pérez</h3>
+                    <p>Grado: 10°A | Matrícula: EST2023001</p>
+                </div>
+                <a href="index-estudiante.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="page-title">
+        <h2><i class="fas fa-chart-bar"></i> Mis Calificaciones</h2>
+        <div class="period-selector">
+            <span>Periodo:</span>
+            <select class="period-select">
+                <option value="all">Todos los periodos</option>
+                <option value="2024-1" selected>2024 - Primer Semestre</option>
+                <option value="2023-2">2023 - Segundo Semestre</option>
+                <option value="2023-1">2023 - Primer Semestre</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="stats-summary">
+        <div class="summary-card">
+            <div class="summary-icon"><i class="fas fa-graduation-cap"></i></div>
+            <div class="summary-number">8.7</div>
+            <div class="summary-label">Promedio General</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="summary-number">6</div>
+            <div class="summary-label">Materias Aprobadas</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon"><i class="fas fa-clock"></i></div>
+            <div class="summary-number">2</div>
+            <div class="summary-label">En Proceso</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="summary-number">+0.5</div>
+            <div class="summary-label">Mejora vs. Periodo Anterior</div>
+        </div>
+    </div>
+    
+    <div class="courses-container">
+        <!-- Materia: Matemáticas -->
+        <div class="course-section">
+            <div class="course-header">
+                <div>
+                    <div class="course-title">Matemáticas</div>
+                    <div class="course-teacher">Prof. Emmanuel Figueroa</div>
+                </div>
+                <div class="course-average">9.2</div>
+            </div>
+            
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Calificación</th>
+                        <th>Ponderación</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Práctica 1: Álgebra básica</td>
+                        <td>Práctica</td>
+                        <td>15/02/2024</td>
+                        <td><span class="grade-value grade-excellent">9.5</span></td>
+                        <td>10%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Examen Parcial 1</td>
+                        <td>Examen</td>
+                        <td>01/03/2024</td>
+                        <td><span class="grade-value grade-excellent">9.0</span></td>
+                        <td>25%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Práctica 2: Ecuaciones cuadráticas</td>
+                        <td>Práctica</td>
+                        <td>10/03/2024</td>
+                        <td><span class="grade-value grade-excellent">10.0</span></td>
+                        <td>10%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Trabajo en equipo: Geometría</td>
+                        <td>Proyecto</td>
+                        <td>20/03/2024</td>
+                        <td><span class="grade-value grade-good">8.5</span></td>
+                        <td>15%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Examen Parcial 2</td>
+                        <td>Examen</td>
+                        <td>05/04/2024</td>
+                        <td><span class="grade-value grade-regular">7.8</span></td>
+                        <td>25%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Práctica Final</td>
+                        <td>Práctica</td>
+                        <td>12/04/2024</td>
+                        <td><span class="grade-value grade-good">8.0</span></td>
+                        <td>10%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Participación en clase</td>
+                        <td>Participación</td>
+                        <td>-</td>
+                        <td><span class="grade-value grade-excellent">9.5</span></td>
+                        <td>5%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="comments-section">
+                <div class="comments-title">
+                    <i class="fas fa-comment-alt"></i> Comentarios del Profesor
+                </div>
+                <div class="teacher-comment">
+                    <div class="comment-header">
+                        <span class="comment-teacher">Prof. Emmanuel Figueroa</span>
+                        <span class="comment-date">15/03/2024</span>
+                    </div>
+                    <div class="comment-content">
+                        Excelente desempeño en los últimos ejercicios de álgebra. Continúa con ese nivel de dedicación. 
+                        Recuerda repasar los conceptos de trigonometría para el próximo examen.
+                    </div>
+                </div>
+                <div class="teacher-comment">
+                    <div class="comment-header">
+                        <span class="comment-teacher">Prof. Emmanuel Figueroa</span>
+                        <span class="comment-date">05/04/2024</span>
+                    </div>
+                    <div class="comment-content">
+                        El segundo examen mostró ciertas dificultades en la resolución de problemas complejos. 
+                        Te recomiendo asistir a las tutorías los jueves de 3 a 4 PM para reforzar estos temas.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimir Calificaciones
+                </button>
+                <a href="chat-matematicas.html" class="btn btn-primary">
+                    <i class="fas fa-comments"></i> Ir al Chat del Curso
+                </a>
+            </div>
+        </div>
+        
+        <!-- Materia: Ciencias Naturales -->
+        <div class="course-section">
+            <div class="course-header">
+                <div>
+                    <div class="course-title">Ciencias Naturales</div>
+                    <div class="course-teacher">Dra. Laura Fernández</div>
+                </div>
+                <div class="course-average">-</div>
+            </div>
+            
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Calificación</th>
+                        <th>Ponderación</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Laboratorio 1: Método científico</td>
+                        <td>Laboratorio</td>
+                        <td>20/02/2024</td>
+                        <td><span class="grade-value grade-good">8.0</span></td>
+                        <td>15%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Investigación: Ecosistemas</td>
+                        <td>Proyecto</td>
+                        <td>10/03/2024</td>
+                        <td><span class="grade-value grade-excellent">9.2</span></td>
+                        <td>20%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Examen Parcial: Biología</td>
+                        <td>Examen</td>
+                        <td>25/03/2024</td>
+                        <td><span class="grade-value grade-regular">7.5</span></td>
+                        <td>30%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Laboratorio 2: Reacciones químicas</td>
+                        <td>Laboratorio</td>
+                        <td>08/04/2024</td>
+                        <td><span class="grade-value grade-pending">-</span></td>
+                        <td>15%</td>
+                        <td><span class="status-badge status-pending">Pendiente</span></td>
+                    </tr>
+                    <tr>
+                        <td>Examen Final</td>
+                        <td>Examen</td>
+                        <td>20/04/2024</td>
+                        <td><span class="grade-value grade-pending">-</span></td>
+                        <td>20%</td>
+                        <td><span class="status-badge status-pending">Por Calificar</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="comments-section">
+                <div class="comments-title">
+                    <i class="fas fa-comment-alt"></i> Comentarios del Profesor
+                </div>
+                <div class="teacher-comment">
+                    <div class="comment-header">
+                        <span class="comment-teacher">Dra. Laura Fernández</span>
+                        <span class="comment-date">12/03/2024</span>
+                    </div>
+                    <div class="comment-content">
+                        Muy buena investigación sobre ecosistemas. La presentación fue clara y bien documentada. 
+                        Para el próximo laboratorio, asegúrate de revisar el protocolo de seguridad.
+                    </div>
+                </div>
+                <div class="no-comments">
+                    No hay más comentarios en este momento.
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimir Calificaciones
+                </button>
+                <a href="chat-ciencias.html" class="btn btn-primary">
+                    <i class="fas fa-comments"></i> Ir al Chat del Curso
+                </a>
+            </div>
+        </div>
+        
+        <!-- Materia: Historia -->
+        <div class="course-section">
+            <div class="course-header">
+                <div>
+                    <div class="course-title">Historia y Geografía</div>
+                    <div class="course-teacher">Prof. Roberto Silva</div>
+                </div>
+                <div class="course-average">8.0</div>
+            </div>
+            
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Calificación</th>
+                        <th>Ponderación</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ensayo: Revolución Industrial</td>
+                        <td>Ensayo</td>
+                        <td>18/02/2024</td>
+                        <td><span class="grade-value grade-good">8.5</span></td>
+                        <td>20%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Examen Parcial: Historia Universal</td>
+                        <td>Examen</td>
+                        <td>05/03/2024</td>
+                        <td><span class="grade-value grade-good">8.0</span></td>
+                        <td>30%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Mapa: Geografía de América</td>
+                        <td>Práctica</td>
+                        <td>22/03/2024</td>
+                        <td><span class="grade-value grade-regular">7.0</span></td>
+                        <td>15%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Presentación: Culturas precolombinas</td>
+                        <td>Presentación</td>
+                        <td>10/04/2024</td>
+                        <td><span class="grade-value grade-good">8.5</span></td>
+                        <td>20%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Participación en debates</td>
+                        <td>Participación</td>
+                        <td>-</td>
+                        <td><span class="grade-value grade-good">8.0</span></td>
+                        <td>15%</td>
+                        <td><span class="status-badge status-approved">Aprobado</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="comments-section">
+                <div class="comments-title">
+                    <i class="fas fa-comment-alt"></i> Comentarios del Profesor
+                </div>
+                <div class="teacher-comment">
+                    <div class="comment-header">
+                        <span class="comment-teacher">Prof. Roberto Silva</span>
+                        <span class="comment-date">25/03/2024</span>
+                    </div>
+                    <div class="comment-content">
+                        El mapa presentado tenía algunos errores en la ubicación de países. Te recomiendo estudiar 
+                        más a fondo la geografía de América del Sur. Por lo demás, buen trabajo.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimir Calificaciones
+                </button>
+                <a href="chat-historia.html" class="btn btn-primary">
+                    <i class="fas fa-comments"></i> Ir al Chat del Curso
+                </a>
+            </div>
+        </div>
+        
+        <!-- Mensaje si no hay calificaciones -->
+        <!--
+        <div class="no-grades">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>No hay calificaciones disponibles</h3>
+            <p>Las calificaciones se publicarán una vez que los profesores las hayan evaluado y aprobado por dirección.</p>
+        </div>
+        -->
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <h3>SGE - Sistema de Gestión Educativa</h3>
+                <p>Portal Estudiantil | Calificaciones de solo lectura</p>
+            </div>
+            <div class="footer-links">
+                <a href="index-estudiante.html">Inicio</a>
+                <a href="chat-general.html">Chat General</a>
+                <a href="horarios.html">Horarios</a>
+                <a href="contacto.html">Contacto</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Cambiar periodo de calificaciones
+        document.querySelector('.period-select').addEventListener('change', function() {
+            const period = this.value;
+            alert(`Mostrando calificaciones del periodo: ${this.options[this.selectedIndex].text}`);
+            // En una implementación real, aquí se cargarían las calificaciones del periodo seleccionado
+        });
+        
+        // Marcar filas de la tabla al pasar el mouse
+        document.querySelectorAll('.grades-table tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+        
+        // Función para exportar calificaciones como PDF (simulada)
+        function exportToPDF() {
+            alert('La función de exportar a PDF se implementará próximamente.');
+        }
+        
+        // Mostrar mensaje de que las calificaciones son de solo lectura
+        document.querySelectorAll('.grade-value').forEach(grade => {
+            grade.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Las calificaciones son de solo lectura. Para consultas sobre tus calificaciones, usa el chat del curso.');
+            });
+        });
+    </script>
+</body>
+</html>

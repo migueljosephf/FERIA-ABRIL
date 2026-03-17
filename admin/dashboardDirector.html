@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard del Director - SGE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Conexión con núcleo SGECore -->
+    <script src="../js/core/eventBus.js"></script>
+    <script src="../js/core/dataStore.js"></script>
+    <script src="../js/core/authSystem.js"></script>
+    <script src="../js/core/systemCore.js"></script>
+    <script src="../js/systemDataManager.js"></script>
+    <script src="../js/systemUsers.js"></script>
+    <style>
+        :root {
+            --dir-primary: #1e40af;
+            --dir-bg: #f0f9ff;
+            --dir-card: #ffffff;
+            --dir-text: #1e3a5f;
+            --dir-success: #10b981;
+            --dir-warning: #f59e0b;
+            --dir-danger: #ef4444;
+            --dir-info: #3b82f6;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background: var(--dir-bg); color: var(--dir-text); min-height: 100vh; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        
+        .header {
+            background: linear-gradient(135deg, var(--dir-primary), #1e3a8a);
+            color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+        
+        .header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+        .header a { color: white; text-decoration: none; font-size: 0.9rem; opacity: 0.9; }
+        .header a:hover { opacity: 1; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: var(--dir-card);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+            padding: 24px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--dir-primary);
+        }
+        
+        .stat-card:hover { transform: translateY(-4px); }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 auto 16px;
+        }
+        
+        .stat-value { font-size: 2.2rem; font-weight: 700; color: var(--dir-text); margin-bottom: 8px; }
+        .stat-label { color: #64748b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .card {
+            background: var(--dir-card);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--dir-primary);
+        }
+        
+        .card h2 { color: var(--dir-primary); margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .card h2 i { font-size: 1.2rem; }
+        
+        .activity-list { max-height: 400px; overflow-y: auto; }
+        .list-item { padding: 12px; border-bottom: 1px solid #e0e7ff; font-size: 0.9rem; display: flex; align-items: center; gap: 12px; }
+        .list-item:last-child { border-bottom: none; }
+        .list-item small { color: #64748b; display: block; margin-top: 4px; }
+        .list-item i { width: 20px; text-align: center; }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-success { background: var(--dir-success); color: white; }
+        .badge-warning { background: var(--dir-warning); color: white; }
+        .badge-danger { background: var(--dir-danger); color: white; }
+        .badge-info { background: var(--dir-info); color: white; }
+        
+        .empty-msg { color: #94a3b8; font-size: 0.9rem; padding: 24px; text-align: center; }
+        .unauth { text-align: center; padding: 48px 24px; }
+        .unauth h2 { color: #dc2626; margin-bottom: 16px; }
+        .unauth a { color: var(--dir-primary); }
+        .btn-refresh { padding: 8px 16px; background: var(--dir-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; margin-bottom: 16px; }
+        .btn-refresh:hover { opacity: 0.9; }
+        
+        .chart-container { position: relative; height: 300px; margin-top: 20px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div id="unauthMsg" class="card unauth" style="display: none;">
+            <h2><i class="fas fa-lock"></i> Sin autorización</h2>
+            <p>Solo el director o administrador puede ver este panel.</p>
+            <p style="margin-top: 12px;"><a href="../index.html">Volver al inicio</a></p>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <header class="header">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard del Director</h1>
+                <div>
+                    <span id="userName">Cargando...</span>
+                    <a href="../index.html" style="margin-left: 16px;"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+                </div>
+            </header>
+
+            <!-- Estadísticas Generales -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--dir-success);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="totalUsuarios">0</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--dir-info);">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="stat-value" id="profesoresActivos">0</div>
+                    <div class="stat-label">Profesores Activos</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--dir-success);">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="stat-value" id="asistenciaProfesores">0</div>
+                    <div class="stat-label">Registros de Asistencia</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--dir-primary);">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-value" id="asistenciaHoy">0</div>
+                    <div class="stat-label">Asistencia Hoy</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--dir-warning);">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="stat-value" id="casosPsicologia">0</div>
+                    <div class="stat-label">Casos Psicología</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--dir-danger);">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="stat-value" id="excusasPendientes">0</div>
+                    <div class="stat-label">Excusas Pendientes</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Actividad Reciente -->
+                <div class="card">
+                    <h2><i class="fas fa-clock"></i> Actividad Reciente del Sistema</h2>
+                    <button class="btn-refresh" onclick="refreshActivity()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                    <div class="activity-list" id="activityList">
+                        <div class="empty-msg">Cargando actividad...</div>
+                    </div>
+                </div>
+
+                <!-- Reportes de Cafetería -->
+                <div class="card">
+                    <h2><i class="fas fa-coffee"></i> Reportes de Cafetería</h2>
+                    <button class="btn-refresh" onclick="refreshCafeteriaReports()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                    <div class="activity-list" id="cafeteriaReports">
+                        <div class="empty-msg">Cargando reportes...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico de Actividad -->
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Tendencias de Actividad Institucional</h2>
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DirectorDashboard {
+            constructor() {
+                this.currentUser = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.initChart();
+            }
+
+            checkAuth() {
+                const userData = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+                if (!userData) {
+                    this.showUnauthorized();
+                    return;
+                }
+
+                try {
+                    this.currentUser = JSON.parse(userData);
+                    const allowedRoles = ['director', 'direccion', 'administrador', 'admin'];
+                    const allowedUsers = ['direccion', 'admin', 'admin2', 'admin3'];
+                    
+                    if (!allowedRoles.includes(this.currentUser.role) && !allowedUsers.includes(this.currentUser.username)) {
+                        this.showUnauthorized();
+                        return;
+                    }
+
+                    this.showDashboard();
+                } catch (error) {
+                    console.error('Error verificando autenticación:', error);
+                    this.showUnauthorized();
+                }
+            }
+
+            showUnauthorized() {
+                document.getElementById('unauthMsg').style.display = 'block';
+                document.getElementById('dashboardContent').style.display = 'none';
+            }
+
+            showDashboard() {
+                document.getElementById('unauthMsg').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+                document.getElementById('userName').textContent = this.currentUser.name;
+            }
+
+            setupEventListeners() {
+                // Auto-refresh cada 30 segundos
+                setInterval(() => {
+                    this.loadDashboardData();
+                }, 30000);
+            }
+
+            loadDashboardData() {
+                if (typeof window.systemDataManager === 'undefined') {
+                    console.warn('systemDataManager no disponible');
+                    return;
+                }
+
+                const data = window.systemDataManager.getAllData();
+                
+                // Actualizar estadísticas
+                this.updateStatistics(data);
+                
+                // Cargar actividad reciente
+                this.loadActivity(data.actividadSistema || []);
+                
+                // Cargar reportes de cafetería
+                this.loadCafeteriaReports(data.reportesCafeteria || []);
+            }
+
+            updateStatistics(data) {
+                // Usuarios activos
+                const totalUsuarios = data.usuarios ? data.usuarios.length : 45;
+                document.getElementById('totalUsuarios').textContent = totalUsuarios;
+
+                // Profesores activos (simulado - debería venir de datos reales)
+                const profesoresActivos = 17; // Número de profesores en el sistema
+                document.getElementById('profesoresActivos').textContent = profesoresActivos;
+
+                // Casos de psicología
+                const casosPsicologia = data.casosPsicologia ? data.casosPsicologia.length : 0;
+                document.getElementById('casosPsicologia').textContent = casosPsicologia;
+
+                // Asistencia de profesores
+                const asistenciaProfesores = data.asistenciaProfesores || [];
+                const totalAsistenciaRegistros = asistenciaProfesores.length;
+                const asistenciaHoy = asistenciaProfesores.filter(a => a.fecha === new Date().toISOString().split('T')[0]).length;
+                document.getElementById('asistenciaProfesores').textContent = totalAsistenciaRegistros;
+                document.getElementById('asistenciaHoy').textContent = asistenciaHoy;
+
+                // Excusas pendientes
+                const excusasPendientes = data.excusas ? data.excusas.filter(e => e.estado === 'pendiente').length : 0;
+                document.getElementById('excusasPendientes').textContent = excusasPendientes;
+            }
+
+            loadActivity(actividades) {
+                const activityList = document.getElementById('activityList');
+                
+                if (actividades.length === 0) {
+                    activityList.innerHTML = '<div class="empty-msg">No hay actividad reciente</div>';
+                    return;
+                }
+
+                // Mostrar últimas 10 actividades
+                const actividadesRecientes = actividades.slice(-10).reverse();
+                
+                activityList.innerHTML = actividadesRecientes.map(actividad => {
+                    const iconMap = {
+                        'Excusa': 'fa-file-medical',
+                        'Psicología': 'fa-brain',
+                        'Cafetería': 'fa-coffee',
+                        'Sistema': 'fa-cog',
+                        'Reporte': 'fa-file-alt'
+                    };
+
+                    const badgeClass = actividad.nivel === 'success' ? 'badge-success' :
+                                       actividad.nivel === 'warning' ? 'badge-warning' :
+                                       actividad.nivel === 'error' ? 'badge-danger' : 'badge-info';
+
+                    return `
+                        <div class="list-item">
+                            <i class="fas ${iconMap[actividad.tipo] || 'fa-info-circle'}"></i>
+                            <div>
+                                <span class="badge ${badgeClass}">${actividad.tipo}</span>
+                                <span>${actividad.descripcion}</span>
+                                <small>${new Date(actividad.timestamp).toLocaleString()}</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            loadCafeteriaReports(reportes) {
+                const reportsList = document.getElementById('cafeteriaReports');
+                
+                if (reportes.length === 0) {
+                    reportsList.innerHTML = '<div class="empty-msg">No hay reportes de cafetería</div>';
+                    return;
+                }
+
+                // Mostrar últimos 5 reportes
+                const reportesRecientes = reportes.slice(-5).reverse();
+                
+                reportsList.innerHTML = reportesRecientes.map(reporte => {
+                    const balanceClass = reporte.resumen.balance >= 0 ? 'badge-success' : 'badge-danger';
+                    
+                    return `
+                        <div class="list-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div>
+                                <span class="badge ${balanceClass}">Balance: $${reporte.resumen.balance.toFixed(2)}</span>
+                                <span>Reporte ${reporte.tipo} - ${reporte.responsable}</span>
+                                <small>${new Date(reporte.fecha).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            initChart() {
+                const ctx = document.getElementById('activityChart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: this.getLastSevenDays(),
+                        datasets: [
+                            {
+                                label: 'Actividad General',
+                                data: this.getActivityData(),
+                                borderColor: 'var(--dir-primary)',
+                                backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            getLastSevenDays() {
+                const days = [];
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    days.push(date.toLocaleDateString());
+                }
+                return days;
+            }
+
+            getActivityData() {
+                // Simular datos de actividad para los últimos 7 días
+                return [12, 15, 8, 20, 18, 25, 22];
+            }
+
+            refreshActivity() {
+                this.loadDashboardData();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    icon: 'success',
+                    title: 'Actividad actualizada'
+                });
+            }
+
+            refreshCafeteriaReports() {
+                this.loadDashboardData();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    icon: 'success',
+                    title: 'Reportes actualizados'
+                });
+            }
+        }
+
+        // Inicializar dashboard
+        let directorDashboard;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            directorDashboard = new DirectorDashboard();
+            window.directorDashboard = directorDashboard;
+        });
+    </script>
+</body>
+</html>

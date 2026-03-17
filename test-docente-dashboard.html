@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Dashboard Docente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test - Dashboard Docente</h1>
+        <p>Verificando el estado del docente-dashboard.html</p>
+        
+        <div id="statusContainer"></div>
+        <div id="logContainer" class="log"></div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="testScripts()">📦 Test Scripts</button>
+            <button onclick="testSystemBridge()">🌉 Test SystemBridge</button>
+            <button onclick="testSystemDataManager()">📊 Test SystemDataManager</button>
+            <button onclick="testTeacherDashboard()">🎯 Test TeacherDashboard</button>
+            <button onclick="openDashboard()">🚀 Abrir Dashboard</button>
+            <button onclick="clearLog()">🗑️ Limpiar Log</button>
+        </div>
+    </div>
+
+    <!-- Cargar los mismos scripts que el dashboard -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/systemCore.js"></script>
+    <script src="js/systemBridge.js"></script>
+    <script src="js/systemDataManager.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/systemUsers.js"></script>
+    <script src="js/teacherDataManager.js"></script>
+
+    <script>
+        let logContainer = document.getElementById('logContainer');
+        let statusContainer = document.getElementById('statusContainer');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logContainer.innerHTML += `<div style="color: ${type === 'error' ? 'red' : type === 'success' ? 'green' : 'black'}">${logEntry}</div>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(logEntry);
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            statusContainer.appendChild(statusDiv);
+        }
+
+        function clearLog() {
+            logContainer.innerHTML = '';
+            statusContainer.innerHTML = '';
+        }
+
+        function testScripts() {
+            log('🔍 Iniciando prueba de scripts...');
+            
+            // Test de librerías externas
+            const tests = [
+                { name: 'Font Awesome CSS', check: () => document.querySelector('link[href*="font-awesome"]') !== null },
+                { name: 'XLSX', check: () => typeof XLSX !== 'undefined' },
+                { name: 'SweetAlert2', check: () => typeof Swal !== 'undefined' }
+            ];
+
+            tests.forEach(test => {
+                try {
+                    if (test.check()) {
+                        log(`✅ ${test.name} disponible`, 'success');
+                        showStatus(`${test.name} cargado correctamente`, 'success');
+                    } else {
+                        log(`❌ ${test.name} no disponible`, 'error');
+                        showStatus(`${test.name} no se cargó`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Error probando ${test.name}: ${error.message}`, 'error');
+                    showStatus(`Error en ${test.name}`, 'error');
+                }
+            });
+        }
+
+        function testSystemBridge() {
+            log('🌉 Probando SystemBridge...');
+            
+            try {
+                if (typeof window.SystemBridge !== 'undefined') {
+                    log('✅ SystemBridge disponible', 'success');
+                    
+                    // Test de métodos
+                    const methods = ['init', 'sendExcuse', 'sendMessage', 'guardarAsistencia'];
+                    methods.forEach(method => {
+                        if (typeof window.SystemBridge[method] === 'function') {
+                            log(`✅ Método ${method} disponible`, 'success');
+                        } else {
+                            log(`⚠️ Método ${method} no encontrado`, 'warning');
+                        }
+                    });
+                    
+                    showStatus('SystemBridge funciona correctamente', 'success');
+                } else {
+                    log('❌ SystemBridge no disponible', 'error');
+                    showStatus('SystemBridge no se cargó', 'error');
+                }
+            } catch (error) {
+                log(`❌ Error en SystemBridge: ${error.message}`, 'error');
+                showStatus('Error en SystemBridge', 'error');
+            }
+        }
+
+        function testSystemDataManager() {
+            log('📊 Probando SystemDataManager...');
+            
+            try {
+                if (typeof window.SystemDataManager !== 'undefined') {
+                    log('✅ SystemDataManager disponible', 'success');
+                    
+                    // Intentar crear instancia
+                    const dataManager = new window.SystemDataManager();
+                    log('✅ Instancia de SystemDataManager creada', 'success');
+                    
+                    // Test de métodos
+                    const methods = ['guardarExcusa', 'guardarMensaje', 'obtenerExcusas', 'obtenerMensajes'];
+                    methods.forEach(method => {
+                        if (typeof dataManager[method] === 'function') {
+                            log(`✅ Método ${method} disponible`, 'success');
+                        } else {
+                            log(`⚠️ Método ${method} no encontrado`, 'warning');
+                        }
+                    });
+                    
+                    showStatus('SystemDataManager funciona correctamente', 'success');
+                } else {
+                    log('❌ SystemDataManager no disponible', 'error');
+                    showStatus('SystemDataManager no se cargó', 'error');
+                }
+            } catch (error) {
+                log(`❌ Error en SystemDataManager: ${error.message}`, 'error');
+                showStatus('Error en SystemDataManager', 'error');
+            }
+        }
+
+        function testTeacherDashboard() {
+            log('🎯 Probando TeacherDashboard...');
+            
+            try {
+                // Simular usuario actual
+                localStorage.setItem('currentUser', JSON.stringify({
+                    username: 'prof_starling',
+                    name: 'Prof. Starling Batista',
+                    role: 'docente'
+                }));
+                
+                log('👤 Usuario de prueba configurado', 'info');
+                
+                // Test de inicialización básica
+                if (typeof window.TeacherDataManager !== 'undefined') {
+                    const teacherManager = new window.TeacherDataManager();
+                    log('✅ TeacherDataManager inicializado', 'success');
+                    showStatus('TeacherDashboard puede inicializarse', 'success');
+                } else {
+                    log('❌ TeacherDataManager no disponible', 'error');
+                    showStatus('TeacherDataManager no se cargó', 'error');
+                }
+            } catch (error) {
+                log(`❌ Error en TeacherDashboard: ${error.message}`, 'error');
+                showStatus('Error en TeacherDashboard', 'error');
+            }
+        }
+
+        function openDashboard() {
+            log('🚀 Abriendo dashboard docente...');
+            window.open('docente-dashboard.html', '_blank');
+        }
+
+        // Test automático al cargar
+        window.addEventListener('load', () => {
+            log('🎯 Página de prueba cargada', 'info');
+            showStatus('Página de prueba lista', 'info');
+            
+            // Esperar un momento y luego probar scripts automáticamente
+            setTimeout(() => {
+                testScripts();
+            }, 1000);
+        });
+
+        // Capturar errores globales
+        window.addEventListener('error', (event) => {
+            log(`❌ Error global: ${event.error.message} en ${event.filename}:${event.lineno}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`❌ Promesa rechazada: ${event.reason}`, 'error');
+        });
+    </script>
+</body>
+</html>

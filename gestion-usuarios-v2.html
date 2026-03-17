@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Sistema de Gestión Escolar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Conexión con Sistema Central -->
+    <script src="js/systemDataManager.js"></script>
+    <script src="js/systemUsers.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f3f4f6;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+            color: var(--gray-800);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header Principal */
+        .main-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 32px;
+            border-radius: var(--border-radius-xl);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.3s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-secondary {
+            background: var(--gray-600);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Sección de Estadísticas */
+        .stats-section {
+            margin-bottom: 40px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 28px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-color), transparent);
+            opacity: 0.05;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-icon.users { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); }
+        .stat-icon.active { background: linear-gradient(135deg, var(--success-color), #059669); }
+        .stat-icon.inactive { background: linear-gradient(135deg, var(--danger-color), #dc2626); }
+        .stat-icon.pending { background: linear-gradient(135deg, var(--warning-color), #d97706); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sección de Herramientas */
+        .tools-section {
+            margin-bottom: 40px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .tool-btn {
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            padding: 16px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-700);
+            text-decoration: none;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tool-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* Sección de Filtros */
+        .filters-section {
+            background: var(--white);
+            padding: 24px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 32px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .search-box button {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-box button:hover {
+            background: var(--secondary-color);
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        /* Tabla de Usuarios */
+        .table-section {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .users-table th {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            font-weight: 600;
+            text-align: left;
+            padding: 16px;
+            border-bottom: 2px solid var(--gray-200);
+            white-space: nowrap;
+        }
+
+        .users-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .users-table tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        .users-table input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Estados */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .status-active {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-inactive {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .status-pending {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        /* Botones de Acción */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .edit-btn {
+            color: var(--primary-color);
+        }
+
+        .edit-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .delete-btn {
+            color: var(--danger-color);
+        }
+
+        .delete-btn:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-xl);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 24px;
+            border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        /* Paginación */
+        .pagination-section {
+            display: flex;
+            justify-content: center;
+            padding: 32px;
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            margin-top: 32px;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--secondary-color);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 1.3rem;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .modal-body {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Principal -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="header-title">
+                    <i class="fas fa-users-cog"></i>
+                    Gestión de Usuarios
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="refreshData()">
+                        <i class="fas fa-sync"></i>
+                        Actualizar
+                    </button>
+                    <a href="index.html" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Estadísticas Rápidas -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">Total Usuarios</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-icon active">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-value" id="activeUsers">0</div>
+                    <div class="stat-label">Activos</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-icon inactive">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div class="stat-value" id="inactiveUsers">0</div>
+                    <div class="stat-label">Inactivos</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-icon pending">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <div class="stat-value" id="pendingUsers">0</div>
+                    <div class="stat-label">Pendientes</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Herramientas Principales -->
+        <section class="tools-section">
+            <div class="tools-grid">
+                <button class="tool-btn" onclick="openNewUserModal()">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Nuevo Usuario</span>
+                </button>
+                <button class="tool-btn" onclick="exportUsers()">
+                    <i class="fas fa-file-export"></i>
+                    <span>Exportar Datos</span>
+                </button>
+                <button class="tool-btn" onclick="importUsers()">
+                    <i class="fas fa-file-import"></i>
+                    <span>Importar Usuarios</span>
+                </button>
+                <button class="tool-btn" onclick="bulkActions()">
+                    <i class="fas fa-tasks"></i>
+                    <span>Acciones Masivas</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Filtros y Búsqueda -->
+        <section class="filters-section">
+            <div class="filter-row">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Buscar usuarios por nombre, email o código...">
+                    <button onclick="searchUsers()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="filter-group">
+                    <select id="roleFilter" onchange="filterUsers()">
+                        <option value="">Todos los roles</option>
+                        <option value="administrador">Administrador</option>
+                        <option value="docente">Docente</option>
+                        <option value="psicologa">Psicólogo</option>
+                        <option value="direccion">Dirección</option>
+                        <option value="secretaria">Secretaría</option>
+                        <option value="enfermeria">Enfermería</option>
+                        <option value="comedor">Comedor</option>
+                        <option value="estudiante">Estudiante</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="statusFilter" onchange="filterUsers()">
+                        <option value="">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                        <option value="pendiente">Pendiente</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabla de Usuarios -->
+        <section class="table-section">
+            <div class="table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                            </th>
+                            <th>Código</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Departamento</th>
+                            <th>Estado</th>
+                            <th>Fecha Creación</th>
+                            <th>Último Acceso</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Los usuarios se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Paginación -->
+        <section class="pagination-section">
+            <div class="pagination">
+                <button class="page-btn" id="prevPage" onclick="changePage(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                    Anterior
+                </button>
+                <div class="page-info">
+                    Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+                </div>
+                <button class="page-btn" id="nextPage" onclick="changePage(1)">
+                    Siguiente
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal para Nuevo Usuario -->
+    <div class="modal" id="newUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-user-plus"></i>
+                    Nuevo Usuario
+                </h3>
+                <button class="close-modal" onclick="closeModal('newUserModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="newUserForm" class="modal-form" onsubmit="createUser(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newName">Nombre *</label>
+                            <input type="text" id="newName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newLastName">Apellido *</label>
+                            <input type="text" id="newLastName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newEmail">Email Institucional *</label>
+                            <input type="email" id="newEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUsername">Usuario (Username) *</label>
+                            <input type="text" id="newUsername" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newPassword">Contraseña *</label>
+                            <input type="password" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newConfirmPassword">Confirmar Contraseña *</label>
+                            <input type="password" id="newConfirmPassword" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newRole">Rol *</label>
+                            <select id="newRole" required onchange="updateDepartmentOptions()">
+                                <option value="">Seleccionar rol</option>
+                                <option value="administrador">Administrador</option>
+                                <option value="docente">Docente</option>
+                                <option value="psicologa">Psicólogo</option>
+                                <option value="direccion">Dirección</option>
+                                <option value="secretaria">Secretaría</option>
+                                <option value="enfermeria">Enfermería</option>
+                                <option value="comedor">Comedor</option>
+                                <option value="estudiante">Estudiante</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newDepartment">Departamento *</label>
+                            <select id="newDepartment" required>
+                                <option value="">Seleccionar departamento</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('newUserModal')">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Crear Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Usuario -->
+    <div class="modal" id="editUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-user-edit"></i>
+                    Editar Usuario
+                </h3>
+                <button class="close-modal" onclick="closeModal('editUserModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm" class="modal-form" onsubmit="updateUser(event)">
+                    <input type="hidden" id="editUserId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editName">Nombre *</label>
+                            <input type="text" id="editName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editLastName">Apellido *</label>
+                            <input type="text" id="editLastName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEmail">Email Institucional *</label>
+                            <input type="email" id="editEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editUsername">Usuario (Username) *</label>
+                            <input type="text" id="editUsername" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editRole">Rol *</label>
+                            <select id="editRole" required onchange="updateEditDepartmentOptions()">
+                                <option value="administrador">Administrador</option>
+                                <option value="docente">Docente</option>
+                                <option value="psicologa">Psicólogo</option>
+                                <option value="direccion">Dirección</option>
+                                <option value="secretaria">Secretaría</option>
+                                <option value="enfermeria">Enfermería</option>
+                                <option value="comedor">Comedor</option>
+                                <option value="estudiante">Estudiante</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDepartment">Departamento *</label>
+                            <select id="editDepartment" required>
+                                <option value="">Seleccionar departamento</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editStatus">Estado</label>
+                            <select id="editStatus" required>
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                                <option value="pendiente">Pendiente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPassword">Nueva Contraseña (opcional)</label>
+                            <input type="password" id="editPassword" placeholder="Dejar en blanco para no cambiar">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger" onclick="deleteUser()">
+                            <i class="fas fa-trash"></i>
+                            Eliminar Usuario
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('editUserModal')">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // SISTEMA DE GESTIÓN DE USUARIOS v2.0
+        // =============================================
+
+        // Variables globales
+        let users = [];
+        let filteredUsers = [];
+        let currentPage = 1;
+        const usersPerPage = 10;
+        let currentEditingUser = null;
+
+        // Mapeo de roles a páginas
+        const rolePageMapping = {
+            'administrador': 'admin/dashboard.html',
+            'docente': 'docente-dashboard.html',
+            'psicologa': 'psicologia-dashboard.html',
+            'direccion': 'dashboardDirector.html',
+            'secretaria': 'modulo-secretaria.html',
+            'enfermeria': 'Enfermeria.html',
+            'comedor': 'comedor.html',
+            'estudiante': 'index.html'
+        };
+
+        // Departamentos por rol
+        const departmentMapping = {
+            'administrador': ['Administración', 'Tecnología'],
+            'docente': ['Académico', 'Pedagogía'],
+            'psicologa': ['Psicología', 'Orientación'],
+            'direccion': ['Dirección', 'Administración'],
+            'secretaria': ['Secretaría', 'Administración'],
+            'enfermeria': ['Salud', 'Enfermería'],
+            'comedor': ['Servicios', 'Comedor'],
+            'estudiante': ['Académico', 'Estudiantil']
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando Sistema de Gestión de Usuarios v2.0...');
+            
+            // Verificar autenticación
+            if (!checkAuthentication()) {
+                return;
+            }
+
+            // Inicializar sistema
+            initializeSystem();
+        });
+
+        // Verificación de autenticación
+        function checkAuthentication() {
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Acceso Denegado',
+                    text: 'Debe iniciar sesión para acceder a esta página',
+                    confirmButtonText: 'Ir al Login'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'index.html';
+                    }
+                });
+                return false;
+            }
+
+            try {
+                const user = JSON.parse(userData);
+                if (!user.role || !user.role.toLowerCase().includes('admin')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Acceso Restringido',
+                        text: 'Esta página está disponible solo para administradores del sistema',
+                        confirmButtonText: 'Volver al Inicio'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = 'index.html';
+                        }
+                    });
+                    return false;
+                }
+                console.log('✅ Usuario autenticado:', user.name, '(', user.role, ')');
+                return true;
+            } catch (error) {
+                console.error('❌ Error verificando autenticación:', error);
+                window.location.href = 'index.html';
+                return false;
+            }
+        }
+
+        // Inicialización del sistema
+        function initializeSystem() {
+            // Cargar usuarios del sistema
+            loadUsers();
+            
+            // Configurar eventos
+            setupEventListeners();
+            
+            // Actualizar estadísticas
+            updateStatistics();
+            
+            // Renderizar tabla
+            renderUsersTable();
+            
+            console.log('✅ Sistema de gestión de usuarios inicializado correctamente');
+        }
+
+        // Cargar usuarios desde SystemDataManager
+        function loadUsers() {
+            try {
+                if (window.systemDataManager) {
+                    users = window.systemDataManager.getUsers() || [];
+                    console.log('📊 Usuarios cargados desde SystemDataManager:', users.length);
+                } else {
+                    // Fallback a localStorage
+                    const storedUsers = localStorage.getItem('sge_users');
+                    if (storedUsers) {
+                        users = JSON.parse(storedUsers);
+                    } else {
+                        users = [];
+                    }
+                    console.log('📊 Usuarios cargados desde localStorage:', users.length);
+                }
+                filteredUsers = [...users];
+            } catch (error) {
+                console.error('❌ Error cargando usuarios:', error);
+                users = [];
+                filteredUsers = [];
+            }
+        }
+
+        // Guardar usuarios en el sistema
+        function saveUsers() {
+            try {
+                if (window.systemDataManager) {
+                    // Guardar en SystemDataManager
+                    window.systemDataManager.data.usuarios = users;
+                    window.systemDataManager.saveData();
+                    console.log('💾 Usuarios guardados en SystemDataManager');
+                } else {
+                    // Fallback a localStorage
+                    localStorage.setItem('sge_users', JSON.stringify(users));
+                    console.log('💾 Usuarios guardados en localStorage');
+                }
+            } catch (error) {
+                console.error('❌ Error guardando usuarios:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron guardar los cambios en el sistema'
+                });
+            }
+        }
+
+        // Configurar eventos
+        function setupEventListeners() {
+            // Búsqueda en tiempo real
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                searchUsers(e.target.value);
+            });
+
+            // Enter en búsqueda
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchUsers(e.target.value);
+                }
+            });
+        }
+
+        // Generar código institucional
+        function generateInstitutionalCode(role, index) {
+            const prefixes = {
+                'administrador': 'ADM',
+                'docente': 'DOC',
+                'psicologa': 'PSI',
+                'direccion': 'DIR',
+                'secretaria': 'SEC',
+                'enfermeria': 'ENF',
+                'comedor': 'COM',
+                'estudiante': 'EST'
+            };
+
+            const prefix = prefixes[role] || 'USR';
+            const number = String(index + 1).padStart(3, '0');
+            return `${prefix}-${number}`;
+        }
+
+        // Crear nuevo usuario
+        function createUser(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('newName').value,
+                lastName: document.getElementById('newLastName').value,
+                email: document.getElementById('newEmail').value,
+                username: document.getElementById('newUsername').value,
+                password: document.getElementById('newPassword').value,
+                role: document.getElementById('newRole').value,
+                department: document.getElementById('newDepartment').value,
+                status: 'pendiente',
+                createdAt: new Date().toISOString(),
+                lastAccess: null,
+                institutionalCode: generateInstitutionalCode(
+                    document.getElementById('newRole').value,
+                    users.filter(u => u.role === document.getElementById('newRole').value).length
+                )
+            };
+
+            // Validaciones básicas
+            if (!validateUserForm(formData)) {
+                return;
+            }
+
+            // Verificar si el username ya existe
+            if (users.some(u => u.username === formData.username)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Usuario Duplicado',
+                    text: 'El nombre de usuario ya está en uso'
+                });
+                return;
+            }
+
+            // Agregar usuario
+            users.push(formData);
+            saveUsers();
+
+            // Limpiar formulario
+            document.getElementById('newUserForm').reset();
+            closeModal('newUserModal');
+
+            // Actualizar interfaz
+            updateStatistics();
+            renderUsersTable();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuario Creado',
+                text: `El usuario ${formData.name} ${formData.lastName} ha sido creado exitosamente con código ${formData.institutionalCode}`,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        // Validar formulario de usuario
+        function validateUserForm(userData) {
+            if (!userData.name || !userData.lastName || !userData.email || !userData.username || !userData.password || !userData.role) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Formulario Incompleto',
+                    text: 'Por favor complete todos los campos obligatorios'
+                });
+                return false;
+            }
+
+            if (userData.password !== document.getElementById('newConfirmPassword').value) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Contraseñas No Coinciden',
+                    text: 'La contraseña y la confirmación deben ser iguales'
+                });
+                return false;
+            }
+
+            if (userData.password.length < 6) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Contraseña Débil',
+                    text: 'La contraseña debe tener al menos 6 caracteres'
+                });
+                return false;
+            }
+
+            return true;
+        }
+
+        // Actualizar usuario
+        function updateUser(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('editUserId').value;
+            const userIndex = users.findIndex(u => u.id === userId);
+            
+            if (userIndex === -1) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Usuario No Encontrado',
+                    text: 'El usuario que intenta editar no existe en el sistema'
+                });
+                return;
+            }
+
+            const updatedData = {
+                ...users[userIndex],
+                name: document.getElementById('editName').value,
+                lastName: document.getElementById('editLastName').value,
+                email: document.getElementById('editEmail').value,
+                username: document.getElementById('editUsername').value,
+                role: document.getElementById('editRole').value,
+                department: document.getElementById('editDepartment').value,
+                status: document.getElementById('editStatus').value,
+                updatedAt: new Date().toISOString()
+            };
+
+            // Actualizar contraseña si se proporcionó
+            const newPassword = document.getElementById('editPassword').value;
+            if (newPassword) {
+                updatedData.password = newPassword;
+            }
+
+            users[userIndex] = updatedData;
+            saveUsers();
+
+            closeModal('editUserModal');
+            updateStatistics();
+            renderUsersTable();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuario Actualizado',
+                text: `El usuario ${updatedData.name} ${updatedData.lastName} ha sido actualizado exitosamente`,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        // Eliminar usuario
+        function deleteUser() {
+            if (!currentEditingUser) return;
+
+            Swal.fire({
+                icon: 'warning',
+                title: '¿Eliminar Usuario?',
+                text: `¿Está seguro que desea eliminar al usuario ${currentEditingUser.name} ${currentEditingUser.lastName}?`,
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Sí, Eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const userIndex = users.findIndex(u => u.id === currentEditingUser.id);
+                    if (userIndex !== -1) {
+                        users.splice(userIndex, 1);
+                        saveUsers();
+                        closeModal('editUserModal');
+                        updateStatistics();
+                        renderUsersTable();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Usuario Eliminado',
+                            text: 'El usuario ha sido eliminado exitosamente',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    }
+                }
+            });
+        }
+
+        // Actualizar estadísticas
+        function updateStatistics() {
+            const totalUsers = users.length;
+            const activeUsers = users.filter(u => u.status === 'activo').length;
+            const inactiveUsers = users.filter(u => u.status === 'inactivo').length;
+            const pendingUsers = users.filter(u => u.status === 'pendiente').length;
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('inactiveUsers').textContent = inactiveUsers;
+            document.getElementById('pendingUsers').textContent = pendingUsers;
+        }
+
+        // Renderizar tabla de usuarios
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const pageUsers = filteredUsers.slice(startIndex, endIndex);
+
+            pageUsers.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" value="${user.id}" onchange="updateSelectedUsers()">
+                    </td>
+                    <td>${user.institutionalCode || 'N/A'}</td>
+                    <td>${user.name} ${user.lastName || ''}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${formatRole(user.role)}</td>
+                    <td>${user.department || 'N/A'}</td>
+                    <td>${getStatusBadge(user.status)}</td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td>${formatDate(user.lastAccess)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn edit-btn" onclick="openEditUserModal('${user.id}')" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn delete-btn" onclick="confirmDeleteUser('${user.id}')" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            updatePagination();
+        }
+
+        // Obtener badge de estado
+        function getStatusBadge(status) {
+            const badges = {
+                'activo': '<span class="status-badge status-active">Activo</span>',
+                'inactivo': '<span class="status-badge status-inactive">Inactivo</span>',
+                'pendiente': '<span class="status-badge status-pending">Pendiente</span>'
+            };
+            return badges[status] || '<span class="status-badge status-pending">Desconocido</span>';
+        }
+
+        // Formatear rol
+        function formatRole(role) {
+            const roles = {
+                'administrador': 'Administrador',
+                'docente': 'Docente',
+                'psicologa': 'Psicólogo',
+                'direccion': 'Dirección',
+                'secretaria': 'Secretaría',
+                'enfermeria': 'Enfermería',
+                'comedor': 'Comedor',
+                'estudiante': 'Estudiante'
+            };
+            return roles[role] || role;
+        }
+
+        // Formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        // Abrir modal de nuevo usuario
+        function openNewUserModal() {
+            document.getElementById('newUserModal').classList.add('active');
+        }
+
+        // Abrir modal de edición
+        function openEditUserModal(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            currentEditingUser = user;
+
+            // Cargar datos en el formulario
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editName').value = user.name || '';
+            document.getElementById('editLastName').value = user.lastName || '';
+            document.getElementById('editEmail').value = user.email || '';
+            document.getElementById('editUsername').value = user.username || '';
+            document.getElementById('editRole').value = user.role || '';
+            document.getElementById('editDepartment').value = user.department || '';
+            document.getElementById('editStatus').value = user.status || 'activo';
+            document.getElementById('editPassword').value = '';
+
+            // Actualizar opciones de departamento
+            updateEditDepartmentOptions();
+
+            document.getElementById('editUserModal').classList.add('active');
+        }
+
+        // Confirmar eliminación
+        function confirmDeleteUser(userId) {
+            const user = users.find(u => u.id === userId);
+            currentEditingUser = user;
+            deleteUser();
+        }
+
+        // Cerrar modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'editUserModal') {
+                currentEditingUser = null;
+            }
+        }
+
+        // Actualizar opciones de departamento
+        function updateDepartmentOptions() {
+            const role = document.getElementById('newRole').value;
+            const departmentSelect = document.getElementById('newDepartment');
+            const departments = departmentMapping[role] || [];
+
+            departmentSelect.innerHTML = '<option value="">Seleccionar departamento</option>';
+            departments.forEach(dept => {
+                departmentSelect.innerHTML += `<option value="${dept}">${dept}</option>`;
+            });
+        }
+
+        function updateEditDepartmentOptions() {
+            const role = document.getElementById('editRole').value;
+            const departmentSelect = document.getElementById('editDepartment');
+            const departments = departmentMapping[role] || [];
+
+            const currentDept = departmentSelect.value;
+            departmentSelect.innerHTML = '<option value="">Seleccionar departamento</option>';
+            departments.forEach(dept => {
+                departmentSelect.innerHTML += `<option value="${dept}">${dept}</option>`;
+            });
+            
+            // Restaurar selección previa si existe en las nuevas opciones
+            if (departments.includes(currentDept)) {
+                departmentSelect.value = currentDept;
+            }
+        }
+
+        // Búsqueda de usuarios
+        function searchUsers(query) {
+            if (!query) {
+                filteredUsers = [...users];
+            } else {
+                const lowerQuery = query.toLowerCase();
+                filteredUsers = users.filter(user => 
+                    user.name?.toLowerCase().includes(lowerQuery) ||
+                    user.lastName?.toLowerCase().includes(lowerQuery) ||
+                    user.email?.toLowerCase().includes(lowerQuery) ||
+                    user.username?.toLowerCase().includes(lowerQuery) ||
+                    user.institutionalCode?.toLowerCase().includes(lowerQuery)
+                );
+            }
+            currentPage = 1;
+            renderUsersTable();
+        }
+
+        // Filtrar usuarios
+        function filterUsers() {
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredUsers = users.filter(user => {
+                const roleMatch = !roleFilter || user.role === roleFilter;
+                const statusMatch = !statusFilter || user.status === statusFilter;
+                return roleMatch && statusMatch;
+            });
+
+            currentPage = 1;
+            renderUsersTable();
+        }
+
+        // Seleccionar todos
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('#usersTableBody input[type="checkbox"]');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        // Actualizar usuarios seleccionados
+        function updateSelectedUsers() {
+            const selectedUsers = Array.from(document.querySelectorAll('#usersTableBody input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+            console.log('Usuarios seleccionados:', selectedUsers);
+        }
+
+        // Paginación
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+            
+            if (direction === -1 && currentPage > 1) {
+                currentPage--;
+            } else if (direction === 1 && currentPage < totalPages) {
+                currentPage++;
+            }
+            
+            renderUsersTable();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+            
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+        }
+
+        // Actualizar datos
+        function refreshData() {
+            Swal.fire({
+                title: 'Actualizando datos...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            setTimeout(() => {
+                loadUsers();
+                updateStatistics();
+                renderUsersTable();
+                Swal.close();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos Actualizados',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }, 1500);
+        }
+
+        // Exportar usuarios
+        function exportUsers() {
+            const dataStr = JSON.stringify(users, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `usuarios_export_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Datos Exportados',
+                text: `Se han exportado ${users.length} usuarios`,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        // Importar usuarios
+        function importUsers() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedUsers = JSON.parse(e.target.result);
+                        
+                        if (!Array.isArray(importedUsers)) {
+                            throw new Error('El archivo no contiene un array de usuarios válido');
+                        }
+
+                        Swal.fire({
+                            icon: 'question',
+                            title: 'Importar Usuarios',
+                            text: `Se encontraron ${importedUsers.length} usuarios en el archivo. ¿Desea importarlos?`,
+                            showCancelButton: true,
+                            confirmButtonText: 'Importar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Validar y agregar usuarios
+                                importedUsers.forEach((importedUser, index) => {
+                                    if (!importedUser.username || !importedUser.name) {
+                                        console.warn(`Usuario ${index + 1} inválido, omitiendo`);
+                                        return;
+                                    }
+
+                                    // Generar ID y código institucional si no existen
+                                    if (!importedUser.id) {
+                                        importedUser.id = Date.now().toString() + index;
+                                    }
+                                    if (!importedUser.institutionalCode) {
+                                        const role = importedUser.role || 'estudiante';
+                                        const existingCount = users.filter(u => u.role === role).length;
+                                        importedUser.institutionalCode = generateInstitutionalCode(role, existingCount + index);
+                                    }
+
+                                    // Establecer valores por defecto
+                                    importedUser.status = importedUser.status || 'pendiente';
+                                    importedUser.createdAt = importedUser.createdAt || new Date().toISOString();
+                                });
+
+                                users = [...users, ...importedUsers];
+                                saveUsers();
+                                updateStatistics();
+                                renderUsersTable();
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Importación Completada',
+                                    text: `Se han importado ${importedUsers.length} usuarios exitosamente`,
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        });
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Importación',
+                            text: 'El archivo no contiene un formato JSON válido'
+                        });
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // Acciones masivas
+        function bulkActions() {
+            const selectedUsers = Array.from(document.querySelectorAll('#usersTableBody input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+
+            if (selectedUsers.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sin Selección',
+                    text: 'Por favor seleccione al menos un usuario para realizar acciones masivas'
+                });
+                return;
+            }
+
+            Swal.fire({
+                icon: 'question',
+                title: 'Acciones Masivas',
+                html: `
+                    <div style="text-align: left; padding: 20px 0;">
+                        <p><strong>Usuarios seleccionados:</strong> ${selectedUsers.length}</p>
+                        <div style="margin: 15px 0;">
+                            <button class="btn" onclick="bulkActivate()" style="margin: 5px; width: 100%;">
+                                <i class="fas fa-check"></i> Activar Seleccionados
+                            </button>
+                            <button class="btn" onclick="bulkDeactivate()" style="margin: 5px; width: 100%;">
+                                <i class="fas fa-times"></i> Desactivar Seleccionados
+                            </button>
+                            <button class="btn" onclick="bulkDelete()" style="margin: 5px; width: 100%; background: var(--danger-color);">
+                                <i class="fas fa-trash"></i> Eliminar Seleccionados
+                            </button>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Cerrar',
+                cancelButtonText: 'Cancelar'
+            });
+        }
+
+        // Acciones masivas específicas
+        function bulkActivate() {
+            selectedUsers.forEach(userId => {
+                const userIndex = users.findIndex(u => u.id === userId);
+                if (userIndex !== -1) {
+                    users[userIndex].status = 'activo';
+                    users[userIndex].updatedAt = new Date().toISOString();
+                }
+            });
+            
+            saveUsers();
+            updateStatistics();
+            renderUsersTable();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuarios Activados',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        function bulkDeactivate() {
+            selectedUsers.forEach(userId => {
+                const userIndex = users.findIndex(u => u.id === userId);
+                if (userIndex !== -1) {
+                    users[userIndex].status = 'inactivo';
+                    users[userIndex].updatedAt = new Date().toISOString();
+                }
+            });
+            
+            saveUsers();
+            updateStatistics();
+            renderUsersTable();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuarios Desactivados',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        function bulkDelete() {
+            Swal.fire({
+                icon: 'warning',
+                title: '¿Eliminar Usuarios Masivamente?',
+                text: `Está a punto de eliminar ${selectedUsers.length} usuarios. Esta acción no se puede deshacer.`,
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Sí, Eliminar Todos',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Eliminar usuarios seleccionados
+                    const remainingUsers = users.filter(u => !selectedUsers.includes(u.id));
+                    users = remainingUsers;
+                    
+                    saveUsers();
+                    updateStatistics();
+                    renderUsersTable();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Usuarios Eliminados',
+                        text: `Se han eliminado ${selectedUsers.length} usuarios exitosamente`,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // Cerrar modales con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                currentEditingUser = null;
+            }
+        });
+
+        // Cerrar modales haciendo clic fuera
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+                currentEditingUser = null;
+            }
+        });
+    </script>
+</body>
+</html>

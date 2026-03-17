@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes de Cafetería - SGE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS para Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- Conexión con núcleo SGECore -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/systemDataManager.js"></script>
+    <script src="js/systemUsers.js"></script>
+    <style>
+        :root {
+            --primary-color: #f39c12;
+            --secondary-color: #e67e22;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 auto 15px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+            color: #ccc;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>
+                <i class="fas fa-chart-line"></i>
+                Reportes de Cafetería
+            </h1>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div id="userName">Cargando...</div>
+                    <div style="font-size: 0.8rem; color: #666;" id="userRole">...</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Estadísticas Generales -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--success-color);">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-value" id="totalIngresos">$0</div>
+                <div class="stat-label">Total Ingresos</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--danger-color);">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-value" id="totalEgresos">$0</div>
+                <div class="stat-label">Total Egresos</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--primary-color);">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="stat-value" id="balance">$0</div>
+                <div class="stat-label">Balance</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--secondary-color);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-value" id="totalReportes">0</div>
+                <div class="stat-label">Total Reportes</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-filter"></i>
+                    Filtros de Búsqueda
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Fecha Inicio</label>
+                        <input type="date" id="fechaInicio">
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha Fin</label>
+                        <input type="date" id="fechaFin">
+                    </div>
+                    <div class="filter-group">
+                        <label>Tipo de Reporte</label>
+                        <select id="tipoReporte">
+                            <option value="">Todos</option>
+                            <option value="diario">Diario</option>
+                            <option value="semanal">Semanal</option>
+                            <option value="mensual">Mensual</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-primary" onclick="aplicarFiltros()">
+                            <i class="fas fa-search"></i>
+                            Aplicar Filtros
+                        </button>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-danger" onclick="limpiarDatosCafeteria()" title="Limpiar datos de prueba">
+                            <i class="fas fa-trash-alt"></i>
+                            Limpiar Datos
+                        </button>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-success" onclick="exportarReportes()">
+                            <i class="fas fa-download"></i>
+                            Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reportes Generados -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i>
+                    Reportes Generados
+                </h3>
+                <button class="btn btn-sm btn-primary" onclick="refreshReportes()">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualizar
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Cajera</th>
+                                <th>Ventas</th>
+                                <th>Gastos</th>
+                                <th>Saldo Neto</th>
+                                <th>Transacciones</th>
+                                <th>Turno</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportesTableBody">
+                            <tr>
+                                <td colspan="10" class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    No hay reportes generados aún
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Tendencias -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-area"></i>
+                    Tendencias de Ingresos/Egresos
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="tendenciasChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CafeteriaReportsSystem {
+            constructor() {
+                this.currentUser = null;
+                this.reportes = [];
+                this.init();
+            }
+
+            init() {
+                this.loadCurrentUser();
+                this.setupEventListeners();
+                this.loadReportes();
+                this.updateStatistics();
+                this.initChart();
+            }
+
+            loadCurrentUser() {
+                const userData = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+                if (userData) {
+                    try {
+                        this.currentUser = JSON.parse(userData);
+                        this.updateUserInfo();
+                    } catch (e) {
+                        console.error('Error loading user data:', e);
+                        this.redirectToLogin();
+                    }
+                } else {
+                    this.redirectToLogin();
+                }
+            }
+
+            updateUserInfo() {
+                if (this.currentUser) {
+                    document.getElementById('userName').textContent = this.currentUser.name;
+                    document.getElementById('userRole').textContent = this.currentUser.role;
+                }
+            }
+
+            setupEventListeners() {
+                // Configurar fechas por defecto
+                const today = new Date();
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                
+                document.getElementById('fechaInicio').value = firstDay.toISOString().split('T')[0];
+                document.getElementById('fechaFin').value = today.toISOString().split('T')[0];
+            }
+
+            loadReportes() {
+                if (typeof window.systemDataManager !== 'undefined') {
+                    const data = window.systemDataManager.getAllData();
+                    this.reportes = data.reportesCafeteria || [];
+                    this.renderReportes();
+                }
+            }
+
+            renderReportes() {
+                const tbody = document.getElementById('reportesTableBody');
+                
+                if (this.reportes.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                No hay reportes generados aún
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                
+                // CORRECCIÓN: Ordenar reportes por fecha (más recientes primero)
+                const reportesOrdenados = this.reportes.sort((a, b) => new Date(b.timestamp || b.fecha) - new Date(a.timestamp || b.fecha));
+                
+                // CORRECCIÓN: Funciones auxiliares para turnos
+                function getTurnoColor(turno) {
+                    const colores = {
+                        'mañana': '#28a745',
+                        'tarde': '#ffc107',
+                        'noche': '#6f42c1',
+                        'completo': '#17a2b8'
+                    };
+                    return colores[turno] || '#6c757d';
+                }
+                
+                function getTurnoIcon(turno) {
+                    const iconos = {
+                        'mañana': '🌅',
+                        'tarde': '🌇',
+                        'noche': '🌙',
+                        'completo': '📅'
+                    };
+                    return iconos[turno] || '📋';
+                }
+                
+                reportesOrdenados.forEach(reporte => {
+                    // CORRECCIÓN: Adaptar a los nuevos campos del cuadre
+                    const ingresos = reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0;
+                    const egresos = reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0;
+                    const balance = reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || (ingresos - egresos);
+                    const responsable = reporte.cajera || reporte.responsable || 'No especificado';
+                    const hora = reporte.hora || 'N/A';
+                    const transacciones = reporte.totalTransacciones || 0;
+                    const turno = reporte.especificaciones?.turno || 'N/A';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(reporte.fecha).toLocaleDateString()}</td>
+                        <td>${hora}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-user-circle" style="color: var(--primary-color);"></i>
+                                ${responsable}
+                            </div>
+                        </td>
+                        <td style="color: var(--success-color); font-weight: 600;">$${ingresos.toFixed(2)}</td>
+                        <td style="color: var(--danger-color); font-weight: 600;">$${egresos.toFixed(2)}</td>
+                        <td style="color: var(--primary-color); font-weight: 600;">$${balance.toFixed(2)}</td>
+                        <td>
+                            <span class="badge badge-info">${transacciones}</span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: ${getTurnoColor(turno)};">
+                                ${getTurnoIcon(turno)} ${turno}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: ${reporte.estado === 'enviado_direccion' ? 'var(--success-color)' : reporte.estado === 'activo' ? 'var(--success-color)' : 'var(--warning-color)'};">
+                                ${reporte.estado || 'activo'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="viewReporte('${reporte.id}')" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="downloadReporteExcel('${reporte.id}')" title="Descargar Excel">
+                                <i class="fas fa-file-excel"></i>
+                            </button>
+                            <button class="btn btn-sm btn-info" onclick="viewReporte('${reporte.id}')" title="Ver cuadre completo">
+                                <i class="fas fa-clipboard-list"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            updateStatistics() {
+                if (this.reportes.length === 0) {
+                    document.getElementById('totalIngresos').textContent = '$0';
+                    document.getElementById('totalEgresos').textContent = '$0';
+                    document.getElementById('balance').textContent = '$0';
+                    document.getElementById('totalReportes').textContent = '0';
+                    return;
+                }
+
+                const totalIngresos = this.reportes.reduce((sum, r) => sum + r.ingresos, 0);
+                const totalEgresos = this.reportes.reduce((sum, r) => sum + r.egresos, 0);
+                const balance = totalIngresos - totalEgresos;
+
+                document.getElementById('totalIngresos').textContent = `$${totalIngresos.toFixed(2)}`;
+                document.getElementById('totalEgresos').textContent = `$${totalEgresos.toFixed(2)}`;
+                document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
+                document.getElementById('totalReportes').textContent = this.reportes.length;
+            }
+
+            initChart() {
+                const ctx = document.getElementById('tendenciasChart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: this.getLastSevenDays(),
+                        datasets: [
+                            {
+                                label: 'Ingresos',
+                                data: this.getLastSevenDaysData('ingresos'),
+                                borderColor: 'var(--success-color)',
+                                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Egresos',
+                                data: this.getLastSevenDaysData('egresos'),
+                                borderColor: 'var(--danger-color)',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            getLastSevenDays() {
+                const days = [];
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    days.push(date.toLocaleDateString());
+                }
+                return days;
+            }
+
+            getLastSevenDaysData(type) {
+                // Simular datos para los últimos 7 días
+                return [1200, 1500, 1100, 1800, 1600, 2000, 1700];
+            }
+
+            aplicarFiltros() {
+                const fechaInicio = document.getElementById('fechaInicio').value;
+                const fechaFin = document.getElementById('fechaFin').value;
+                const tipoReporte = document.getElementById('tipoReporte').value;
+
+                let reportesFiltrados = [...this.reportes];
+
+                if (fechaInicio) {
+                    reportesFiltrados = reportesFiltrados.filter(r => 
+                        new Date(r.fecha) >= new Date(fechaInicio)
+                    );
+                }
+
+                if (fechaFin) {
+                    reportesFiltrados = reportesFiltrados.filter(r => 
+                        new Date(r.fecha) <= new Date(fechaFin)
+                    );
+                }
+
+                if (tipoReporte) {
+                    reportesFiltrados = reportesFiltrados.filter(r => 
+                        r.tipo === tipoReporte
+                    );
+                }
+
+                this.renderFilteredReportes(reportesFiltrados);
+            }
+
+            renderFilteredReportes(reportes) {
+                const tbody = document.getElementById('reportesTableBody');
+                
+                if (reportes.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="fas fa-search"></i>
+                                No hay reportes que coincidan con los filtros
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Renderizar reportes filtrados (similar a renderReportes)
+                this.reportes = reportes;
+                this.renderReportes();
+            }
+
+            refreshReportes() {
+                this.loadReportes();
+                this.updateStatistics();
+                this.showToast('Reportes actualizados', 'success');
+            }
+
+            // CORRECCIÓN: Función para descargar reporte individual en Excel
+            downloadReporteExcel(id) {
+                const reporte = this.reportes.find(r => r.id === id);
+                if (!reporte) {
+                    Swal.fire('Error', 'Reporte no encontrado', 'error');
+                    return;
+                }
+                
+                // Generar Excel individual
+                const wb = XLSX.utils.book_new();
+                
+                // Hoja 1: Resumen del Cuadre
+                const resumenCuadre = [
+                    ['CUADRE DE CAJA - DETALLE COMPLETO'],
+                    ['SISTEMA GESTIÓN ESCOLAR'],
+                    [''],
+                    ['INFORMACIÓN GENERAL'],
+                    ['Fecha:', new Date(reporte.fecha).toLocaleDateString()],
+                    ['Hora:', reporte.hora || 'N/A'],
+                    ['Cajera:', reporte.cajera || reporte.responsable || 'N/A'],
+                    ['Username:', reporte.usernameCajera || 'N/A'],
+                    ['ID Reporte:', reporte.id],
+                    ['Estado:', reporte.estado || 'activo'],
+                    [''],
+                    ['RESUMEN ECONÓMICO'],
+                    ['Ventas Totales:', reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0],
+                    ['Gastos Totales:', reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0],
+                    ['Saldo Neto:', reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || 0],
+                    ['Total Transacciones:', reporte.totalTransacciones || 0],
+                    [''],
+                    ['ESPECIFICACIONES DEL TURNO'],
+                    ['Turno:', reporte.especificaciones?.turno || 'N/A'],
+                    ['Método Pago Predominante:', reporte.especificaciones?.metodoPagoPredominante || 'N/A'],
+                    ['Clientes Atendidos:', reporte.especificaciones?.clientesAtendidos || 0],
+                    ['Ticket Promedio:', reporte.especificaciones?.ticketPromedio || 0],
+                    ['Hora Inicio:', reporte.especificaciones?.horaInicio || 'N/A'],
+                    ['Hora Fin:', reporte.especificaciones?.horaFin || 'N/A'],
+                    ['Incidencias:', reporte.especificaciones?.incidencias || 'sin_incidencias'],
+                    ['Prioridad:', reporte.prioridad || 'normal'],
+                    [''],
+                    ['GENERADO EL:', new Date().toLocaleString()]
+                ];
+                
+                const wsResumen = XLSX.utils.aoa_to_sheet(resumenCuadre);
+                wsResumen['!cols'] = [{ wch: 25 }, { wch: 20 }];
+                XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Cuadre');
+                
+                // Hoja 2: Detalle de Transacciones
+                if (reporte.detalles?.transacciones && reporte.detalles.transacciones.length > 0) {
+                    const detalleTransacciones = [
+                        ['DETALLE DE TRANSACCIONES'],
+                        [''],
+                        ['Hora', 'Descripción', 'Tipo', 'Monto', 'Fecha'],
+                        ...reporte.detalles.transacciones.map(t => [
+                            t.time || 'N/A',
+                            t.description || 'N/A',
+                            t.type === 'sale' ? 'Venta' : t.type === 'expense' ? 'Gasto' : t.type === 'prestamo' ? 'Préstamo' : 'Otro',
+                            Math.abs(t.amount || 0),
+                            t.date || new Date(reporte.fecha).toLocaleDateString()
+                        ])
+                    ];
+                    
+                    const wsTransacciones = XLSX.utils.aoa_to_sheet(detalleTransacciones);
+                    wsTransacciones['!cols'] = [
+                        { wch: 10 }, // Hora
+                        { wch: 30 }, // Descripción
+                        { wch: 15 }, // Tipo
+                        { wch: 12 }, // Monto
+                        { wch: 12 }  // Fecha
+                    ];
+                    XLSX.utils.book_append_sheet(wb, wsTransacciones, 'Detalle Transacciones');
+                }
+                
+                // Hoja 3: Observaciones
+                if (reporte.observaciones) {
+                    const observacionesHoja = [
+                        ['OBSERVACIONES DEL CUADRE'],
+                        [''],
+                        ['Observaciones:'],
+                        [reporte.observaciones],
+                        [''],
+                        ['Fecha de Registro:'],
+                        [new Date(reporte.timestamp || reporte.fecha).toLocaleString()],
+                        [''],
+                        ['GENERADO POR:'],
+                        [reporte.cajera || reporte.responsable || 'Sistema']
+                    ];
+                    
+                    const wsObservaciones = XLSX.utils.aoa_to_sheet(observacionesHoja);
+                    wsObservaciones['!cols'] = [{ wch: 50 }];
+                    XLSX.utils.book_append_sheet(wb, wsObservaciones, 'Observaciones');
+                }
+                
+                // Generar y descargar archivo
+                const fileName = `cuadre_${reporte.fecha}_${(reporte.cajera || reporte.responsable || 'sindatos').replace(/\s+/g, '_')}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: '✅ Excel Descargado',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>📄 Archivo:</strong> ${fileName}</p>
+                            <p><strong>📊 Cuadre del día:</strong> ${new Date(reporte.fecha).toLocaleDateString()}</p>
+                            <p><strong>👤 Cajera:</strong> ${reporte.cajera || reporte.responsable || 'N/A'}</p>
+                            <p><strong>💰 Saldo Neto:</strong> $${(reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || 0).toFixed(2)}</p>
+                            <p><strong>📋 Hojas incluidas:</strong></p>
+                            <ul style="text-align: left; margin-left: 20px;">
+                                <li>📊 Resumen Cuadre</li>
+                                <li>📋 Detalle Transacciones</li>
+                                <li>📝 Observaciones</li>
+                            </ul>
+                        </div>
+                    `,
+                    timer: 4000,
+                    showConfirmButton: false
+                });
+            }
+            
+            exportarReportes() {
+                // CORRECCIÓN: Usar la nueva función de exportación a Excel
+                this.exportarTodosReportes();
+            }
+
+            limpiarDatosCafeteria() {
+                Swal.fire({
+                    title: '⚠️ Limpiar Datos de Prueba',
+                    html: `
+                        <div style="text-align: left;">
+                            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <h4 style="color: #856404; margin-bottom: 10px;">⚠️ Advertencia Importante</h4>
+                                <p>Esta acción <strong>eliminará permanentemente</strong> todos los datos de prueba de:</p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>📊 Todos los cuadres de caja registrados</li>
+                                    <li>💰 Todos los préstamos solicitados</li>
+                                    <li>📋 Todas las transacciones de prueba</li>
+                                </ul>
+                                <p style="color: #dc3545; font-weight: bold; margin-top: 10px;">
+                                    ❌ Esta acción no se puede deshacer
+                                </p>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">🔒 Escribe "LIMPIAR" para confirmar:</label>
+                                <input type="text" id="confirmacionLimpiar" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Escribe LIMPIAR en mayúsculas">
+                            </div>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '🗑️ Limpiar Datos',
+                    cancelButtonText: '❌ Cancelar',
+                    width: 500
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const confirmacion = document.getElementById('confirmacionLimpiar').value;
+                        
+                        if (confirmacion !== 'LIMPIAR') {
+                            Swal.fire('Error', 'Debes escribir "LIMPIAR" correctamente para continuar', 'error');
+                            return;
+                        }
+                        
+                        // Ejecutar limpieza
+                        if (typeof window.systemDataManager !== 'undefined') {
+                            const resultado = window.systemDataManager.limpiarDatosCafeteria();
+                            
+                            if (resultado.success) {
+                                // Limpiar datos locales
+                                this.reportes = [];
+                                this.renderReportes();
+                                this.updateStatistics();
+                                
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '✅ Datos Limpiados',
+                                    html: `
+                                        <div style="text-align: left;">
+                                            <p><strong>🗑️ Acción completada:</strong> Todos los datos de prueba han sido eliminados</p>
+                                            <p><strong>📊 Cuadres eliminados:</strong> Todos</p>
+                                            <p><strong>💰 Préstamos eliminados:</strong> Todos</p>
+                                            <p><strong>🔄 Estado:</strong> Sistema listo para producción</p>
+                                        </div>
+                                    `,
+                                    timer: 4000,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                Swal.fire('Error', resultado.message || 'Error al limpiar los datos', 'error');
+                            }
+                        } else {
+                            Swal.fire('Error', 'Sistema de datos no disponible', 'error');
+                        }
+                    }
+                });
+            }
+
+            viewReporte(id) {
+                const reporte = this.reportes.find(r => r.id === id);
+                if (!reporte) {
+                    Swal.fire('Error', 'Reporte no encontrado', 'error');
+                    return;
+                }
+                
+                // CORRECCIÓN: Adaptar a los nuevos campos del cuadre
+                const ingresos = reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0;
+                const egresos = reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0;
+                const balance = reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || (ingresos - egresos);
+                const responsable = reporte.cajera || reporte.responsable || 'No especificado';
+                const usernameCajera = reporte.usernameCajera || 'N/A';
+                const totalTransacciones = reporte.totalTransacciones || reporte.detalles?.transacciones?.length || 0;
+                
+                Swal.fire({
+                    title: '📊 Detalles del Cuadre de Caja',
+                    html: `
+                        <div style="text-align: left;">
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">📋 Información General</h4>
+                                <p><strong>📅 Fecha:</strong> ${new Date(reporte.fecha).toLocaleDateString()}</p>
+                                <p><strong>🕐 Hora:</strong> ${reporte.hora || 'N/A'}</p>
+                                <p><strong>🆔 ID:</strong> ${reporte.id}</p>
+                                <p><strong>📝 Tipo:</strong> ${reporte.tipo || 'cuadre_caja'}</p>
+                                <p><strong>✅ Estado:</strong> <span style="color: #27ae60;">${reporte.estado || 'activo'}</span></p>
+                            </div>
+                            
+                            <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <h4 style="color: #27ae60; margin-bottom: 15px;">💰 Resumen Económico</h4>
+                                <p><strong>💵 Ventas Totales:</strong> <span style="color: #27ae60; font-size: 1.1em;">$${ingresos.toFixed(2)}</span></p>
+                                <p><strong>💸 Gastos Totales:</strong> <span style="color: #e74c3c; font-size: 1.1em;">$${egresos.toFixed(2)}</span></p>
+                                <p><strong>⚖️ Saldo Neto:</strong> <span style="color: #f39c12; font-size: 1.2em; font-weight: bold;">$${balance.toFixed(2)}</span></p>
+                            </div>
+                            
+                            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <h4 style="color: #3498db; margin-bottom: 15px;">👤 Información de la Cajera</h4>
+                                <p><strong>👩‍💼 Nombre:</strong> ${responsable}</p>
+                                <p><strong>🆔 Username:</strong> ${usernameCajera}</p>
+                                <p><strong>📊 Total Transacciones:</strong> ${totalTransacciones}</p>
+                            </div>
+                            
+                            ${reporte.observaciones ? `
+                            <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                                <h4 style="color: #856404; margin-bottom: 10px;">📝 Observaciones</h4>
+                                <p style="color: #856404;">${reporte.observaciones}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `,
+                    width: 800,
+                    confirmButtonColor: '#3498db',
+                    confirmButtonText: 'Cerrar'
+                });
+            }
+            
+            downloadReporte(id) {
+                const reporte = this.reportes.find(r => r.id === id);
+                if (!reporte) {
+                    Swal.fire('Error', 'Reporte no encontrado', 'error');
+                    return;
+                }
+                
+                // CORRECCIÓN: Generar Excel con los datos del cuadre
+                const ingresos = reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0;
+                const egresos = reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0;
+                const balance = reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || (ingresos - egresos);
+                const responsable = reporte.cajera || reporte.responsable || 'No especificado';
+                
+                // Crear workbook de Excel
+                const wb = XLSX.utils.book_new();
+                
+                // Hoja 1: Resumen del Cuadre
+                const resumenData = [
+                    ['CUADRE DE CAJA - SISTEMA GESTIÓN ESCOLAR'],
+                    [''],
+                    ['INFORMACIÓN GENERAL'],
+                    ['Fecha:', new Date(reporte.fecha).toLocaleDateString()],
+                    ['Hora:', reporte.hora || 'N/A'],
+                    ['ID Reporte:', reporte.id],
+                    ['Tipo:', reporte.tipo || 'cuadre_caja'],
+                    ['Estado:', reporte.estado || 'activo'],
+                    [''],
+                    ['INFORMACIÓN DE LA CAJERA'],
+                    ['Nombre:', responsable],
+                    ['Username:', reporte.usernameCajera || 'N/A'],
+                    [''],
+                    ['RESUMEN ECONÓMICO'],
+                    ['Ventas Totales:', ingresos],
+                    ['Gastos Totales:', egresos],
+                    ['Saldo Neto:', balance],
+                    ['Total Transacciones:', reporte.totalTransacciones || 0],
+                    [''],
+                    ...(reporte.observaciones ? [['OBSERVACIONES'], [reporte.observaciones], ['']] : []),
+                    ['GENERADO EL:', new Date().toLocaleString()]
+                ];
+                
+                const wsResumen = XLSX.utils.aoa_to_sheet(resumenData);
+                
+                // Configurar anchos de columna
+                wsResumen['!cols'] = [
+                    { wch: 25 }, // Columna A
+                    { wch: 30 }  // Columna B
+                ];
+                
+                // Agregar hoja de resumen
+                XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Cuadre');
+                
+                // Hoja 2: Detalle de Transacciones (si existen)
+                if (reporte.detalles?.transacciones && reporte.detalles.transacciones.length > 0) {
+                    const transaccionesData = [
+                        ['DETALLE DE TRANSACCIONES'],
+                        [''],
+                        ['Fecha', 'Hora', 'Descripción', 'Tipo', 'Monto'],
+                        ...reporte.detalles.transacciones.map(t => [
+                            reporte.fecha,
+                            t.time || 'N/A',
+                            t.description || 'Sin descripción',
+                            t.type === 'sale' ? 'Venta' : 'Gasto/Retiro',
+                            t.amount || 0
+                        ])
+                    ];
+                    
+                    const wsTransacciones = XLSX.utils.aoa_to_sheet(transaccionesData);
+                    
+                    // Configurar anchos de columna
+                    wsTransacciones['!cols'] = [
+                        { wch: 15 }, // Fecha
+                        { wch: 12 }, // Hora
+                        { wch: 30 }, // Descripción
+                        { wch: 15 }, // Tipo
+                        { wch: 12 }  // Monto
+                    ];
+                    
+                    // Agregar hoja de transacciones
+                    XLSX.utils.book_append_sheet(wb, wsTransacciones, 'Detalle Transacciones');
+                }
+                
+                // Hoja 3: Estadísticas (si hay múltiples reportes)
+                if (this.reportes.length > 1) {
+                    const statsData = [
+                        ['ESTADÍSTICAS DE REPORTES'],
+                        [''],
+                        ['Período', 'Total Ventas', 'Total Gastos', 'Saldo Neto', 'Reportes'],
+                        ['General', 
+                            this.reportes.reduce((sum, r) => sum + (r.montoVentas || r.ingresos || r.resumen?.ventasTotales || 0), 0),
+                            this.reportes.reduce((sum, r) => sum + (r.montoGastos || r.egresos || r.resumen?.gastosTotales || 0), 0),
+                            this.reportes.reduce((sum, r) => sum + (r.saldoNeto || r.balance || r.resumen?.saldoNeto || 0), 0),
+                            this.reportes.length
+                        ],
+                        [''],
+                        ['TOP 5 CAJERAS POR VENTAS'],
+                        ...this.getTopCajeras().slice(0, 5)
+                    ];
+                    
+                    const wsStats = XLSX.utils.aoa_to_sheet(statsData);
+                    wsStats['!cols'] = [
+                        { wch: 20 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 10 }
+                    ];
+                    
+                    XLSX.utils.book_append_sheet(wb, wsStats, 'Estadísticas');
+                }
+                
+                // Generar y descargar archivo Excel
+                const fileName = `cuadre_caja_${reporte.fecha}_${responsable.replace(/\s+/g, '_')}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: '✅ Reporte Excel Descargado',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>📊 Archivo generado:</strong> ${fileName}</p>
+                            <p><strong>📋 Hojas incluidas:</strong></p>
+                            <ul style="text-align: left; margin-left: 20px;">
+                                <li>📄 Resumen Cuadre</li>
+                                ${reporte.detalles?.transacciones ? '<li>📋 Detalle Transacciones</li>' : ''}
+                                <li>📈 Estadísticas</li>
+                            </ul>
+                        </div>
+                    `,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+            
+            // CORRECCIÓN: Función para exportar todos los reportes a Excel
+            exportarTodosReportes() {
+                if (this.reportes.length === 0) {
+                    Swal.fire('Información', 'No hay reportes para exportar', 'info');
+                    return;
+                }
+                
+                Swal.fire({
+                    title: '📊 Exportar Todos los Reportes',
+                    html: `
+                        <div style="text-align: left;">
+                            <p>Se exportarán <strong>${this.reportes.length}</strong> reportes a Excel.</p>
+                            <p>El archivo contendrá:</p>
+                            <ul style="text-align: left; margin-left: 20px;">
+                                <li>📄 Resumen General</li>
+                                <li>📋 Todos los Reportes Detallados</li>
+                                <li>📈 Estadísticas Completas</li>
+                                <li>👤 Ranking de Cajeras</li>
+                            </ul>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#27ae60',
+                    cancelButtonColor: '#e74c3c',
+                    confirmButtonText: '✅ Exportar',
+                    cancelButtonText: '❌ Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.generarExcelCompleto();
+                    }
+                });
+            }
+            
+            // CORRECCIÓN: Generar Excel completo con todos los reportes
+            generarExcelCompleto() {
+                const wb = XLSX.utils.book_new();
+                
+                // Hoja 1: Resumen General
+                const resumenGeneral = [
+                    ['REPORTE GENERAL DE CUADRES DE CAJA'],
+                    ['SISTEMA GESTIÓN ESCOLAR'],
+                    [''],
+                    ['PERÍODO ANALIZADO'],
+                    ['Fecha Inicio:', this.getFechaInicio()],
+                    ['Fecha Fin:', this.getFechaFin()],
+                    ['Total Reportes:', this.reportes.length],
+                    [''],
+                    ['RESUMEN ECONÓMICO GENERAL'],
+                    ['Total Ventas:', this.reportes.reduce((sum, r) => sum + (r.montoVentas || r.ingresos || r.resumen?.ventasTotales || 0), 0)],
+                    ['Total Gastos:', this.reportes.reduce((sum, r) => sum + (r.montoGastos || r.egresos || r.resumen?.gastosTotales || 0), 0)],
+                    ['Saldo Neto General:', this.reportes.reduce((sum, r) => sum + (r.saldoNeto || r.balance || r.resumen?.saldoNeto || 0), 0)],
+                    ['Promedio Ventas por Reporte:', (this.reportes.reduce((sum, r) => sum + (r.montoVentas || r.ingresos || r.resumen?.ventasTotales || 0), 0) / this.reportes.length).toFixed(2)],
+                    [''],
+                    ['GENERADO EL:', new Date().toLocaleString()]
+                ];
+                
+                const wsResumen = XLSX.utils.aoa_to_sheet(resumenGeneral);
+                wsResumen['!cols'] = [{ wch: 25 }, { wch: 20 }];
+                XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen General');
+                
+                // Hoja 2: Todos los Reportes
+                const todosReportes = [
+                    ['TODOS LOS REPORTES DE CUADRE'],
+                    [''],
+                    ['Fecha', 'Hora', 'ID', 'Cajera', 'Ventas', 'Gastos', 'Saldo Neto', 'Transacciones', 'Estado', 'Tipo'],
+                    ...this.reportes.map(r => [
+                        new Date(r.fecha).toLocaleDateString(),
+                        r.hora || 'N/A',
+                        r.id,
+                        r.cajera || r.responsable || 'N/A',
+                        r.montoVentas || r.ingresos || r.resumen?.ventasTotales || 0,
+                        r.montoGastos || r.egresos || r.resumen?.gastosTotales || 0,
+                        r.saldoNeto || r.balance || r.resumen?.saldoNeto || 0,
+                        r.totalTransacciones || 0,
+                        r.estado || 'activo',
+                        r.tipo || 'cuadre_caja'
+                    ])
+                ];
+                
+                const wsTodos = XLSX.utils.aoa_to_sheet(todosReportes);
+                wsTodos['!cols'] = [
+                    { wch: 12 }, // Fecha
+                    { wch: 10 }, // Hora
+                    { wch: 20 }, // ID
+                    { wch: 20 }, // Cajera
+                    { wch: 12 }, // Ventas
+                    { wch: 12 }, // Gastos
+                    { wch: 12 }, // Saldo Neto
+                    { wch: 12 }, // Transacciones
+                    { wch: 12 }, // Estado
+                    { wch: 15 }  // Tipo
+                ];
+                XLSX.utils.book_append_sheet(wb, wsTodos, 'Todos los Reportes');
+                
+                // Hoja 3: Estadísticas por Cajera
+                const statsCajeras = [
+                    ['ESTADÍSTICAS POR CAJERA'],
+                    [''],
+                    ['Cajera', 'Total Reportes', 'Total Ventas', 'Total Gastos', 'Saldo Neto', 'Promedio Ventas'],
+                    ...this.getEstadisticasPorCajera()
+                ];
+                
+                const wsStats = XLSX.utils.aoa_to_sheet(statsCajeras);
+                wsStats['!cols'] = [
+                    { wch: 25 }, // Cajera
+                    { wch: 15 }, // Total Reportes
+                    { wch: 15 }, // Total Ventas
+                    { wch: 15 }, // Total Gastos
+                    { wch: 15 }, // Saldo Neto
+                    { wch: 15 }  // Promedio Ventas
+                ];
+                XLSX.utils.book_append_sheet(wb, wsStats, 'Estadísticas por Cajera');
+                
+                // Hoja 4: Resumen Mensual (si hay suficientes datos)
+                if (this.reportes.length > 5) {
+                    const resumenMensual = [
+                        ['RESUMEN MENSUAL'],
+                        [''],
+                        ['Mes', 'Reportes', 'Ventas', 'Gastos', 'Saldo Neto'],
+                        ...this.getResumenMensual()
+                    ];
+                    
+                    const wsMensual = XLSX.utils.aoa_to_sheet(resumenMensual);
+                    wsMensual['!cols'] = [
+                        { wch: 15 }, // Mes
+                        { wch: 10 }, // Reportes
+                        { wch: 15 }, // Ventas
+                        { wch: 15 }, // Gastos
+                        { wch: 15 }  // Saldo Neto
+                    ];
+                    XLSX.utils.book_append_sheet(wb, wsMensual, 'Resumen Mensual');
+                }
+                
+                // Generar y descargar archivo
+                const fileName = `reportes_completos_cafeteria_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: '✅ Exportación Completa',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>📊 Archivo generado:</strong> ${fileName}</p>
+                            <p><strong>📋 Hojas incluidas:</strong></p>
+                            <ul style="text-align: left; margin-left: 20px;">
+                                <li>📄 Resumen General</li>
+                                <li>📋 Todos los Reportes (${this.reportes.length})</li>
+                                <li>📈 Estadísticas por Cajera</li>
+                                <li>📅 Resumen Mensual</li>
+                            </ul>
+                        </div>
+                    `,
+                    timer: 4000,
+                    showConfirmButton: false
+                });
+            }
+            
+            // CORRECCIÓN: Funciones auxiliares para estadísticas
+            getEstadisticasPorCajera() {
+                const cajeras = {};
+                
+                this.reportes.forEach(reporte => {
+                    const cajera = reporte.cajera || reporte.responsable || 'Desconocido';
+                    const ventas = reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0;
+                    const gastos = reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0;
+                    const saldo = reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || 0;
+                    
+                    if (!cajeras[cajera]) {
+                        cajeras[cajera] = {
+                            reportes: 0,
+                            ventas: 0,
+                            gastos: 0,
+                            saldo: 0
+                        };
+                    }
+                    
+                    cajeras[cajera].reportes++;
+                    cajeras[cajera].ventas += ventas;
+                    cajeras[cajera].gastos += gastos;
+                    cajeras[cajera].saldo += saldo;
+                });
+                
+                return Object.entries(cajeras)
+                    .map(([cajera, stats]) => [
+                        cajera,
+                        stats.reportes,
+                        stats.ventas,
+                        stats.gastos,
+                        stats.saldo,
+                        (stats.ventas / stats.reportes).toFixed(2)
+                    ])
+                    .sort(([,a], [,b]) => b[2] - a[2]); // Ordenar por ventas
+            }
+            
+            getResumenMensual() {
+                const meses = {};
+                
+                this.reportes.forEach(reporte => {
+                    const fecha = new Date(reporte.fecha);
+                    const mes = fecha.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+                    
+                    if (!meses[mes]) {
+                        meses[mes] = {
+                            reportes: 0,
+                            ventas: 0,
+                            gastos: 0,
+                            saldo: 0
+                        };
+                    }
+                    
+                    meses[mes].reportes++;
+                    meses[mes].ventas += reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0;
+                    meses[mes].gastos += reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0;
+                    meses[mes].saldo += reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || 0;
+                });
+                
+                return Object.entries(meses)
+                    .map(([mes, stats]) => [
+                        mes,
+                        stats.reportes,
+                        stats.ventas,
+                        stats.gastos,
+                        stats.saldo
+                    ])
+                    .sort((a, b) => new Date(a[0]) - new Date(b[0]));
+            }
+            
+            getFechaInicio() {
+                if (this.reportes.length === 0) return 'N/A';
+                const fecha = new Date(Math.min(...this.reportes.map(r => new Date(r.fecha))));
+                return fecha.toLocaleDateString();
+            }
+            
+            getFechaFin() {
+                if (this.reportes.length === 0) return 'N/A';
+                const fecha = new Date(Math.max(...this.reportes.map(r => new Date(r.fecha))));
+                return fecha.toLocaleDateString();
+            }
+
+            editReporte(id) {
+                Swal.fire({
+                    title: 'Editar Reporte',
+                    text: 'Como administrador, puede corregir información administrativa si es necesario.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Editar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.showToast('Modo de edición activado', 'info');
+                    }
+                });
+            }
+
+            showToast(message, type = 'info') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    icon: type,
+                    title: message
+                });
+            }
+
+            redirectToLogin() {
+                window.location.href = '../index.html';
+            }
+        }
+
+        // Inicializar sistema
+        document.addEventListener('DOMContentLoaded', () => {
+            window.cafeteriaReportsSystem = new CafeteriaReportsSystem();
+            
+            // Asignar funciones globales directamente
+            window.aplicarFiltros = () => window.cafeteriaReportsSystem.aplicarFiltros();
+            window.limpiarDatosCafeteria = () => window.cafeteriaReportsSystem.limpiarDatosCafeteria();
+            window.exportarReportes = () => window.cafeteriaReportsSystem.exportarReportes();
+            window.refreshReportes = () => window.cafeteriaReportsSystem.refreshReportes();
+            window.viewReporte = (id) => window.cafeteriaReportsSystem.viewReporte(id);
+            window.downloadReporteExcel = (id) => window.cafeteriaReportsSystem.downloadReporteExcel(id);
+        });
+    </script>
+</body>
+</html>

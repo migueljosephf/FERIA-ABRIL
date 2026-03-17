@@ -1,0 +1,27 @@
+  users: {
+                'admin': { password: 'admin123', name: 'Administrador Principal', role: 'administrador' },✔
+                'admin123': { password: 'admin123', name: 'Administrador Sistema', role: 'administrador' },✔
+                'docente': { password: 'doc123', name: 'Profesor Ejemplo', role: 'docente' },✘
+                'papeleria': { password: 'papel123', name: 'Encargado de Papelería', role: 'papeleria' },✔
+                'direccion': { password: 'dir123', name: 'Director', role: 'direccion' },✘
+                'estudiante': { password: 'est123', name: 'Estudiante Ejemplo', role: 'estudiante' },✘
+                'secretaria': { password: 'sec123', name: 'Secretaria', role: 'secretaria' },✘
+                'psicologia': { password: 'psi123', name: 'Psicóloga', role: 'psicologia' },✘
+
+                // CAFETERÍA
+                'cajero1': { password: 'cafe123', name: 'María Rodríguez', role: 'cajero_cafeteria' },✔
+                'cajero2': { password: 'cafe123', name: 'Carlos Martínez', role: 'cajero_cafeteria' },✔
+                'cajero3': { password: 'cafe123', name: 'Ana López', role: 'cajero_cafeteria' },✔
+                'admin_cafe': { password: 'admin123', name: 'Administrador Cafetería', role: 'admin_cafeteria' },✔
+                
+                // COMEDOR
+                'comedor1': { password: 'comedor123', name: 'Encargado de Comedor', role: 'comedor' },✔
+                'comedor2': { password: 'comedor123', name: 'Auxiliar de Comedor', role: 'comedor' },✔
+                
+                // ODONTOLOGÍA
+                'odontologia': { password: 'odonto123', name: 'Dr. Odontólogo', role: 'odontologia' },✔
+                
+                // USUARIOS COMUNES (para pruebas)
+                'usuario1': { password: 'user123', name: 'Juan Pérez', role: 'usuario' },✘
+                'usuario2': { password: 'user123', name: 'María García', role: 'usuario' },✘
+                'familia1': { password: 'user123', name: 'Familia Rodríguez', role: 'usuario' },✘

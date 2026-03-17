@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Cafetería - SGE Emma Balaguer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --info-color: #3498db;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .admin-header h1 {
+            color: var(--secondary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .admin-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .user-info-bar {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--info-color);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            display: block;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h3 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .cuadres-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            padding: 25px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-header h2 {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border: 2px solid #e8eff7;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .cuadres-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cuadres-table th,
+        .cuadres-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .cuadres-table th {
+            background: #f8f9fa;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .cuadres-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .jornada-badge {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .jornada-matutina {
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+
+        .jornada-vespertina {
+            background: #fff3cd;
+            color: #f39c12;
+        }
+
+        .amount-positive {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .alert-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .alert-section h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                width: 100%;
+            }
+            
+            .cuadres-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="admin-header">
+            <h1><i class="fas fa-utensils"></i> Administración de Cafetería</h1>
+            <p>Gestión de Cuadres de Caja y Reportes</p>
+        </div>
+
+        <!-- User Info -->
+        <div class="user-info-bar" id="userInfoBar">
+            <!-- Se llena con JavaScript -->
+        </div>
+
+        <!-- Alertas -->
+        <div class="alert-section" id="alertSection" style="display: none;">
+            <h3><i class="fas fa-exclamation-triangle"></i> Alertas</h3>
+            <div id="alertContent"></div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number" id="totalCuadres">0</span>
+                <span class="stat-label">Total Cuadres Hoy</span>
+            </div>
+            <div class="stat-card success">
+                <span class="stat-number" id="totalVentas">$0</span>
+                <span class="stat-label">Ventas Totales Hoy</span>
+            </div>
+            <div class="stat-card info">
+                <span class="stat-number" id="cuadresPendientes">0</span>
+                <span class="stat-label">Cuadres Pendientes</span>
+            </div>
+            <div class="stat-card warning">
+                <span class="stat-number" id="cajerosActivos">0</span>
+                <span class="stat-label">Cajeros Activos</span>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Ventas por Jornada</h3>
+                <canvas id="ventasChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Cuadres por Cajero</h3>
+                <canvas id="cajerosChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Cuadres Recientes -->
+        <div class="cuadres-section">
+            <div class="section-header">
+                <h2>Cuadres de Caja Recientes</h2>
+                <div class="filters">
+                    <select class="filter-select" id="fechaFilter" onchange="filtrarCuadres()">
+                        <option value="hoy">Hoy</option>
+                        <option value="ayer">Ayer</option>
+                        <option value="semana">Esta Semana</option>
+                        <option value="mes">Este Mes</option>
+                    </select>
+                    <select class="filter-select" id="jornadaFilter" onchange="filtrarCuadres()">
+                        <option value="todas">Todas las Jornadas</option>
+                        <option value="matutina">Matutina</option>
+                        <option value="vespertina">Vespertina</option>
+                    </select>
+                    <button class="btn btn-success" onclick="generarReporte()">
+                        <i class="fas fa-file-pdf"></i> Reporte PDF
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="cuadres-table">
+                    <thead>
+                        <tr>
+                            <th>Cajero</th>
+                            <th>Jornada</th>
+                            <th>Fecha/Hora</th>
+                            <th>Ventas</th>
+                            <th>Efectivo</th>
+                            <th>Fondo Inicial</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuadresTableBody">
+                        <!-- Se llena con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Resumen Diario -->
+        <div class="cuadres-section">
+            <div class="section-header">
+                <h2>Resumen del Día</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalDia">$0</span>
+                    <span class="stat-label">Total Recaudado</span>
+                </div>
+                <div class="stat-card success">
+                    <span class="stat-number" id="ventasMatutina">$0</span>
+                    <span class="stat-label">Ventas Matutinas</span>
+                </div>
+                <div class="stat-card warning">
+                    <span class="stat-number" id="ventasVespertina">$0</span>
+                    <span class="stat-label">Ventas Vespertinas</span>
+                </div>
+                <div class="stat-card info">
+                    <span class="stat-number" id="promedioVenta">$0</span>
+                    <span class="stat-label">Promedio por Cajero</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar autenticación
+        const userData = JSON.parse(localStorage.getItem('currentUser'));
+        if (!userData || userData.role !== 'admin_cafeteria') {
+            window.location.href = 'index.html';
+        }
+
+        // Configurar información del usuario
+        document.getElementById('userInfoBar').innerHTML = `
+            <div>
+                <strong>Administrador:</strong> ${userData.name}
+            </div>
+            <div>
+                <button class="btn btn-primary" onclick="salir()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        `;
+
+        // Sistema de Administración
+        class AdminCafeteriaSystem {
+            constructor() {
+                this.cuadres = this.loadCuadres();
+                this.init();
+            }
+
+            init() {
+                this.mostrarEstadisticas();
+                this.mostrarCuadres();
+                this.setupCharts();
+                this.checkAlertas();
+            }
+
+            loadCuadres() {
+                return JSON.parse(localStorage.getItem('cuadres_cafeteria')) || [];
+            }
+
+            mostrarEstadisticas() {
+                const hoy = new Date().toDateString();
+                const cuadresHoy = this.cuadres.filter(cuadre => 
+                    new Date(cuadre.fecha).toDateString() === hoy
+                );
+
+                // Estadísticas básicas
+                document.getElementById('totalCuadres').textContent = cuadresHoy.length;
+                
+                const totalVentas = cuadresHoy.reduce((sum, cuadre) => sum + cuadre.ventas, 0);
+                document.getElementById('totalVentas').textContent = `$${totalVentas.toFixed(2)}`;
+
+                // Cuadres pendientes (cajeros que no han enviado cuadre hoy)
+                const cajerosActivos = ['María Rodríguez', 'Carlos Martínez', 'Ana López'];
+                const cajerosConCuadre = [...new Set(cuadresHoy.map(c => c.usuario))];
+                const cuadresPendientes = cajerosActivos.filter(cajero => 
+                    !cajerosConCuadre.includes(cajero)
+                ).length;
+
+                document.getElementById('cuadresPendientes').textContent = cuadresPendientes;
+                document.getElementById('cajerosActivos').textContent = cajerosActivos.length;
+
+                // Resumen del día
+                this.mostrarResumenDiario(cuadresHoy);
+            }
+
+            mostrarResumenDiario(cuadresHoy) {
+                const ventasMatutina = cuadresHoy
+                    .filter(c => c.jornada.includes('Matutina'))
+                    .reduce((sum, c) => sum + c.ventas, 0);
+                
+                const ventasVespertina = cuadresHoy
+                    .filter(c => c.jornada.includes('Vespertina'))
+                    .reduce((sum, c) => sum + c.ventas, 0);
+
+                const totalDia = ventasMatutina + ventasVespertina;
+                const promedioVenta = cuadresHoy.length > 0 ? totalDia / cuadresHoy.length : 0;
+
+                document.getElementById('totalDia').textContent = `$${totalDia.toFixed(2)}`;
+                document.getElementById('ventasMatutina').textContent = `$${ventasMatutina.toFixed(2)}`;
+                document.getElementById('ventasVespertina').textContent = `$${ventasVespertina.toFixed(2)}`;
+                document.getElementById('promedioVenta').textContent = `$${promedioVenta.toFixed(2)}`;
+            }
+
+            mostrarCuadres(cuadresFiltrados = null) {
+                const cuadresAMostrar = cuadresFiltrados || this.cuadres;
+                const tbody = document.getElementById('cuadresTableBody');
+
+                if (cuadresAMostrar.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="no-data">
+                                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                                <p>No hay cuadres de caja registrados</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Ordenar por fecha más reciente
+                const cuadresOrdenados = [...cuadresAMostrar].sort((a, b) => 
+                    new Date(b.fecha) - new Date(a.fecha)
+                );
+
+                tbody.innerHTML = cuadresOrdenados.map(cuadre => {
+                    const fecha = new Date(cuadre.fecha);
+                    const jornadaClass = cuadre.jornada.includes('Matutina') ? 'jornada-matutina' : 'jornada-vespertina';
+                    
+                    return `
+                        <tr>
+                            <td><strong>${cuadre.usuario}</strong></td>
+                            <td>
+                                <span class="jornada-badge ${jornadaClass}">
+                                    ${cuadre.jornada}
+                                </span>
+                            </td>
+                            <td>${fecha.toLocaleString()}</td>
+                            <td class="amount-positive">$${cuadre.ventas.toFixed(2)}</td>
+                            <td class="amount-positive">$${cuadre.totalEfectivo.toFixed(2)}</td>
+                            <td>$${cuadre.fondoInicial.toFixed(2)}</td>
+                            <td>
+                                <span style="color: #27ae60;">
+                                    <i class="fas fa-check-circle"></i> Completado
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" onclick="verDetalles('${cuadre.fecha}')" style="padding: 5px 10px; font-size: 0.8rem;">
+                                    <i class="fas fa-eye"></i> Ver
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            setupCharts() {
+                const hoy = new Date().toDateString();
+                const cuadresHoy = this.cuadres.filter(cuadre => 
+                    new Date(cuadre.fecha).toDateString() === hoy
+                );
+
+                // Gráfico de ventas por jornada
+                const ventasMatutina = cuadresHoy
+                    .filter(c => c.jornada.includes('Matutina'))
+                    .reduce((sum, c) => sum + c.ventas, 0);
+                
+                const ventasVespertina = cuadresHoy
+                    .filter(c => c.jornada.includes('Vespertina'))
+                    .reduce((sum, c) => sum + c.ventas, 0);
+
+                const ventasCtx = document.getElementById('ventasChart').getContext('2d');
+                new Chart(ventasCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Matutina', 'Vespertina'],
+                        datasets: [{
+                            data: [ventasMatutina, ventasVespertina],
+                            backgroundColor: ['#27ae60', '#f39c12']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Gráfico de cuadres por cajero
+                const ventasPorCajero = {};
+                cuadresHoy.forEach(cuadre => {
+                    ventasPorCajero[cuadre.usuario] = (ventasPorCajero[cuadre.usuario] || 0) + cuadre.ventas;
+                });
+
+                const cajerosCtx = document.getElementById('cajerosChart').getContext('2d');
+                new Chart(cajerosCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(ventasPorCajero),
+                        datasets: [{
+                            label: 'Ventas',
+                            data: Object.values(ventasPorCajero),
+                            backgroundColor: '#e74c3c'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            checkAlertas() {
+                const ahora = new Date();
+                const hora = ahora.getHours();
+                const cuadresHoy = this.cuadres.filter(cuadre => 
+                    new Date(cuadre.fecha).toDateString() === ahora.toDateString()
+                );
+
+                let alertas = [];
+
+                // Alerta para cuadres pendientes de la mañana (después de las 11:30 AM)
+                if (hora >= 11 && hora < 12) {
+                    const cajerosMatutina = ['María Rodríguez', 'Ana López'];
+                    const cuadresMatutina = cuadresHoy.filter(c => 
+                        c.jornada.includes('Matutina')
+                    );
+                    const cajerosPendientes = cajerosMatutina.filter(cajero => 
+                        !cuadresMatutina.some(c => c.usuario === cajero)
+                    );
+
+                    if (cajerosPendientes.length > 0) {
+                        alertas.push(`Cuadres matutinos pendientes: ${cajerosPendientes.join(', ')}`);
+                    }
+                }
+
+                // Alerta para cuadres pendientes de la tarde (después de las 5:30 PM)
+                if (hora >= 17 && hora < 18) {
+                    const cajerosVespertina = ['Carlos Martínez', 'Ana López'];
+                    const cuadresVespertina = cuadresHoy.filter(c => 
+                        c.jornada.includes('Vespertina')
+                    );
+                    const cajerosPendientes = cajerosVespertina.filter(cajero => 
+                        !cuadresVespertina.some(c => c.usuario === cajero)
+                    );
+
+                    if (cajerosPendientes.length > 0) {
+                        alertas.push(`Cuadres vespertinos pendientes: ${cajerosPendientes.join(', ')}`);
+                    }
+                }
+
+                // Mostrar alertas si hay alguna
+                if (alertas.length > 0) {
+                    const alertSection = document.getElementById('alertSection');
+                    const alertContent = document.getElementById('alertContent');
+                    
+                    alertContent.innerHTML = alertas.map(alerta => 
+                        `<p>• ${alerta}</p>`
+                    ).join('');
+                    alertSection.style.display = 'block';
+                }
+            }
+
+            filtrarPorFecha(filtro) {
+                const ahora = new Date();
+                let fechaInicio;
+
+                switch(filtro) {
+                    case 'hoy':
+                        fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+                        break;
+                    case 'ayer':
+                        fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - 1);
+                        break;
+                    case 'semana':
+                        fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - 7);
+                        break;
+                    case 'mes':
+                        fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+                        break;
+                    default:
+                        return this.cuadres;
+                }
+
+                return this.cuadres.filter(cuadre => 
+                    new Date(cuadre.fecha) >= fechaInicio
+                );
+            }
+
+            filtrarPorJornada(cuadres, jornada) {
+                if (jornada === 'todas') return cuadres;
+                return cuadres.filter(cuadre => 
+                    cuadre.jornada.toLowerCase().includes(jornada.toLowerCase())
+                );
+            }
+        }
+
+        // Funciones globales
+        let adminSystem;
+
+        function filtrarCuadres() {
+            const fechaFilter = document.getElementById('fechaFilter').value;
+            const jornadaFilter = document.getElementById('jornadaFilter').value;
+
+            let cuadresFiltrados = adminSystem.filtrarPorFecha(fechaFilter);
+            cuadresFiltrados = adminSystem.filtrarPorJornada(cuadresFiltrados, jornadaFilter);
+
+            adminSystem.mostrarCuadres(cuadresFiltrados);
+        }
+
+        function verDetalles(fecha) {
+            const cuadre = adminSystem.cuadres.find(c => c.fecha === fecha);
+            if (!cuadre) return;
+
+            const denominacionesHTML = Object.entries(cuadre.denominaciones)
+                .map(([denominacion, cantidad]) => {
+                    if (denominacion === 'monedas') {
+                        return `<p><strong>Monedas:</strong> $${cantidad.toFixed(2)}</p>`;
+                    }
+                    return `<p><strong>$${denominacion}:</strong> ${cantidad} billetes = $${(cantidad * denominacion).toFixed(2)}</p>`;
+                })
+                .join('');
+
+            Swal.fire({
+                title: `Cuadre de ${cuadre.usuario}`,
+                html: `
+                    <div style="text-align: left;">
+                        <p><strong>Jornada:</strong> ${cuadre.jornada}</p>
+                        <p><strong>Fecha:</strong> ${new Date(cuadre.fecha).toLocaleString()}</p>
+                        <p><strong>Fondo Inicial:</strong> $${cuadre.fondoInicial.toFixed(2)}</p>
+                        <p><strong>Ventas:</strong> $${cuadre.ventas.toFixed(2)}</p>
+                        <p><strong>Total Efectivo:</strong> $${cuadre.totalEfectivo.toFixed(2)}</p>
+                        
+                        <h4 style="margin-top: 20px; margin-bottom: 10px;">Desglose de Efectivo:</h4>
+                        ${denominacionesHTML}
+                        
+                        ${cuadre.observaciones ? `
+                            <h4 style="margin-top: 20px; margin-bottom: 10px;">Observaciones:</h4>
+                            <p>${cuadre.observaciones}</p>
+                        ` : ''}
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'Cerrar',
+                width: 600
+            });
+        }
+
+        function generarReporte() {
+            // Simular generación de reporte
+            Swal.fire({
+                title: 'Generando Reporte',
+                text: 'El reporte PDF se está generando...',
+                icon: 'info',
+                showConfirmButton: false,
+                timer: 2000
+            }).then(() => {
+                Swal.fire('¡Éxito!', 'Reporte PDF generado y descargado', 'success');
+            });
+        }
+
+        function salir() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar sistema
+        document.addEventListener('DOMContentLoaded', function() {
+            adminSystem = new AdminCafeteriaSystem();
+        });
+    </script>
+    <script src="roles.js"></script>
+    <script src="cafeteria-permissions.js"></script>
+
+    <!-- Conexión con núcleo SGECore -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/modules/cafeteriaModule.js"></script>
+</body>
+</html>

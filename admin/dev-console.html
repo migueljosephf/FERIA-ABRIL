@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Console - SGE</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .dev-header {
+            background: #1e293b;
+            border-bottom: 2px solid #3b82f6;
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .dev-header h1 {
+            color: #e2e8f0;
+            text-align: center;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .dev-container {
+            margin-top: 80px;
+            padding: 20px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            color: #e2e8f0;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .log-container {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 5px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+
+        .log-time {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .log-message {
+            color: #e2e8f0;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .module-item {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #334155;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .module-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .module-status {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+
+        .status-active {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .status-inactive {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .tool-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .tool-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .tool-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .db-viewer {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .db-key {
+            color: #3b82f6;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .db-content {
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1f3a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <header class="dev-header">
+        <h1><i class="fas fa-terminal"></i> DEVELOPER CONSOLE - SGE SYSTEM</h1>
+    </header>
+
+    <div class="dev-container">
+        <!-- ESTADÍSTICAS PRINCIPALES -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="systemStatus">ONLINE</div>
+                <div class="stat-label">Estado del Sistema</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="modulesCount">0</div>
+                <div class="stat-label">Módulos Cargados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeUsers">0</div>
+                <div class="stat-label">Usuarios Activos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="systemUptime">00:00:00</div>
+                <div class="stat-label">Tiempo de Ejecución</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="errorCount">0</div>
+                <div class="stat-label">Errores Detectados</div>
+            </div>
+        </div>
+
+        <!-- ESTADÍSTICAS DE ARCHIVOS -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-file"></i> ESTADÍSTICAS DE ARCHIVOS</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFiles">0</div>
+                    <div class="stat-label">Archivos Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="uploadedFiles">0</div>
+                    <div class="stat-label">Archivos Subidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="movedFiles">0</div>
+                    <div class="stat-label">Archivos Movidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="deletedFiles">0</div>
+                    <div class="stat-label">Archivos Eliminados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="storageUsed">0 MB</div>
+                    <div class="stat-label">Almacenamiento Utilizado</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MONITOR DE ACTIVIDAD -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-chart-line"></i> MONITOR DE ACTIVIDAD DEL SISTEMA</h2>
+            <div class="log-container" id="activityLog">
+                <!-- Logs se agregarán dinámicamente -->
+            </div>
+        </div>
+
+        <!-- CONTROL DE MÓDULOS -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-cogs"></i> CONTROL DE MÓDULOS</h2>
+            <div class="module-grid" id="moduleGrid">
+                <!-- Módulos se agregarán dinámicamente -->
+            </div>
+        </div>
+
+        <!-- USO DE ALMACENAMIENTO -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-database"></i> USO DE ALMACENAMIENTO</h2>
+            <div class="stat-card">
+                <div class="stat-value" id="localStorageSize">0 KB</div>
+                <div class="stat-label">Espacio Usado en localStorage</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="storageProgress">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HERRAMIENTAS DE DESARROLLADOR -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-tools"></i> HERRAMIENTAS DE DESARROLLADOR</h2>
+            <div class="tool-buttons">
+                <button class="tool-btn" onclick="restartSystem()">
+                    <i class="fas fa-redo"></i> Reiniciar Sistema
+                </button>
+                <button class="tool-btn" onclick="clearCache()">
+                    <i class="fas fa-broom"></i> Limpiar Cache
+                </button>
+                <button class="tool-btn" onclick="repairSystem()">
+                    <i class="fas fa-wrench"></i> Reparar Flujo de Datos
+                </button>
+                <button class="tool-btn" onclick="viewDatabase()">
+                    <i class="fas fa-eye"></i> Ver Base de Datos
+                </button>
+                <button class="tool-btn" onclick="exportData()">
+                    <i class="fas fa-download"></i> Exportar Datos
+                </button>
+                <button class="tool-btn" onclick="runDiagnostics()">
+                    <i class="fas fa-stethoscope"></i> Diagnóstico Completo
+                </button>
+            </div>
+        </div>
+
+        <!-- VISUALIZADOR DE BASE DE DATOS -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-database"></i> VISUALIZADOR DE BASE DE DATOS</h2>
+            <div class="db-viewer" id="dbViewer">
+                <!-- Contenido de la base de datos se mostrará aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let systemStartTime = Date.now();
+        let errorCount = 0;
+        let activityLogs = [];
+
+        // Gestor central de módulos del sistema
+        const systemModules = {
+            teachers: true,
+            psychology: true,
+            tesoreria: true,
+            porteria: true,
+            secretaria: true,
+            orientacion: true,
+            empresas: true,
+            comedor: true,
+            cafeteria: true,
+            biblioteca: true
+        };
+
+        // Inicializar módulos en localStorage
+        function initializeModules() {
+            if (!localStorage.getItem('systemModules')) {
+                localStorage.setItem('systemModules', JSON.stringify(systemModules));
+            }
+        }
+
+        // Obtener estado de módulos
+        function getModulesStatus() {
+            return JSON.parse(localStorage.getItem('systemModules') || '{}');
+        }
+
+        // Guardar estado de módulos
+        function saveModulesStatus(modules) {
+            localStorage.setItem('systemModules', JSON.stringify(modules));
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSystem();
+            initializeModules();
+            updateStats();
+            renderModules();
+            loadActivityLogs();
+            updateDatabaseViewer();
+            
+            // Actualizar estadísticas cada 5 segundos
+            setInterval(updateStats, 5000);
+            
+            // Actualizar tiempo de ejecución cada segundo
+            setInterval(updateUptime, 1000);
+            
+            // Simular actividad del sistema
+            setInterval(simulateActivity, 8000);
+        });
+
+        function initializeSystem() {
+            addLog('Sistema inicializado', 'system');
+            addLog('Developer Console cargado', 'system');
+            
+            // Inicializar contadores de archivos si no existen
+            if (!localStorage.getItem('fileStats')) {
+                localStorage.setItem('fileStats', JSON.stringify({
+                    total: 0,
+                    uploaded: 0,
+                    moved: 0,
+                    deleted: 0
+                }));
+            }
+            
+            // Inicializar system logs si no existen
+            if (!localStorage.getItem('systemLogs')) {
+                localStorage.setItem('systemLogs', JSON.stringify([]));
+            }
+        }
+
+        function updateStats() {
+            // Actualizar módulos
+            const modules = getModulesStatus();
+            const activeModules = Object.values(modules).filter(status => status === true).length;
+            document.getElementById('modulesCount').textContent = activeModules + '/' + Object.keys(modules).length;
+            
+            // Actualizar usuarios activos (simulado)
+            const activeUsers = Math.floor(Math.random() * 20) + 5;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            
+            // Actualizar errores
+            document.getElementById('errorCount').textContent = errorCount;
+            
+            // Actualizar estadísticas de archivos
+            updateFileStats();
+            
+            // Actualizar almacenamiento
+            updateStorageStats();
+        }
+
+        function updateFileStats() {
+            const fileStats = JSON.parse(localStorage.getItem('fileStats') || '{}');
+            document.getElementById('totalFiles').textContent = fileStats.total || 0;
+            document.getElementById('uploadedFiles').textContent = fileStats.uploaded || 0;
+            document.getElementById('movedFiles').textContent = fileStats.moved || 0;
+            document.getElementById('deletedFiles').textContent = fileStats.deleted || 0;
+            
+            // Calcular almacenamiento utilizado (estimado)
+            const storageUsed = ((fileStats.total || 0) * 2.5).toFixed(1);
+            document.getElementById('storageUsed').textContent = storageUsed + ' MB';
+        }
+
+        function updateStorageStats() {
+            let totalSize = 0;
+            let keyCount = 0;
+            
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    totalSize += localStorage[key].length + key.length;
+                    keyCount++;
+                }
+            }
+            
+            const sizeKB = (totalSize / 1024).toFixed(2);
+            const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+            
+            document.getElementById('localStorageSize').textContent = 
+                sizeMB > 1 ? sizeMB + ' MB' : sizeKB + ' KB';
+            
+            // Calcular porcentaje (asumiendo 5MB máximo)
+            const maxStorage = 5 * 1024 * 1024; // 5MB
+            const percentage = Math.min((totalSize / maxStorage) * 100, 100);
+            const progressBar = document.getElementById('storageProgress');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage.toFixed(1) + '%';
+            
+            // Cambiar color según porcentaje
+            if (percentage > 80) {
+                progressBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+            } else if (percentage > 60) {
+                progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+            } else {
+                progressBar.style.background = 'linear-gradient(90deg, #3b82f6, #2563eb)';
+            }
+        }
+
+        function updateUptime() {
+            const uptime = Date.now() - systemStartTime;
+            const hours = Math.floor(uptime / 3600000);
+            const minutes = Math.floor((uptime % 3600000) / 60000);
+            const seconds = Math.floor((uptime % 60000) / 1000);
+            
+            const uptimeString = 
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+            
+            document.getElementById('systemUptime').textContent = uptimeString;
+        }
+
+        function renderModules() {
+            const moduleGrid = document.getElementById('moduleGrid');
+            moduleGrid.innerHTML = '';
+            
+            const modules = getModulesStatus();
+            const moduleNames = {
+                teachers: 'Docentes',
+                psychology: 'Psicología',
+                tesoreria: 'Tesorería',
+                porteria: 'Portería',
+                secretaria: 'Secretaría',
+                orientacion: 'Orientación',
+                empresas: 'Empresas',
+                comedor: 'Comedor',
+                cafeteria: 'Cafetería',
+                biblioteca: 'Biblioteca'
+            };
+            
+            for (const [key, status] of Object.entries(modules)) {
+                const moduleItem = document.createElement('div');
+                moduleItem.className = 'module-item';
+                moduleItem.innerHTML = `
+                    <div>${moduleNames[key] || key}</div>
+                    <div class="module-status ${status ? 'status-active' : 'status-inactive'}">
+                        ${status ? 'ACTIVO' : 'INACTIVO'}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="tool-btn" style="padding: 5px 10px; margin: 2px; font-size: 11px;" onclick="restartModule('${key}')">
+                            <i class="fas fa-redo"></i> Restart
+                        </button>
+                        <button class="tool-btn" style="padding: 5px 10px; margin: 2px; font-size: 11px; background: ${status ? '#ef4444' : '#3b82f6'};" onclick="toggleModule('${key}')">
+                            <i class="fas fa-${status ? 'ban' : 'check'}"></i> ${status ? 'Disable' : 'Enable'}
+                        </button>
+                    </div>
+                `;
+                moduleGrid.appendChild(moduleItem);
+            }
+        }
+
+        function addLog(message, type = 'info') {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                              now.getMinutes().toString().padStart(2, '0') + ':' + 
+                              now.getSeconds().toString().padStart(2, '0');
+            
+            const logEntry = {
+                time: timeString,
+                message: message,
+                type: type,
+                timestamp: Date.now()
+            };
+            
+            activityLogs.unshift(logEntry);
+            if (activityLogs.length > 50) {
+                activityLogs.pop();
+            }
+            
+            // Guardar en localStorage systemLogs
+            const systemLogs = JSON.parse(localStorage.getItem('systemLogs') || '[]');
+            systemLogs.unshift(logEntry);
+            if (systemLogs.length > 200) {
+                systemLogs.pop();
+            }
+            localStorage.setItem('systemLogs', JSON.stringify(systemLogs));
+            
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const logContainer = document.getElementById('activityLog');
+            logContainer.innerHTML = '';
+            
+            activityLogs.forEach(log => {
+                const logDiv = document.createElement('div');
+                logDiv.className = 'log-entry';
+                logDiv.innerHTML = `
+                    <span class="log-time">[${log.time}]</span>
+                    <span class="log-message">${log.message}</span>
+                `;
+                logContainer.appendChild(logDiv);
+            });
+        }
+
+        function loadActivityLogs() {
+            // Cargar logs guardados de systemLogs
+            const savedLogs = localStorage.getItem('systemLogs');
+            if (savedLogs) {
+                const systemLogs = JSON.parse(savedLogs);
+                activityLogs = systemLogs.slice(0, 50); // Mostrar solo los últimos 50
+                renderLogs();
+            }
+        }
+
+        function saveActivityLogs() {
+            // Los logs ya se guardan automáticamente en addLog
+            // Esta función mantiene compatibilidad
+        }
+
+        function simulateActivity() {
+            const activities = [
+                { message: 'Usuario accedió al sistema', type: 'user' },
+                { message: 'Archivo subido exitosamente', type: 'file' },
+                { message: 'Informe generado', type: 'report' },
+                { message: 'Datos sincronizados', type: 'sync' },
+                { message: 'Módulo actualizado', type: 'module' },
+                { message: 'Backup creado', type: 'backup' },
+                { message: 'Sistema optimizado', type: 'system' },
+                { message: 'Cache limpiada', type: 'maintenance' },
+                { message: 'Módulo accedido', type: 'module' },
+                { message: 'Sistema reiniciado', type: 'system' },
+                { message: 'Módulo desactivado', type: 'module' },
+                { message: 'File uploaded', type: 'file' },
+                { message: 'User login', type: 'user' },
+                { message: 'Module accessed', type: 'module' },
+                { message: 'System restart', type: 'system' },
+                { message: 'Module disabled', type: 'module' }
+            ];
+            
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            addLog(randomActivity.message, randomActivity.type);
+        }
+
+function updateDatabaseViewer() {
+            const dbViewer = document.getElementById('dbViewer');
+            dbViewer.innerHTML = '';
+            
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'db-key';
+                    keyDiv.textContent = key;
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'db-content';
+                    
+                    try {
+                        const content = JSON.parse(localStorage[key]);
+                        contentDiv.textContent = JSON.stringify(content, null, 2);
+                    } catch (e) {
+                        contentDiv.textContent = localStorage[key];
+                    }
+                    
+                    dbViewer.appendChild(keyDiv);
+                    dbViewer.appendChild(contentDiv);
+                }
+            }
+        }
+
+        function clearCache() {
+            Swal.fire({
+                title: 'Limpiar Cache',
+                text: '¿Está seguro de que desea limpiar la cache?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Limpiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Limpiar cache específica del sistema
+                    const keysToKeep = ['users', 'systemSettings', 'fileStats'];
+                    const tempData = {};
+                    
+                    keysToKeep.forEach(key => {
+                        if (localStorage.getItem(key)) {
+                            tempData[key] = localStorage.getItem(key);
+                        }
+                    });
+                    
+                    localStorage.clear();
+                    
+                    // Restaurar datos importantes
+                    for (let key in tempData) {
+                        localStorage.setItem(key, tempData[key]);
+                    }
+                    
+                    addLog('Cache limpiada', 'system');
+                    updateStats();
+                    updateDatabaseViewer();
+                    
+                    Swal.fire('Éxito', 'Cache limpiada correctamente', 'success');
+                }
+            });
+        }
+
+        function repairSystem() {
+            addLog('Iniciando reparación del sistema', 'system');
+            
+            // Verificar y recrear claves necesarias
+            const requiredKeys = {
+                'users': '{}',
+                'fileStats': '{"total":0,"uploaded":0,"moved":0,"deleted":0}',
+                'systemSettings': '{"theme":"dark","language":"es"}',
+                'systemActivityLogs': '[]'
+            };
+            
+            let repaired = 0;
+            for (let key in requiredKeys) {
+                if (!localStorage.getItem(key)) {
+                    localStorage.setItem(key, requiredKeys[key]);
+                    repaired++;
+                }
+            }
+            
+            addLog(`Reparación completada: ${repaired} elementos restaurados`, 'system');
+            updateStats();
+            updateDatabaseViewer();
+            
+            Swal.fire('Éxito', `Sistema reparado. ${repaired} elementos restaurados`, 'success');
+        }
+
+        function viewDatabase() {
+            updateDatabaseViewer();
+            document.getElementById('dbViewer').scrollIntoView({ behavior: 'smooth' });
+            addLog('Base de datos actualizada', 'system');
+        }
+
+        function exportData() {
+            const exportData = {};
+            
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    exportData[key] = localStorage[key];
+                }
+            }
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `sge_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            addLog('Datos del sistema exportados', 'system');
+            
+            Swal.fire('Éxito', 'Datos exportados correctamente', 'success');
+        }
+
+        // Funciones de control de módulos
+        function restartModule(moduleName) {
+            addLog(`Reiniciando módulo: ${moduleName}`, 'system');
+            
+            // Simular reinicio del módulo
+            setTimeout(() => {
+                addLog(`Módulo ${moduleName} reiniciado exitosamente`, 'system');
+                renderModules();
+                updateStats();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Módulo Reiniciado',
+                    text: `El módulo ${moduleName} ha sido reiniciado correctamente`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }, 1500);
+        }
+
+        function toggleModule(moduleName) {
+            const modules = getModulesStatus();
+            const currentStatus = modules[moduleName];
+            
+            if (currentStatus) {
+                // Desactivar módulo
+                disableModule(moduleName);
+            } else {
+                // Activar módulo
+                enableModule(moduleName);
+            }
+        }
+
+        function disableModule(moduleName) {
+            const modules = getModulesStatus();
+            modules[moduleName] = false;
+            saveModulesStatus(modules);
+            
+            addLog(`Módulo desactivado: ${moduleName}`, 'system');
+            renderModules();
+            updateStats();
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'Módulo Desactivado',
+                text: `El módulo ${moduleName} ha sido desactivado`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        function enableModule(moduleName) {
+            const modules = getModulesStatus();
+            modules[moduleName] = true;
+            saveModulesStatus(modules);
+            
+            addLog(`Módulo activado: ${moduleName}`, 'system');
+            renderModules();
+            updateStats();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Módulo Activado',
+                text: `El módulo ${moduleName} ha sido activado`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        // Reinicio global del sistema
+        function restartSystem() {
+            Swal.fire({
+                title: 'Reiniciar Sistema',
+                text: '¿Está seguro de que desea reiniciar todo el sistema?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Reiniciar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    addLog('Reinicio global del sistema iniciado', 'system');
+                    
+                    // Mantener datos importantes
+                    const criticalData = {};
+                    const keysToKeep = ['users', 'systemModules', 'fileStats', 'systemLogs'];
+                    
+                    keysToKeep.forEach(key => {
+                        if (localStorage.getItem(key)) {
+                            criticalData[key] = localStorage.getItem(key);
+                        }
+                    });
+                    
+                    // Limpiar todo
+                    localStorage.clear();
+                    
+                    // Restaurar datos críticos
+                    for (let key in criticalData) {
+                        localStorage.setItem(key, criticalData[key]);
+                    }
+                    
+                    addLog('Sistema reiniciado completamente', 'system');
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }
+            });
+        }
+
+        function runDiagnostics() {
+            addLog('Iniciando diagnóstico completo', 'system');
+            
+            const modules = getModulesStatus();
+            let diagnostics = {
+                localStorage: true,
+                modules: Object.keys(modules).length,
+                activeModules: Object.values(modules).filter(status => status === true).length,
+                errors: errorCount,
+                uptime: Date.now() - systemStartTime,
+                storage: 0
+            };
+            
+            // Calcular almacenamiento
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    diagnostics.storage += localStorage[key].length + key.length;
+                }
+            }
+            
+            const report = `
+Diagnóstico del Sistema SGE
+=========================
+
+Estado: ${diagnostics.localStorage ? 'OK' : 'ERROR'}
+Módulos totales: ${diagnostics.modules}
+Módulos activos: ${diagnostics.activeModules}
+Módulos inactivos: ${diagnostics.modules - diagnostics.activeModules}
+Errores: ${diagnostics.errors}
+Tiempo activo: ${Math.floor(diagnostics.uptime / 1000)}s
+Almacenamiento: ${(diagnostics.storage / 1024).toFixed(2)} KB
+
+Estado General: ${diagnostics.errors === 0 && diagnostics.activeModules === diagnostics.modules ? 'SALUDABLE' : 'REQUIERE ATENCIÓN'}
+            `;
+            
+            addLog('Diagnóstico completado', 'system');
+            
+            Swal.fire({
+                title: 'Diagnóstico Completo',
+                html: `<pre style="text-align: left; font-size: 12px; background: #0f172a; color: #e2e8f0; padding: 15px; border-radius: 5px;">${report}</pre>`,
+                icon: diagnostics.errors === 0 ? 'success' : 'warning',
+                confirmButtonText: 'Entendido'
+            });
+        }
+
+        // Guardar logs automáticamente
+        setInterval(saveActivityLogs, 30000);
+
+        // Detectar errores globales
+        window.addEventListener('error', function(e) {
+            errorCount++;
+            addLog(`Error: ${e.message}`, 'error');
+            updateStats();
+        });
+    </script>
+</body>
+</html>

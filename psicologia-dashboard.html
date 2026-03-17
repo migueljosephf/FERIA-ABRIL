@@ -1,0 +1,3138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Escolar - Dashboard de Psicología Mejorado</title>
+    <link rel="icon" href="https://image2url.com/r2/default/images/1770592195859-7d15c7b4-f957-48cf-8d51-5c3b4dd13b98.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Variables y Estilos Generales */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --psychology-color: #9b59b6;
+            --psychology-light: #e8d9f0;
+            --teacher-color: #e67e22;
+            --teacher-light: #fdebd0;
+            --direction-color: #27ae60;
+            --direction-light: #d5f4e6;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--psychology-color), #6c3483);
+            color: white;
+            padding: 0;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.3rem;
+        }
+
+        .user-profile {
+            padding: 25px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fff, var(--psychology-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--psychology-color);
+            border: 3px solid white;
+        }
+
+        .user-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .user-info p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .user-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-menu li {
+            margin-bottom: 5px;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-menu a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-menu a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-left-color: white;
+        }
+
+        .nav-divider {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            background: var(--danger-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
+
+        .logout-btn {
+            margin: 20px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 0;
+            background: #f5f7fa;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar h1 {
+            color: var(--psychology-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--psychology-color);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            padding: 30px;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section-title {
+            color: var(--psychology-color);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--psychology-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6c3483;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--psychology-color);
+            color: var(--psychology-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--psychology-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        /* Message Item */
+        .message-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        .message-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .message-item.unread {
+            border-left: 4px solid var(--psychology-color);
+            background: linear-gradient(to right, rgba(155, 89, 182, 0.05), #fafafa);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            color: var(--psychology-color);
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .message-subject {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .message-content {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Case Item */
+        .case-item {
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        .case-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .case-student {
+            font-weight: bold;
+            color: var(--psychology-color);
+            font-size: 1.1rem;
+        }
+
+        .case-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .case-status.active {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        .case-status.pending {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+        }
+
+        .case-status.closed {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+
+        .case-description {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .case-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .case-detail {
+            font-size: 0.9rem;
+        }
+
+        .case-detail-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .case-detail-value {
+            color: #666;
+        }
+
+        .case-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* File Item */
+        .file-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: var(--psychology-color);
+            margin-bottom: 5px;
+        }
+
+        .file-meta {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Teacher Item */
+        .teacher-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .teacher-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .teacher-info {
+            flex: 1;
+        }
+
+        .teacher-name {
+            font-weight: bold;
+            color: var(--psychology-color);
+            margin-bottom: 5px;
+        }
+
+        .teacher-stats {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+            color: var(--psychology-color);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-title {
+            color: var(--psychology-color);
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--psychology-color);
+            box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
+        }
+
+        .form-control.textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Drop Zone Styles */
+        .drop-zone {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--psychology-color);
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.05), rgba(155, 89, 182, 0.02));
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--psychology-color);
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(155, 89, 182, 0.05));
+            transform: scale(1.02);
+        }
+
+        .drop-zone-content {
+            pointer-events: none;
+        }
+
+        .drop-zone-content i {
+            color: var(--psychology-color);
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .drop-zone:hover .drop-zone-content i {
+            transform: scale(1.1);
+        }
+
+        .drop-zone.drag-over .drop-zone-content i {
+            transform: scale(1.2);
+            color: var(--psychology-color);
+        }
+
+        .drop-zone-content p {
+            margin: 5px 0;
+            font-weight: 500;
+        }
+
+        .drop-zone-content .text-muted {
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+        /* File Preview */
+        .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .file-preview-icon {
+            font-size: 2rem;
+            color: var(--psychology-color);
+        }
+
+        .file-preview-info {
+            flex: 1;
+        }
+
+        .file-preview-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .file-preview-meta {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .file-preview-remove {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .file-preview-remove:hover {
+            background: #c0392b;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-brain"></i>
+                <h2>Psicología</h2>
+            </div>
+            
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">PS</div>
+                <div class="user-info">
+                    <h4 id="userName">Psicólogo Escolar</h4>
+                    <p id="userRole">Departamento de Psicología</p>
+                    <div class="user-status">
+                        <div class="status-dot"></div>
+                        <span>En línea</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <li><a href="#" class="nav-link active" onclick="showSection('dashboardSection', this)">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="showSection('messagesSection', this)">
+                    <i class="fas fa-envelope"></i> Mensajes Recibidos
+                    <span class="badge" id="messagesBadge">0</span>
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="showSection('sentMessagesSection', this)">
+                    <i class="fas fa-paper-plane"></i> Mensajes Enviados
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="showSection('sentFilesSection', this)">
+                    <i class="fas fa-file-export"></i> Archivos Enviados
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="showSection('filesSection', this)">
+                    <i class="fas fa-file-alt"></i> Archivos Recibidos
+                    <span class="badge" id="filesBadge">0</span>
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="showSection('casesSection', this)">
+                    <i class="fas fa-user-injured"></i> Casos Psicológicos
+                    <span class="badge" id="casesBadge">0</span>
+                </a></li>
+                
+                <div class="nav-divider">Conexiones</div>
+                
+                <li><a href="#" class="nav-link" onclick="showSection('teachersSection', this)">
+                    <i class="fas fa-chalkboard-teacher"></i> Docentes
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="showSection('directionSection', this)">
+                    <i class="fas fa-user-tie"></i> Dirección
+                </a></li>
+            </nav>
+
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h1>
+                    <i class="fas fa-brain"></i> 
+                    Dashboard de Psicología Mejorado
+                </h1>
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalMessages">0</span>
+                        <span class="stat-label">Mensajes</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="unreadMessages">0</span>
+                        <span class="stat-label">No Leídos</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalFiles">0</span>
+                        <span class="stat-label">Archivos</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalCases">0</span>
+                        <span class="stat-label">Casos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="content-section active">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-line"></i> Resumen de Actividad
+                        </h3>
+                    </div>
+                    <div id="dashboardContent">
+                        <div class="empty-state">
+                            <i class="fas fa-chart-pie"></i>
+                            <h3>Cargando datos del sistema...</h3>
+                            <p>Conectando con el servidor para obtener información actualizada</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Messages Section -->
+            <section id="messagesSection" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-inbox"></i> Mensajes Recibidos
+                        </h3>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="markAllAsRead()">
+                                <i class="fas fa-check-double"></i> Marcar todos como leídos
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="refreshMessages()">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="messagesList">
+                        <div class="empty-state">
+                            <i class="fas fa-envelope"></i>
+                            <h3>No hay mensajes recibidos</h3>
+                            <p>Los mensajes enviados por los docentes y dirección aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sent Messages Section -->
+            <section id="sentMessagesSection" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-paper-plane"></i> Mensajes Enviados
+                        </h3>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="showNewMessageModal()">
+                                <i class="fas fa-plus"></i> Nuevo Mensaje
+                            </button>
+                        </div>
+                    </div>
+                    <div id="sentMessagesList">
+                        <div class="empty-state">
+                            <i class="fas fa-paper-plane"></i>
+                            <h3>No hay mensajes enviados</h3>
+                            <p>Tus mensajes enviados a docentes y dirección aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Files Section -->
+            <section id="filesSection" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-file-alt"></i> Archivos Recibidos
+                        </h3>
+                        <div>
+                            <button class="btn btn-secondary btn-sm" onclick="refreshFiles()">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="filesList">
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <h3>No hay archivos recibidos</h3>
+                            <p>Los archivos enviados por los docentes aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sent Files Section -->
+            <section id="sentFilesSection" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-paper-plane"></i> Archivos Enviados
+                        </h3>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="showDirectionFileModal()">
+                                <i class="fas fa-user-tie"></i> Enviar a Dirección
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="showTeacherFileModal()">
+                                <i class="fas fa-chalkboard-teacher"></i> Enviar a Profesor
+                            </button>
+                        </div>
+                    </div>
+                    <div id="sentFilesList">
+                        <div class="empty-state">
+                            <i class="fas fa-paper-plane"></i>
+                            <h3>No hay archivos enviados</h3>
+                            <p>Tus archivos enviados a dirección y profesores aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cases Section -->
+            <section id="casesSection" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-user-injured"></i> Casos Psicológicos
+                        </h3>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="showNewCaseModal()">
+                                <i class="fas fa-plus"></i> Nuevo Caso
+                            </button>
+                        </div>
+                    </div>
+                    <div id="casesList">
+                        <div class="empty-state">
+                            <i class="fas fa-user-injured"></i>
+                            <h3>No hay casos registrados</h3>
+                            <p>Los casos psicológicos que registres aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Teachers Section -->
+            <section id="teachersSection" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-chalkboard-teacher"></i> Docentes Conectados
+                        </h3>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="showNewMessageModal()">
+                                <i class="fas fa-envelope"></i> Enviar Mensaje
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="showTeacherFileModal()">
+                                <i class="fas fa-file-upload"></i> Enviar Archivo
+                            </button>
+                        </div>
+                    </div>
+                    <div id="teachersList">
+                        <div class="empty-state">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <h3>No hay docentes conectados</h3>
+                            <p>Los docentes que envíen mensajes aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Direction Section -->
+            <section id="directionSection" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-user-tie"></i> Comunicación con Dirección
+                        </h3>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="showDirectionMessageModal()">
+                                <i class="fas fa-envelope"></i> Enviar Comunicado
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="showDirectionFileModal()">
+                                <i class="fas fa-file-upload"></i> Enviar Archivo
+                            </button>
+                        </div>
+                    </div>
+                    <div id="directionContent">
+                        <div class="empty-state">
+                            <i class="fas fa-user-tie"></i>
+                            <h3>Conexión con Dirección</h3>
+                            <p>Envía comunicados y archivos a la dirección del centro</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="newMessageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Mensaje</h3>
+                <button class="modal-close" onclick="closeModal('newMessageModal')">&times;</button>
+            </div>
+            <form id="newMessageForm">
+                <div class="form-group">
+                    <label class="form-label">Para:</label>
+                    <select class="form-select" id="messageRecipient" required>
+                        <option value="">Seleccionar destinatario...</option>
+                        <optgroup label="Docentes">
+                            <option value="prof_starling">Prof. Starling Encarnación</option>
+                            <option value="prof_adrian">Prof. Adrián Fernández</option>
+                            <option value="prof_belkis">Prof. Belkis Batista</option>
+                        </optgroup>
+                        <optgroup label="Dirección">
+                            <option value="direccion">Dirección del Centro</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Asunto:</label>
+                    <input type="text" class="form-control" id="messageSubject" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mensaje:</label>
+                    <textarea class="form-control textarea" id="messageContent" required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Enviar Mensaje
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('newMessageModal')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="newCaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Caso Psicológico</h3>
+                <button class="modal-close" onclick="closeModal('newCaseModal')">&times;</button>
+            </div>
+            <form id="newCaseForm">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Estudiante:</label>
+                    <input type="text" class="form-control" id="caseStudentName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Grado/Sección:</label>
+                    <input type="text" class="form-control" id="caseGrade" placeholder="Ej: 8vo Grado A" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Caso:</label>
+                    <select class="form-select" id="caseType" required>
+                        <option value="">Seleccionar tipo...</option>
+                        <option value="conductual">Conductual</option>
+                        <option value="emocional">Emocional</option>
+                        <option value="academico">Académico</option>
+                        <option value="social">Social</option>
+                        <option value="familiar">Familiar</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción del Caso:</label>
+                    <textarea class="form-control textarea" id="caseDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Recomendaciones Iniciales:</label>
+                    <textarea class="form-control textarea" id="caseRecommendations"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridad:</label>
+                    <select class="form-select" id="casePriority" required>
+                        <option value="baja">Baja</option>
+                        <option value="media">Media</option>
+                        <option value="alta">Alta</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Registrar Caso
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('newCaseModal')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Direction Message Modal -->
+    <div id="directionMessageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Enviar Comunicado a Dirección</h3>
+                <button class="modal-close" onclick="closeModal('directionMessageModal')">&times;</button>
+            </div>
+            <form id="directionMessageForm">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Comunicado:</label>
+                    <select class="form-select" id="communicatedType" required>
+                        <option value="">Seleccionar tipo...</option>
+                        <option value="reporte">Reporte de Caso</option>
+                        <option value="recomendacion">Recomendación</option>
+                        <option value="solicitud">Solicitud</option>
+                        <option value="informe">Informe General</option>
+                        <option value="comunicado">Comunicado Oficial</option>
+                        <option value="urgente">Urgente</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Asunto:</label>
+                    <input type="text" class="form-control" id="directionSubject" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mensaje:</label>
+                    <textarea class="form-control textarea" id="directionContent" required placeholder="Escriba el contenido del comunicado..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridad:</label>
+                    <select class="form-select" id="directionPriority">
+                        <option value="normal">Normal</option>
+                        <option value="alta">Alta</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Enviar a Dirección
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('directionMessageModal')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Direction File Modal -->
+    <div id="directionFileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Enviar Archivo a Dirección</h3>
+                <button class="modal-close" onclick="closeModal('directionFileModal')">&times;</button>
+            </div>
+            <form id="directionFileForm">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Archivo:</label>
+                    <input type="text" class="form-control" id="fileName" required placeholder="Ej: Reporte_Caso_Juan_Perez.pdf">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Archivo:</label>
+                    <select class="form-select" id="fileType" required>
+                        <option value="">Seleccionar tipo...</option>
+                        <optgroup label="Documentos Psicológicos">
+                            <option value="reporte_psicologico">Reporte Psicológico</option>
+                            <option value="evaluacion">Evaluación</option>
+                            <option value="recomendacion">Recomendación</option>
+                            <option value="informe">Informe</option>
+                            <option value="estudio_caso">Estudio de Caso</option>
+                            <option value="diagnostico">Diagnóstico</option>
+                            <option value="tratamiento">Plan de Tratamiento</option>
+                        </optgroup>
+                        <optgroup label="Documentos Oficiales">
+                            <option value="documento_oficial">Documento Oficial</option>
+                            <option value="constancia">Constancia</option>
+                            <option value="certificado">Certificado</option>
+                            <option value="solicitud">Solicitud</option>
+                            <option value="acta">Acta</option>
+                        </optgroup>
+                        <optgroup label="Documentos Estudiantiles">
+                            <option value="excusa">Excusa Médica</option>
+                            <option value="justificante">Justificante</option>
+                            <option value="reporte_academico">Reporte Académico</option>
+                            <option value="conducta">Reporte de Conducta</option>
+                            <option value="asistencia">Reporte de Asistencia</option>
+                        </optgroup>
+                        <optgroup label="Formatos Comunes">
+                            <option value="pdf">PDF</option>
+                            <option value="word">Word (.docx)</option>
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="powerpoint">PowerPoint (.pptx)</option>
+                            <option value="imagen">Imagen (.jpg, .png)</option>
+                            <option value="texto">Texto (.txt)</option>
+                            <option value="video">Video (.mp4)</option>
+                            <option value="audio">Audio (.mp3)</option>
+                            <option value="otro">Otro</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Método de Envío:</label>
+                    <select class="form-select" id="fileMethod" onchange="toggleFileMethod()">
+                        <option value="text">Escribir Contenido</option>
+                        <option value="upload">Subir Archivo Real</option>
+                        <option value="link">Enlace a Archivo</option>
+                    </select>
+                </div>
+                <div class="form-group" id="fileUploadGroup" style="display: none;">
+                    <label class="form-label">Seleccionar Archivo:</label>
+                    <div class="drop-zone" id="dropZoneDirection" ondrop="handleDrop(event, 'direction')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div class="drop-zone-content">
+                            <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                            <p>Arrastra y suelta archivos aquí</p>
+                            <p class="text-muted">o</p>
+                            <input type="file" class="form-control" id="fileUpload" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.txt,.mp4,.mp3,.zip" onchange="handleFileUpload(event)">
+                            <small class="text-muted">Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes, Texto, Video, Audio, ZIP</small>
+                            <br><small class="text-warning"><strong>Tamaño máximo: 500 MB</strong></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" id="fileLinkGroup" style="display: none;">
+                    <label class="form-label">Enlace al Archivo:</label>
+                    <input type="url" class="form-control" id="fileLink" placeholder="https://ejemplo.com/archivo.pdf">
+                    <small class="text-muted">Ingrese el enlace directo al archivo</small>
+                </div>
+                <div class="form-group" id="fileContentGroup">
+                    <label class="form-label">Contenido del Archivo:</label>
+                    <textarea class="form-control textarea" id="fileContent" placeholder="Contenido completo del archivo o descripción detallada..." style="min-height: 150px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción:</label>
+                    <textarea class="form-control textarea" id="fileDescription" required placeholder="Descripción breve del contenido del archivo..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Referencia (Opcional):</label>
+                    <input type="text" class="form-control" id="fileReference" placeholder="Número de caso, estudiante, etc.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridad:</label>
+                    <select class="form-select" id="filePriority">
+                        <option value="normal">Normal</option>
+                        <option value="alta">Alta</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Etiquetas (Opcional):</label>
+                    <input type="text" class="form-control" id="fileTags" placeholder="Ej: importante, urgente, estudiante, caso">
+                    <small class="text-muted">Separe las etiquetas con comas</small>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-upload"></i> Enviar Archivo
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('directionFileModal')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Teacher File Modal -->
+    <div id="teacherFileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Enviar Archivo a Profesor</h3>
+                <button class="modal-close" onclick="closeModal('teacherFileModal')">&times;</button>
+            </div>
+            <form id="teacherFileForm">
+                <div class="form-group">
+                    <label class="form-label">Profesor Destinatario:</label>
+                    <select class="form-select" id="teacherRecipient" required>
+                        <option value="">Seleccionar profesor...</option>
+                        <option value="prof_starling">Prof. Starling Encarnación</option>
+                        <option value="prof_adrian">Prof. Adrián Fernández</option>
+                        <option value="prof_belkis">Prof. Belkis Batista</option>
+                        <option value="prof_raymond">Prof. Raymond Ledesma</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nombre del Archivo:</label>
+                    <input type="text" class="form-control" id="teacherFileName" required placeholder="Ej: Recomendaciones_Juan_Perez.pdf">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Archivo:</label>
+                    <select class="form-select" id="teacherFileType" required>
+                        <option value="">Seleccionar tipo...</option>
+                        <optgroup label="Documentos Psicológicos">
+                            <option value="reporte_psicologico">Reporte Psicológico</option>
+                            <option value="evaluacion">Evaluación</option>
+                            <option value="recomendacion">Recomendación</option>
+                            <option value="informe">Informe</option>
+                            <option value="estudio_caso">Estudio de Caso</option>
+                            <option value="diagnostico">Diagnóstico</option>
+                            <option value="tratamiento">Plan de Tratamiento</option>
+                        </optgroup>
+                        <optgroup label="Documentos Estudiantiles">
+                            <option value="excusa">Excusa Médica</option>
+                            <option value="justificante">Justificante</option>
+                            <option value="reporte_academico">Reporte Académico</option>
+                            <option value="conducta">Reporte de Conducta</option>
+                            <option value="asistencia">Reporte de Asistencia</option>
+                            <option value="observacion">Observación</option>
+                        </optgroup>
+                        <optgroup label="Formatos Comunes">
+                            <option value="pdf">PDF</option>
+                            <option value="word">Word (.docx)</option>
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="powerpoint">PowerPoint (.pptx)</option>
+                            <option value="imagen">Imagen (.jpg, .png)</option>
+                            <option value="texto">Texto (.txt)</option>
+                            <option value="video">Video (.mp4)</option>
+                            <option value="audio">Audio (.mp3)</option>
+                            <option value="otro">Otro</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Método de Envío:</label>
+                    <select class="form-select" id="teacherFileMethod" onchange="toggleTeacherFileMethod()">
+                        <option value="text">Escribir Contenido</option>
+                        <option value="upload">Subir Archivo Real</option>
+                        <option value="link">Enlace a Archivo</option>
+                    </select>
+                </div>
+                <div class="form-group" id="teacherFileUploadGroup" style="display: none;">
+                    <label class="form-label">Seleccionar Archivo:</label>
+                    <div class="drop-zone" id="dropZoneTeacher" ondrop="handleDrop(event, 'teacher')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div class="drop-zone-content">
+                            <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                            <p>Arrastra y suelta archivos aquí</p>
+                            <p class="text-muted">o</p>
+                            <input type="file" class="form-control" id="teacherFileUpload" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.txt,.mp4,.mp3,.zip" onchange="handleTeacherFileUpload(event)">
+                            <small class="text-muted">Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes, Texto, Video, Audio, ZIP</small>
+                            <br><small class="text-warning"><strong>Tamaño máximo: 500 MB</strong></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" id="teacherFileLinkGroup" style="display: none;">
+                    <label class="form-label">Enlace al Archivo:</label>
+                    <input type="url" class="form-control" id="teacherFileLink" placeholder="https://ejemplo.com/archivo.pdf">
+                    <small class="text-muted">Ingrese el enlace directo al archivo</small>
+                </div>
+                <div class="form-group" id="teacherFileContentGroup">
+                    <label class="form-label">Contenido del Archivo:</label>
+                    <textarea class="form-control textarea" id="teacherFileContent" placeholder="Contenido completo del archivo o descripción detallada..." style="min-height: 150px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción:</label>
+                    <textarea class="form-control textarea" id="teacherFileDescription" required placeholder="Descripción breve del contenido del archivo..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Referencia (Opcional):</label>
+                    <input type="text" class="form-control" id="teacherFileReference" placeholder="Número de caso, estudiante, etc.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Etiquetas (Opcional):</label>
+                    <input type="text" class="form-control" id="teacherFileTags" placeholder="Ej: importante, seguimiento, estudiante">
+                    <small class="text-muted">Separe las etiquetas con comas</small>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-upload"></i> Enviar Archivo
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('teacherFileModal')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sistema Central -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/systemDataManager.js"></script>
+    <script src="js/systemUsers.js"></script>
+
+    <script>
+        // Dashboard Mejorado de Psicología
+        class EnhancedPsychologyDashboard {
+            constructor() {
+                this.data = {
+                    messages: [],
+                    sentMessages: [],
+                    files: [],
+                    cases: [],
+                    teachers: [],
+                    directionMessages: [],
+                    directionFiles: []
+                };
+                this.currentUser = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadUserData();
+                this.loadRealData();
+                this.startAutoReload();
+                this.updateUI();
+            }
+
+            setupEventListeners() {
+                // Formularios
+                document.getElementById('newMessageForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.sendNewMessage();
+                });
+
+                document.getElementById('newCaseForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.createNewCase();
+                });
+
+                document.getElementById('directionMessageForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.sendDirectionMessage();
+                });
+
+                document.getElementById('directionFileForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.sendDirectionFile();
+                });
+
+                document.getElementById('teacherFileForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.sendTeacherFile();
+                });
+
+                // Eventos del sistema
+                if (window.eventBus) {
+                    window.eventBus.on('dataUpdated', () => {
+                        this.loadRealData();
+                    });
+                }
+            }
+
+            loadUserData() {
+                const userData = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+                if (userData) {
+                    this.currentUser = JSON.parse(userData);
+                    this.updateUserProfile();
+                }
+            }
+
+            updateUserProfile() {
+                if (this.currentUser) {
+                    document.getElementById('userName').textContent = this.currentUser.name || 'Psicólogo Escolar';
+                    document.getElementById('userRole').textContent = this.currentUser.role || 'Departamento de Psicología';
+                    
+                    const avatar = document.getElementById('userAvatar');
+                    const initials = this.currentUser.name ? 
+                        this.currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 
+                        'PS';
+                    avatar.textContent = initials;
+                }
+            }
+
+            loadRealData() {
+                try {
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        const data = window.systemDataManager.getAllData();
+                        
+                        // Cargar mensajes recibidos
+                        this.data.messages = (data.mensajes || []).filter(msg => 
+                            msg.para === 'psi_dashboard' || msg.para.startsWith('psi_')
+                        );
+                        
+                        // Cargar mensajes enviados
+                        this.data.sentMessages = (data.mensajes || []).filter(msg => 
+                            msg.de === 'psi_dashboard' || msg.de.startsWith('psi_')
+                        );
+                        
+                        // Cargar archivos recibidos (excusas convertidas)
+                        this.data.files = (data.excusas || []).filter(exc => 
+                            exc.psychologistUsername === 'psi_dashboard' || exc.psychologistUsername?.startsWith('psi_')
+                        ).map(exc => ({
+                            id: exc.id,
+                            name: 'Excusa_' + exc.estudiante + '_' + new Date(exc.timestamp).toLocaleDateString() + '.pdf',
+                            sender: exc.profesor,
+                            content: exc.motivo,
+                            timestamp: exc.timestamp,
+                            type: 'excusa'
+                        }));
+                        
+                        // Cargar casos psicológicos
+                        this.data.cases = data.casosPsicologicos || [];
+                        
+                        // Cargar archivos enviados a dirección
+                        this.data.directionFiles = data.archivosDireccion || [];
+                        
+                        // Cargar archivos enviados a profesores
+                        this.data.teacherFiles = data.archivosProfesores || [];
+                        
+                        // Cargar profesores conectados
+                        const teacherSet = new Set();
+                        [...this.data.messages, ...this.data.sentMessages].forEach(msg => {
+                            if (msg.de.startsWith('prof_')) teacherSet.add(msg.de);
+                            if (msg.para.startsWith('prof_')) teacherSet.add(msg.para);
+                        });
+                        
+                        // También agregar profesores de archivos enviados
+                        this.data.teacherFiles.forEach(file => {
+                            if (file.recipient.startsWith('prof_')) teacherSet.add(file.recipient);
+                        });
+                        
+                        this.data.teachers = Array.from(teacherSet).map(teacher => ({
+                            username: teacher,
+                            name: this.getTeacherDisplayName(teacher),
+                            messagesCount: [...this.data.messages, ...this.data.sentMessages].filter(m => 
+                                m.de === teacher || m.para === teacher
+                            ).length,
+                            filesCount: this.data.teacherFiles.filter(f => f.recipient === teacher).length
+                        }));
+                        
+                        // Cargar comunicación con dirección
+                        this.data.directionMessages = (data.mensajes || []).filter(msg => 
+                            (msg.de === 'psi_dashboard' && msg.para === 'direccion') ||
+                            (msg.de === 'direccion' && msg.para === 'psi_dashboard')
+                        );
+                        
+                        console.log('Datos cargados:', {
+                            mensajes: this.data.messages.length,
+                            enviados: this.data.sentMessages.length,
+                            archivos: this.data.files.length,
+                            casos: this.data.cases.length,
+                            docentes: this.data.teachers.length,
+                            archivosDireccion: this.data.directionFiles.length,
+                            archivosProfesores: this.data.teacherFiles.length
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error cargando datos:', error);
+                }
+            }
+
+            getTeacherDisplayName(username) {
+                const userMap = {
+                    'prof_starling': 'Prof. Starling Encarnación',
+                    'prof_adrian': 'Prof. Adrián Fernández',
+                    'prof_belkis': 'Prof. Belkis Batista',
+                    'prof_raymond': 'Prof. Raymond Ledesma'
+                };
+                return userMap[username] || username;
+            }
+
+            updateUI() {
+                this.updateStats();
+                this.updateDashboard();
+                this.updateMessages();
+                this.updateSentMessages();
+                this.updateFiles();
+                this.updateSentFiles();
+                this.updateCases();
+                this.updateTeachers();
+                this.updateDirection();
+            }
+
+            updateStats() {
+                document.getElementById('totalMessages').textContent = this.data.messages.length;
+                document.getElementById('unreadMessages').textContent = this.data.messages.filter(m => !m.leido).length;
+                document.getElementById('totalFiles').textContent = this.data.files.length;
+                document.getElementById('totalCases').textContent = this.data.cases.length;
+                
+                document.getElementById('messagesBadge').textContent = this.data.messages.filter(m => !m.leido).length;
+                document.getElementById('filesBadge').textContent = this.data.files.length;
+                document.getElementById('casesBadge').textContent = this.data.cases.length;
+            }
+
+            updateDashboard() {
+                const dashboardContent = document.getElementById('dashboardContent');
+                if (!dashboardContent) return;
+                
+                const unreadCount = this.data.messages.filter(m => !m.leido).length;
+                const todayMessages = this.data.messages.filter(m => {
+                    const msgDate = new Date(m.timestamp);
+                    const today = new Date();
+                    return msgDate.toDateString() === today.toDateString();
+                }).length;
+                
+                const activeCases = this.data.cases.filter(c => c.estado === 'activo').length;
+                
+                dashboardContent.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">' +
+                    '<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, var(--psychology-light), white); border-radius: 12px; border: 1px solid var(--psychology-color);">' +
+                        '<i class="fas fa-envelope" style="font-size: 2rem; color: var(--psychology-color); margin-bottom: 10px;"></i>' +
+                        '<div style="font-size: 2rem; font-weight: bold; color: var(--psychology-color);">' + this.data.messages.length + '</div>' +
+                        '<div style="color: #666;">Total Mensajes</div>' +
+                    '</div>' +
+                    '<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #fdf2f2, white); border-radius: 12px; border: 1px solid var(--danger-color);">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 2rem; color: var(--danger-color); margin-bottom: 10px;"></i>' +
+                        '<div style="font-size: 2rem; font-weight: bold; color: var(--danger-color);">' + unreadCount + '</div>' +
+                        '<div style="color: #666;">No Leídos</div>' +
+                    '</div>' +
+                    '<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #e8f5e8, white); border-radius: 12px; border: 1px solid var(--success-color);">' +
+                        '<i class="fas fa-calendar-day" style="font-size: 2rem; color: var(--success-color); margin-bottom: 10px;"></i>' +
+                        '<div style="font-size: 2rem; font-weight: bold; color: var(--success-color);">' + todayMessages + '</div>' +
+                        '<div style="color: #666;">Hoy</div>' +
+                    '</div>' +
+                    '<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #f0f8ff, white); border-radius: 12px; border: 1px solid var(--secondary-color);">' +
+                        '<i class="fas fa-user-injured" style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 10px;"></i>' +
+                        '<div style="font-size: 2rem; font-weight: bold; color: var(--secondary-color);">' + activeCases + '</div>' +
+                        '<div style="color: #666;">Casos Activos</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">' +
+                    '<div>' +
+                        '<h4 style="color: var(--psychology-color); margin-bottom: 15px;"><i class="fas fa-chart-line"></i> Actividad Reciente</h4>' +
+                        '<div style="max-height: 300px; overflow-y: auto;">' + this.getRecentActivity() + '</div>' +
+                    '</div>' +
+                    '<div>' +
+                        '<h4 style="color: var(--psychology-color); margin-bottom: 15px;"><i class="fas fa-tasks"></i> Acciones Rápidas</h4>' +
+                        '<div style="display: grid; gap: 10px;">' +
+                            '<button class="btn btn-primary" onclick="showNewCaseModal()"><i class="fas fa-plus"></i> Nuevo Caso Psicológico</button>' +
+                            '<button class="btn btn-secondary" onclick="showNewMessageModal()"><i class="fas fa-envelope"></i> Enviar Mensaje</button>' +
+                            '<button class="btn btn-success" onclick="showDirectionMessageModal()"><i class="fas fa-user-tie"></i> Contactar Dirección</button>' +
+                            '<button class="btn btn-outline" onclick="refreshAllData()"><i class="fas fa-sync"></i> Actualizar Todo</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            getRecentActivity() {
+                const activities = [];
+                
+                this.data.messages.slice(0, 3).forEach(msg => {
+                    activities.push({
+                        type: 'message',
+                        icon: 'fas fa-envelope',
+                        text: 'Mensaje de ' + (msg.remitenteNombre || msg.de),
+                        time: new Date(msg.timestamp).toLocaleString(),
+                        color: 'var(--psychology-color)'
+                    });
+                });
+                
+                this.data.cases.slice(0, 3).forEach(caseItem => {
+                    activities.push({
+                        type: 'case',
+                        icon: 'fas fa-user-injured',
+                        text: 'Nuevo caso: ' + caseItem.estudiante,
+                        time: new Date(caseItem.timestamp).toLocaleString(),
+                        color: 'var(--secondary-color)'
+                    });
+                });
+                
+                this.data.files.slice(0, 3).forEach(file => {
+                    activities.push({
+                        type: 'file',
+                        icon: 'fas fa-file-alt',
+                        text: 'Archivo de ' + file.sender,
+                        time: new Date(file.timestamp).toLocaleString(),
+                        color: 'var(--success-color)'
+                    });
+                });
+                
+                activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+                
+                if (activities.length === 0) {
+                    return '<div class="empty-state"><i class="fas fa-clock"></i><p>No hay actividad reciente</p></div>';
+                }
+                
+                return activities.slice(0, 5).map(activity => 
+                    '<div style="padding: 10px; border-left: 3px solid ' + activity.color + '; margin-bottom: 10px; background: rgba(0,0,0,0.02);">' +
+                        '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">' +
+                            '<i class="' + activity.icon + '" style="color: ' + activity.color + ';"></i>' +
+                            '<span style="font-weight: 500;">' + activity.text + '</span>' +
+                        '</div>' +
+                        '<div style="font-size: 0.8rem; color: #666;">' + activity.time + '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            updateMessages() {
+                const messagesList = document.getElementById('messagesList');
+                if (!messagesList) return;
+                
+                if (this.data.messages.length === 0) {
+                    messagesList.innerHTML = '<div class="empty-state"><i class="fas fa-envelope"></i><h3>No hay mensajes recibidos</h3><p>Los mensajes enviados por los docentes y dirección aparecerán aquí</p></div>';
+                    return;
+                }
+                
+                messagesList.innerHTML = this.data.messages.map(message => 
+                    '<div class="message-item ' + (!message.leido ? 'unread' : '') + '">' +
+                        '<div class="message-header">' +
+                            '<div class="message-sender">' + (message.remitenteNombre || message.de) + '</div>' +
+                            '<div class="message-time">' + new Date(message.timestamp).toLocaleString() + '</div>' +
+                        '</div>' +
+                        '<div class="message-subject">' + message.asunto + '</div>' +
+                        '<div class="message-content">' + message.contenido + '</div>' +
+                        '<div class="message-actions">' +
+                            (!message.leido ? '<button class="btn btn-sm btn-primary" onclick="markAsRead(\'' + message.id + '\')"><i class="fas fa-check"></i> Marcar como leído</button>' : '') +
+                            '<button class="btn btn-sm btn-secondary" onclick="replyToMessage(\'' + message.id + '\')"><i class="fas fa-reply"></i> Responder</button>' +
+                            (message.de.startsWith('prof_') ? '<button class="btn btn-sm btn-danger" onclick="rejectMessage(\'' + message.id + '\')"><i class="fas fa-times"></i> Rechazar</button>' : '') +
+                        '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            updateSentMessages() {
+                const sentMessagesList = document.getElementById('sentMessagesList');
+                if (!sentMessagesList) return;
+                
+                if (this.data.sentMessages.length === 0) {
+                    sentMessagesList.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><h3>No hay mensajes enviados</h3><p>Tus mensajes enviados a docentes y dirección aparecerán aquí</p></div>';
+                    return;
+                }
+                
+                sentMessagesList.innerHTML = this.data.sentMessages.map(message => 
+                    '<div class="message-item">' +
+                        '<div class="message-header">' +
+                            '<div class="message-sender">Para: ' + this.getRecipientName(message.para) + '</div>' +
+                            '<div class="message-time">' + new Date(message.timestamp).toLocaleString() + '</div>' +
+                        '</div>' +
+                        '<div class="message-subject">' + message.asunto + '</div>' +
+                        '<div class="message-content">' + message.contenido + '</div>' +
+                        '<div class="message-actions">' +
+                            '<button class="btn btn-sm btn-outline" onclick="viewMessage(\'' + message.id + '\')"><i class="fas fa-eye"></i> Ver</button>' +
+                        '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            updateFiles() {
+                const filesList = document.getElementById('filesList');
+                if (!filesList) return;
+                
+                if (this.data.files.length === 0) {
+                    filesList.innerHTML = '<div class="empty-state"><i class="fas fa-file-alt"></i><h3>No hay archivos recibidos</h3><p>Los archivos enviados por los docentes aparecerán aquí</p></div>';
+                    return;
+                }
+                
+                filesList.innerHTML = this.data.files.map(file => 
+                    '<div class="file-item">' +
+                        '<div class="file-info">' +
+                            '<div class="file-name">' + file.name + '</div>' +
+                            '<div class="file-meta">Enviado por: ' + file.sender + ' | ' + new Date(file.timestamp).toLocaleString() + ' | Tipo: ' + file.type + '</div>' +
+                        '</div>' +
+                        '<div class="file-actions">' +
+                            '<button class="btn btn-sm btn-primary" onclick="viewFile(\'' + file.id + '\')"><i class="fas fa-eye"></i> Ver</button>' +
+                            '<button class="btn btn-sm btn-success" onclick="downloadFile(\'' + file.id + '\')"><i class="fas fa-download"></i> Descargar</button>' +
+                        '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            updateCases() {
+                const casesList = document.getElementById('casesList');
+                if (!casesList) return;
+                
+                if (this.data.cases.length === 0) {
+                    casesList.innerHTML = '<div class="empty-state"><i class="fas fa-user-injured"></i><h3>No hay casos registrados</h3><p>Los casos psicológicos que registres aparecerán aquí</p></div>';
+                    return;
+                }
+                
+                casesList.innerHTML = this.data.cases.map(caseItem => 
+                    '<div class="case-item">' +
+                        '<div class="case-header">' +
+                            '<div class="case-student">' + caseItem.estudiante + '</div>' +
+                            '<div class="case-status ' + caseItem.estado + '">' + caseItem.estado + '</div>' +
+                        '</div>' +
+                        '<div class="case-description">' + caseItem.descripcion + '</div>' +
+                        '<div class="case-details">' +
+                            '<div class="case-detail"><div class="case-detail-label">Grado:</div><div class="case-detail-value">' + caseItem.grado + '</div></div>' +
+                            '<div class="case-detail"><div class="case-detail-label">Tipo:</div><div class="case-detail-value">' + caseItem.tipo + '</div></div>' +
+                            '<div class="case-detail"><div class="case-detail-label">Prioridad:</div><div class="case-detail-value">' + caseItem.prioridad + '</div></div>' +
+                            '<div class="case-detail"><div class="case-detail-label">Fecha:</div><div class="case-detail-value">' + new Date(caseItem.timestamp).toLocaleDateString() + '</div></div>' +
+                        '</div>' +
+                        '<div class="case-actions">' +
+                            '<button class="btn btn-sm btn-primary" onclick="viewCase(\'' + caseItem.id + '\')"><i class="fas fa-eye"></i> Ver Detalles</button>' +
+                            '<button class="btn btn-sm btn-secondary" onclick="editCase(\'' + caseItem.id + '\')"><i class="fas fa-edit"></i> Editar</button>' +
+                            (caseItem.estado === 'activo' ? '<button class="btn btn-sm btn-success" onclick="closeCase(\'' + caseItem.id + '\')"><i class="fas fa-check"></i> Cerrar Caso</button>' : '') +
+                            '<button class="btn btn-sm btn-warning" onclick="sendCaseToDirection(\'' + caseItem.id + '\')"><i class="fas fa-user-tie"></i> Enviar a Dirección</button>' +
+                        '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            updateTeachers() {
+                const teachersList = document.getElementById('teachersList');
+                if (!teachersList) return;
+                
+                if (this.data.teachers.length === 0) {
+                    teachersList.innerHTML = '<div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><h3>No hay docentes conectados</h3><p>Los docentes que envíen mensajes aparecerán aquí</p></div>';
+                    return;
+                }
+                
+                teachersList.innerHTML = this.data.teachers.map(teacher => 
+                    '<div class="teacher-item">' +
+                        '<div class="teacher-info">' +
+                            '<div class="teacher-name">' + teacher.name + '</div>' +
+                            '<div class="teacher-stats">' + teacher.messagesCount + ' mensaje(s) intercambiado(s)</div>' +
+                        '</div>' +
+                        '<div class="teacher-actions">' +
+                            '<button class="btn btn-sm btn-primary" onclick="sendMessageToTeacher(\'' + teacher.username + '\')"><i class="fas fa-envelope"></i> Enviar Mensaje</button>' +
+                            '<button class="btn btn-sm btn-success" onclick="sendFileToTeacher(\'' + teacher.username + '\')"><i class="fas fa-file-upload"></i> Enviar Archivo</button>' +
+                        '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            updateSentFiles() {
+                const sentFilesList = document.getElementById('sentFilesList');
+                if (!sentFilesList) return;
+                
+                // Combinar archivos enviados a dirección y profesores
+                const allSentFiles = [
+                    ...this.data.directionFiles.map(file => ({...file, destination: 'Dirección'})),
+                    ...this.data.teacherFiles.map(file => ({...file, destination: this.getRecipientName(file.recipient)}))
+                ];
+                
+                if (allSentFiles.length === 0) {
+                    sentFilesList.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><h3>No hay archivos enviados</h3><p>Tus archivos enviados a dirección y profesores aparecerán aquí</p></div>';
+                    return;
+                }
+                
+                // Ordenar por fecha (más reciente primero)
+                allSentFiles.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                sentFilesList.innerHTML = allSentFiles.map(file => 
+                    '<div class="file-item">' +
+                        '<div class="file-info">' +
+                            '<div class="file-name">' + file.name + '</div>' +
+                            '<div class="file-meta">Enviado a: ' + file.destination + ' | ' + new Date(file.timestamp).toLocaleString() + ' | Tipo: ' + file.type + (file.prioridad ? ' | Prioridad: ' + file.prioridad : '') + '</div>' +
+                            (file.tags && file.tags.length > 0 ? '<div class="file-tags"><span class="badge" style="background: var(--psychology-color);">' + file.tags.join('</span> <span class="badge" style="background: var(--psychology-color);">') + '</span></div>' : '') +
+                        '</div>' +
+                        '<div class="file-actions">' +
+                            '<button class="btn btn-sm btn-primary" onclick="viewSentFile(\'' + file.id + '\', \'' + (file.categoria || 'unknown') + '\')"><i class="fas fa-eye"></i> Ver</button>' +
+                            '<button class="btn btn-sm btn-success" onclick="downloadFile(\'' + file.id + '\')"><i class="fas fa-download"></i> Descargar</button>' +
+                        '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            updateDirection() {
+                const directionContent = document.getElementById('directionContent');
+                if (!directionContent) return;
+                
+                directionContent.innerHTML = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">' +
+                    '<div>' +
+                        '<h4 style="color: var(--direction-color); margin-bottom: 15px;"><i class="fas fa-exchange-alt"></i> Mensajes con Dirección</h4>' +
+                        '<div style="max-height: 300px; overflow-y: auto;">' +
+                            (this.data.directionMessages.length === 0 ? 
+                                '<div class="empty-state"><i class="fas fa-comments"></i><p>No hay mensajes con dirección</p></div>' :
+                                this.data.directionMessages.map(msg => 
+                                    '<div class="message-item">' +
+                                        '<div class="message-header">' +
+                                            '<div class="message-sender">' + (msg.de === 'psi_dashboard' ? 'Enviado a Dirección' : 'Recibido de Dirección') + '</div>' +
+                                            '<div class="message-time">' + new Date(msg.timestamp).toLocaleString() + '</div>' +
+                                        '</div>' +
+                                        '<div class="message-subject">' + msg.asunto + '</div>' +
+                                        '<div class="message-content">' + msg.contenido + '</div>' +
+                                    '</div>'
+                                ).join('')
+                            ) +
+                        '</div>' +
+                    '</div>' +
+                    '<div>' +
+                        '<h4 style="color: var(--direction-color); margin-bottom: 15px;"><i class="fas fa-file-alt"></i> Archivos con Dirección</h4>' +
+                        '<div style="max-height: 300px; overflow-y: auto;">' +
+                            (this.data.directionFiles.length === 0 ? 
+                                '<div class="empty-state"><i class="fas fa-file"></i><p>No hay archivos compartidos con dirección</p></div>' :
+                                this.data.directionFiles.map(file => 
+                                    '<div class="file-item">' +
+                                        '<div class="file-info">' +
+                                            '<div class="file-name">' + file.name + '</div>' +
+                                            '<div class="file-meta">' + (file.sender === 'psi_dashboard' ? 'Enviado a Dirección' : 'Recibido de Dirección') + ' | ' + new Date(file.timestamp).toLocaleString() + '</div>' +
+                                        '</div>' +
+                                    '</div>'
+                                ).join('')
+                            ) +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            sendNewMessage() {
+                const recipient = document.getElementById('messageRecipient').value;
+                const subject = document.getElementById('messageSubject').value;
+                const content = document.getElementById('messageContent').value;
+                
+                const messageData = {
+                    id: Date.now().toString(),
+                    de: 'psi_dashboard',
+                    para: recipient,
+                    asunto: subject,
+                    contenido: content,
+                    remitenteNombre: 'Departamento de Psicología',
+                    timestamp: new Date().toISOString(),
+                    leido: false
+                };
+                
+                try {
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        const data = window.systemDataManager.getAllData();
+                        if (!data.mensajes) data.mensajes = [];
+                        data.mensajes.push(messageData);
+                        window.systemDataManager.saveAllData(data);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Mensaje Enviado',
+                            text: 'El mensaje ha sido enviado a ' + this.getRecipientName(recipient),
+                            confirmButtonText: 'Aceptar'
+                        });
+                        
+                        closeModal('newMessageModal');
+                        document.getElementById('newMessageForm').reset();
+                        this.loadRealData();
+                        this.updateUI();
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo enviar el mensaje: ' + error.message,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }
+
+            createNewCase() {
+                const caseData = {
+                    id: Date.now().toString(),
+                    estudiante: document.getElementById('caseStudentName').value,
+                    grado: document.getElementById('caseGrade').value,
+                    tipo: document.getElementById('caseType').value,
+                    descripcion: document.getElementById('caseDescription').value,
+                    recomendaciones: document.getElementById('caseRecommendations').value,
+                    prioridad: document.getElementById('casePriority').value,
+                    estado: 'activo',
+                    psicologo: this.currentUser?.name || 'Psicólogo Escolar',
+                    timestamp: new Date().toISOString(),
+                    fechaActualizacion: new Date().toISOString()
+                };
+                
+                try {
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        const data = window.systemDataManager.getAllData();
+                        if (!data.casosPsicologicos) data.casosPsicologicos = [];
+                        data.casosPsicologicos.push(caseData);
+                        window.systemDataManager.saveAllData(data);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Caso Registrado',
+                            text: 'El caso de ' + caseData.estudiante + ' ha sido registrado exitosamente',
+                            confirmButtonText: 'Aceptar'
+                        });
+                        
+                        closeModal('newCaseModal');
+                        document.getElementById('newCaseForm').reset();
+                        this.loadRealData();
+                        this.updateUI();
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo registrar el caso: ' + error.message,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }
+
+            sendDirectionMessage() {
+                const type = document.getElementById('communicatedType').value;
+                const subject = document.getElementById('directionSubject').value;
+                const content = document.getElementById('directionContent').value;
+                const priority = document.getElementById('directionPriority').value;
+                
+                const messageData = {
+                    id: Date.now().toString(),
+                    de: 'psi_dashboard',
+                    para: 'direccion',
+                    asunto: '[' + type.toUpperCase() + '] ' + subject,
+                    contenido: content,
+                    remitenteNombre: 'Departamento de Psicología',
+                    tipoComunicado: type,
+                    prioridad: priority,
+                    timestamp: new Date().toISOString(),
+                    leido: false,
+                    categoria: 'comunicado_direccion'
+                };
+                
+                try {
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        const data = window.systemDataManager.getAllData();
+                        if (!data.mensajes) data.mensajes = [];
+                        data.mensajes.push(messageData);
+                        window.systemDataManager.saveAllData(data);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Comunicado Enviado',
+                            text: 'El comunicado ha sido enviado a dirección exitosamente',
+                            confirmButtonText: 'Aceptar'
+                        });
+                        
+                        closeModal('directionMessageModal');
+                        document.getElementById('directionMessageForm').reset();
+                        this.loadRealData();
+                        this.updateUI();
+                    } else {
+                        throw new Error('SystemDataManager no disponible');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo enviar el comunicado: ' + error.message,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }
+
+            sendDirectionFile() {
+                const name = document.getElementById('fileName').value;
+                const type = document.getElementById('fileType').value;
+                const method = document.getElementById('fileMethod').value;
+                const description = document.getElementById('fileDescription').value;
+                const reference = document.getElementById('fileReference').value;
+                const tags = document.getElementById('fileTags').value;
+                const priority = document.getElementById('filePriority').value;
+                
+                let content = '';
+                let fileInfo = {};
+                
+                if (method === 'text') {
+                    content = document.getElementById('fileContent').value;
+                } else if (method === 'upload') {
+                    const fileInput = document.getElementById('fileUpload');
+                    if (fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        fileInfo = {
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            lastModified: file.lastModified
+                        };
+                        content = `Archivo subido: ${file.name} (${this.formatFileSize(file.size)})`;
+                    }
+                } else if (method === 'link') {
+                    content = document.getElementById('fileLink').value;
+                }
+                
+                const fileData = {
+                    id: Date.now().toString(),
+                    name: name,
+                    type: type,
+                    description: description,
+                    content: content,
+                    reference: reference,
+                    tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+                    sender: 'psi_dashboard',
+                    recipient: 'direccion',
+                    timestamp: new Date().toISOString(),
+                    remitenteNombre: 'Departamento de Psicología',
+                    prioridad: priority,
+                    method: method,
+                    fileInfo: fileInfo,
+                    categoria: 'archivo_direccion'
+                };
+                
+                try {
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        const data = window.systemDataManager.getAllData();
+                        if (!data.archivosDireccion) data.archivosDireccion = [];
+                        data.archivosDireccion.push(fileData);
+                        window.systemDataManager.saveAllData(data);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Archivo Enviado',
+                            text: 'El archivo ha sido enviado a dirección exitosamente',
+                            confirmButtonText: 'Aceptar'
+                        });
+                        
+                        closeModal('directionFileModal');
+                        document.getElementById('directionFileForm').reset();
+                        this.loadRealData();
+                        this.updateUI();
+                    } else {
+                        throw new Error('SystemDataManager no disponible');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo enviar el archivo: ' + error.message,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }
+
+            sendTeacherFile() {
+                const recipient = document.getElementById('teacherRecipient').value;
+                const name = document.getElementById('teacherFileName').value;
+                const type = document.getElementById('teacherFileType').value;
+                const method = document.getElementById('teacherFileMethod').value;
+                const description = document.getElementById('teacherFileDescription').value;
+                const reference = document.getElementById('teacherFileReference').value;
+                const tags = document.getElementById('teacherFileTags').value;
+                
+                let content = '';
+                let fileInfo = {};
+                
+                if (method === 'text') {
+                    content = document.getElementById('teacherFileContent').value;
+                } else if (method === 'upload') {
+                    const fileInput = document.getElementById('teacherFileUpload');
+                    if (fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        fileInfo = {
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            lastModified: file.lastModified
+                        };
+                        content = `Archivo subido: ${file.name} (${this.formatFileSize(file.size)})`;
+                    }
+                } else if (method === 'link') {
+                    content = document.getElementById('teacherFileLink').value;
+                }
+                
+                const fileData = {
+                    id: Date.now().toString(),
+                    name: name,
+                    type: type,
+                    description: description,
+                    content: content,
+                    reference: reference,
+                    tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+                    sender: 'psi_dashboard',
+                    recipient: recipient,
+                    timestamp: new Date().toISOString(),
+                    remitenteNombre: 'Departamento de Psicología',
+                    method: method,
+                    fileInfo: fileInfo,
+                    categoria: 'archivo_profesor'
+                };
+                
+                try {
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        const data = window.systemDataManager.getAllData();
+                        if (!data.archivosProfesores) data.archivosProfesores = [];
+                        data.archivosProfesores.push(fileData);
+                        window.systemDataManager.saveAllData(data);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Archivo Enviado',
+                            text: 'El archivo ha sido enviado al profesor exitosamente',
+                            confirmButtonText: 'Aceptar'
+                        });
+                        
+                        closeModal('teacherFileModal');
+                        document.getElementById('teacherFileForm').reset();
+                        this.loadRealData();
+                        this.updateUI();
+                    } else {
+                        throw new Error('SystemDataManager no disponible');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo enviar el archivo: ' + error.message,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            getRecipientName(recipient) {
+                const names = {
+                    'direccion': 'Dirección del Centro',
+                    'prof_starling': 'Prof. Starling Encarnación',
+                    'prof_adrian': 'Prof. Adrián Fernández',
+                    'prof_belkis': 'Prof. Belkis Batista'
+                };
+                return names[recipient] || recipient;
+            }
+
+            startAutoReload() {
+                setInterval(() => {
+                    this.loadRealData();
+                    this.updateUI();
+                }, 30000);
+                
+                window.addEventListener('focus', () => {
+                    this.loadRealData();
+                    this.updateUI();
+                });
+            }
+        }
+
+        // Funciones globales
+        let dashboard;
+
+        function showSection(sectionId, linkElement) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            linkElement.classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showNewMessageModal() {
+            document.getElementById('newMessageModal').classList.add('active');
+        }
+
+        function showNewCaseModal() {
+            document.getElementById('newCaseModal').classList.add('active');
+        }
+
+        function showDirectionMessageModal() {
+            document.getElementById('directionMessageModal').classList.add('active');
+        }
+
+        function showDirectionFileModal() {
+            document.getElementById('directionFileModal').classList.add('active');
+        }
+
+        function showTeacherFileModal() {
+            document.getElementById('teacherFileModal').classList.add('active');
+        }
+
+        function sendFileToTeacher(username) {
+            showTeacherFileModal();
+            document.getElementById('teacherRecipient').value = username;
+        }
+
+        // Funciones para manejar archivos
+        function toggleFileMethod() {
+            const method = document.getElementById('fileMethod').value;
+            const uploadGroup = document.getElementById('fileUploadGroup');
+            const linkGroup = document.getElementById('fileLinkGroup');
+            const contentGroup = document.getElementById('fileContentGroup');
+            
+            // Ocultar todos
+            uploadGroup.style.display = 'none';
+            linkGroup.style.display = 'none';
+            contentGroup.style.display = 'none';
+            
+            // Mostrar según el método
+            if (method === 'upload') {
+                uploadGroup.style.display = 'block';
+            } else if (method === 'link') {
+                linkGroup.style.display = 'block';
+            } else {
+                contentGroup.style.display = 'block';
+            }
+        }
+
+        function toggleTeacherFileMethod() {
+            const method = document.getElementById('teacherFileMethod').value;
+            const uploadGroup = document.getElementById('teacherFileUploadGroup');
+            const linkGroup = document.getElementById('teacherFileLinkGroup');
+            const contentGroup = document.getElementById('teacherFileContentGroup');
+            
+            // Ocultar todos
+            uploadGroup.style.display = 'none';
+            linkGroup.style.display = 'none';
+            contentGroup.style.display = 'none';
+            
+            // Mostrar según el método
+            if (method === 'upload') {
+                uploadGroup.style.display = 'block';
+            } else if (method === 'link') {
+                linkGroup.style.display = 'block';
+            } else {
+                contentGroup.style.display = 'block';
+            }
+        }
+
+        // Funciones de Drag and Drop
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Agregar clase visual
+            const dropZone = event.currentTarget;
+            dropZone.classList.add('drag-over');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Remover clase visual
+            const dropZone = event.currentTarget;
+            dropZone.classList.remove('drag-over');
+        }
+
+        function handleDrop(event, type) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Remover clase visual
+            const dropZone = event.currentTarget;
+            dropZone.classList.remove('drag-over');
+            
+            // Obtener archivos
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                // Procesar el primer archivo (puedes extender para múltiples archivos)
+                processDroppedFile(files[0], type);
+            }
+        }
+
+        function processDroppedFile(file, type) {
+            // Validar el tamaño del archivo (500MB máximo)
+            const maxSize = 500 * 1024 * 1024; // 500MB en bytes
+            if (file.size > maxSize) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo Demasiado Grande',
+                    html: 'El archivo <strong>' + file.name + '</strong> excede el límite permitido de 500MB.<br><br>' +
+                          'Tamaño actual: <strong>' + dashboard.formatFileSize(file.size) + '</strong><br>' +
+                          'Tamaño máximo: <strong>500 MB</strong><br><br>' +
+                          'Por favor, comprima el archivo o divídalo en partes más pequeñas.',
+                    confirmButtonText: 'Entendido',
+                    width: '500px'
+                });
+                return;
+            }
+            
+            // Validar el tipo de archivo
+            const allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-powerpoint',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'text/plain',
+                'video/mp4',
+                'audio/mpeg',
+                'application/zip'
+            ];
+            
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.gif', '.txt', '.mp4', '.mp3', '.zip'];
+            
+            if (!allowedExtensions.includes(fileExtension)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tipo de Archivo No Permitido',
+                    html: 'El archivo <strong>' + file.name + '</strong> no es un formato permitido.<br><br>' +
+                          'Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes, Texto, Video, Audio, ZIP',
+                    confirmButtonText: 'Aceptar',
+                    width: '450px'
+                });
+                return;
+            }
+            
+            // Determinar qué input actualizar según el tipo
+            let fileInput, fileNameInput, dropZone;
+            
+            if (type === 'direction') {
+                fileInput = document.getElementById('fileUpload');
+                fileNameInput = document.getElementById('fileName');
+                dropZone = document.getElementById('dropZoneDirection');
+            } else if (type === 'teacher') {
+                fileInput = document.getElementById('teacherFileUpload');
+                fileNameInput = document.getElementById('teacherFileName');
+                dropZone = document.getElementById('dropZoneTeacher');
+            }
+            
+            // Crear un nuevo FileList con el archivo arrastrado
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            // Actualizar el nombre del archivo si está vacío
+            if (!fileNameInput.value) {
+                fileNameInput.value = file.name;
+            }
+            
+            // Mostrar vista previa del archivo
+            showFilePreview(file, dropZone);
+            
+            // Mostrar información del archivo
+            const fileSize = dashboard.formatFileSize(file.size);
+            console.log('Archivo arrastrado:', file.name, 'Tamaño:', fileSize);
+            
+            // Mostrar confirmación con información detallada
+            Swal.fire({
+                icon: 'success',
+                title: 'Archivo Añadido Exitosamente',
+                html: 'El archivo <strong>' + file.name + '</strong> ha sido añadido.<br><br>' +
+                      'Tamaño: <strong>' + fileSize + '</strong><br>' +
+                      'Tipo: <strong>' + fileExtension.substring(1).toUpperCase() + '</strong>',
+                timer: 3000,
+                showConfirmButton: false,
+                position: 'top-end',
+                toast: true
+            });
+        }
+
+        function showFilePreview(file, dropZone) {
+            // Eliminar vista previa anterior si existe
+            const existingPreview = dropZone.querySelector('.file-preview');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+            
+            // Determinar el icono según el tipo de archivo
+            let icon = 'fas fa-file';
+            const extension = file.name.split('.').pop().toLowerCase();
+            
+            const iconMap = {
+                'pdf': 'fas fa-file-pdf',
+                'doc': 'fas fa-file-word',
+                'docx': 'fas fa-file-word',
+                'xls': 'fas fa-file-excel',
+                'xlsx': 'fas fa-file-excel',
+                'ppt': 'fas fa-file-powerpoint',
+                'pptx': 'fas fa-file-powerpoint',
+                'jpg': 'fas fa-file-image',
+                'jpeg': 'fas fa-file-image',
+                'png': 'fas fa-file-image',
+                'gif': 'fas fa-file-image',
+                'txt': 'fas fa-file-alt',
+                'mp4': 'fas fa-file-video',
+                'mp3': 'fas fa-file-audio',
+                'zip': 'fas fa-file-archive'
+            };
+            
+            icon = iconMap[extension] || 'fas fa-file';
+            
+            // Crear vista previa
+            const preview = document.createElement('div');
+            preview.className = 'file-preview';
+            preview.innerHTML = `
+                <div class="file-preview-icon">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="file-preview-info">
+                    <div class="file-preview-name">${file.name}</div>
+                    <div class="file-preview-meta">${dashboard.formatFileSize(file.size)} • ${new Date(file.lastModified).toLocaleString()}</div>
+                </div>
+                <button class="file-preview-remove" onclick="removeFilePreview(this)">
+                    <i class="fas fa-times"></i> Quitar
+                </button>
+            `;
+            
+            // Insertar la vista previa después del drop zone content
+            const dropZoneContent = dropZone.querySelector('.drop-zone-content');
+            dropZoneContent.parentNode.insertBefore(preview, dropZoneContent.nextSibling);
+        }
+
+        function removeFilePreview(button) {
+            const preview = button.closest('.file-preview');
+            const dropZone = preview.closest('.drop-zone');
+            const type = dropZone.id === 'dropZoneDirection' ? 'direction' : 'teacher';
+            
+            // Eliminar vista previa
+            preview.remove();
+            
+            // Limpiar el input de archivo
+            let fileInput;
+            if (type === 'direction') {
+                fileInput = document.getElementById('fileUpload');
+            } else {
+                fileInput = document.getElementById('teacherFileUpload');
+            }
+            
+            fileInput.value = '';
+            
+            // Mostrar confirmación
+            Swal.fire({
+                icon: 'info',
+                title: 'Archivo Eliminado',
+                text: 'El archivo ha sido eliminado de la carga.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Validar el tamaño del archivo (500MB máximo)
+                const maxSize = 500 * 1024 * 1024; // 500MB en bytes
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Archivo Demasiado Grande',
+                        html: 'El archivo <strong>' + file.name + '</strong> excede el límite permitido de 500MB.<br><br>' +
+                              'Tamaño actual: <strong>' + dashboard.formatFileSize(file.size) + '</strong><br>' +
+                              'Tamaño máximo: <strong>500 MB</strong><br><br>' +
+                              'Por favor, comprima el archivo o divídalo en partes más pequeñas.',
+                        confirmButtonText: 'Entendido',
+                        width: '500px'
+                    });
+                    // Limpiar el input
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Validar el tipo de archivo
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.gif', '.txt', '.mp4', '.mp3', '.zip'];
+                
+                if (!allowedExtensions.includes(fileExtension)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Tipo de Archivo No Permitido',
+                        html: 'El archivo <strong>' + file.name + '</strong> no es un formato permitido.<br><br>' +
+                              'Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes, Texto, Video, Audio, ZIP',
+                        confirmButtonText: 'Aceptar',
+                        width: '450px'
+                    });
+                    // Limpiar el input
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Actualizar el nombre del archivo si está vacío
+                const fileNameInput = document.getElementById('fileName');
+                if (!fileNameInput.value) {
+                    fileNameInput.value = file.name;
+                }
+                
+                // Mostrar vista previa
+                const dropZone = document.getElementById('dropZoneDirection');
+                showFilePreview(file, dropZone);
+                
+                // Mostrar información del archivo
+                const fileSize = dashboard.formatFileSize(file.size);
+                console.log('Archivo seleccionado:', file.name, 'Tamaño:', fileSize);
+                
+                // Mostrar confirmación
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Archivo Seleccionado',
+                    html: 'El archivo <strong>' + file.name + '</strong> ha sido seleccionado.<br><br>' +
+                          'Tamaño: <strong>' + fileSize + '</strong><br>' +
+                          'Tipo: <strong>' + fileExtension.substring(1).toUpperCase() + '</strong>',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true
+                });
+            }
+        }
+
+        function handleTeacherFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Validar el tamaño del archivo (500MB máximo)
+                const maxSize = 500 * 1024 * 1024; // 500MB en bytes
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Archivo Demasiado Grande',
+                        html: 'El archivo <strong>' + file.name + '</strong> excede el límite permitido de 500MB.<br><br>' +
+                              'Tamaño actual: <strong>' + dashboard.formatFileSize(file.size) + '</strong><br>' +
+                              'Tamaño máximo: <strong>500 MB</strong><br><br>' +
+                              'Por favor, comprima el archivo o divídalo en partes más pequeñas.',
+                        confirmButtonText: 'Entendido',
+                        width: '500px'
+                    });
+                    // Limpiar el input
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Validar el tipo de archivo
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.gif', '.txt', '.mp4', '.mp3', '.zip'];
+                
+                if (!allowedExtensions.includes(fileExtension)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Tipo de Archivo No Permitido',
+                        html: 'El archivo <strong>' + file.name + '</strong> no es un formato permitido.<br><br>' +
+                              'Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes, Texto, Video, Audio, ZIP',
+                        confirmButtonText: 'Aceptar',
+                        width: '450px'
+                    });
+                    // Limpiar el input
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Actualizar el nombre del archivo si está vacío
+                const fileNameInput = document.getElementById('teacherFileName');
+                if (!fileNameInput.value) {
+                    fileNameInput.value = file.name;
+                }
+                
+                // Mostrar vista previa
+                const dropZone = document.getElementById('dropZoneTeacher');
+                showFilePreview(file, dropZone);
+                
+                // Mostrar información del archivo
+                const fileSize = dashboard.formatFileSize(file.size);
+                console.log('Archivo seleccionado:', file.name, 'Tamaño:', fileSize);
+                
+                // Mostrar confirmación
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Archivo Seleccionado',
+                    html: 'El archivo <strong>' + file.name + '</strong> ha sido seleccionado.<br><br>' +
+                          'Tamaño: <strong>' + fileSize + '</strong><br>' +
+                          'Tipo: <strong>' + fileExtension.substring(1).toUpperCase() + '</strong>',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true
+                });
+            }
+        }
+
+        function markAllAsRead() {
+            if (!dashboard || typeof window.systemDataManager === 'undefined') return;
+            
+            const data = window.systemDataManager.getAllData();
+            let updatedCount = 0;
+            
+            data.mensajes.forEach(message => {
+                if ((message.para === 'psi_dashboard' || message.para.startsWith('psi_')) && !message.leido) {
+                    message.leido = true;
+                    updatedCount++;
+                }
+            });
+            
+            window.systemDataManager.saveAllData(data);
+            dashboard.loadRealData();
+            dashboard.updateUI();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Mensajes Actualizados',
+                text: updatedCount + ' mensajes marcados como leídos',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+
+        function refreshMessages() {
+            if (dashboard) {
+                dashboard.loadRealData();
+                dashboard.updateUI();
+            }
+        }
+
+        function refreshFiles() {
+            if (dashboard) {
+                dashboard.loadRealData();
+                dashboard.updateUI();
+            }
+        }
+
+        function refreshAllData() {
+            if (dashboard) {
+                dashboard.loadRealData();
+                dashboard.updateUI();
+            }
+        }
+
+        function markAsRead(messageId) {
+            if (!dashboard || typeof window.systemDataManager === 'undefined') return;
+            
+            const data = window.systemDataManager.getAllData();
+            const message = data.mensajes.find(m => m.id === messageId);
+            
+            if (message) {
+                message.leido = true;
+                window.systemDataManager.saveAllData(data);
+                dashboard.loadRealData();
+                dashboard.updateUI();
+            }
+        }
+
+        function replyToMessage(messageId) {
+            if (!dashboard) return;
+            
+            const message = dashboard.data.messages.find(m => m.id === messageId);
+            if (message) {
+                showNewMessageModal();
+                document.getElementById('messageRecipient').value = message.de;
+                document.getElementById('messageSubject').value = 'Re: ' + message.asunto;
+                document.getElementById('messageContent').focus();
+            }
+        }
+
+        function rejectMessage(messageId) {
+            Swal.fire({
+                title: 'Rechazar Mensaje',
+                text: '¿Estás seguro de rechazar este mensaje? Se enviará una notificación al docente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, rechazar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Rechazado', 'El mensaje ha sido rechazado', 'success');
+                }
+            });
+        }
+
+        function sendMessageToTeacher(username) {
+            showNewMessageModal();
+            document.getElementById('messageRecipient').value = username;
+        }
+
+        function viewCase(caseId) {
+            const caseData = dashboard.data.cases.find(c => c.id === caseId);
+            if (caseData) {
+                Swal.fire({
+                    title: 'Caso: ' + caseData.estudiante,
+                    html: '<div style="text-align: left;">' +
+                        '<p><strong>Estudiante:</strong> ' + caseData.estudiante + '</p>' +
+                        '<p><strong>Grado:</strong> ' + caseData.grado + '</p>' +
+                        '<p><strong>Tipo:</strong> ' + caseData.tipo + '</p>' +
+                        '<p><strong>Prioridad:</strong> ' + caseData.prioridad + '</p>' +
+                        '<p><strong>Estado:</strong> ' + caseData.estado + '</p>' +
+                        '<p><strong>Descripción:</strong></p>' +
+                        '<p>' + caseData.descripcion + '</p>' +
+                        '<p><strong>Recomendaciones:</strong></p>' +
+                        '<p>' + (caseData.recomendaciones || 'No especificadas') + '</p>' +
+                        '<p><strong>Psicólogo:</strong> ' + caseData.psicologo + '</p>' +
+                        '<p><strong>Fecha:</strong> ' + new Date(caseData.timestamp).toLocaleString() + '</p>' +
+                        '</div>',
+                    confirmButtonText: 'Cerrar'
+                });
+            }
+        }
+
+        function editCase(caseId) {
+            Swal.fire('En desarrollo', 'Función de edición de casos en desarrollo', 'info');
+        }
+
+        function closeCase(caseId) {
+            if (!dashboard || typeof window.systemDataManager === 'undefined') return;
+            
+            const data = window.systemDataManager.getAllData();
+            const caseData = data.casosPsicologicos.find(c => c.id === caseId);
+            
+            if (caseData) {
+                caseData.estado = 'cerrado';
+                caseData.fechaActualizacion = new Date().toISOString();
+                window.systemDataManager.saveAllData(data);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Caso Cerrado',
+                    text: 'El caso ha sido cerrado exitosamente',
+                    confirmButtonText: 'Aceptar'
+                });
+                
+                dashboard.loadRealData();
+                dashboard.updateUI();
+            }
+        }
+
+        function sendCaseToDirection(caseId) {
+            const caseData = dashboard.data.cases.find(c => c.id === caseId);
+            if (caseData) {
+                showDirectionMessageModal();
+                document.getElementById('communicatedType').value = 'reporte';
+                document.getElementById('directionSubject').value = 'Reporte de Caso: ' + caseData.estudiante;
+                document.getElementById('directionPriority').value = caseData.prioridad === 'urgente' ? 'urgente' : caseData.prioridad === 'alta' ? 'alta' : 'normal';
+                document.getElementById('directionContent').value = 'ESTUDIANTE: ' + caseData.estudiante + '\n' +
+                    'GRADO: ' + caseData.grado + '\n' +
+                    'TIPO DE CASO: ' + caseData.tipo + '\n' +
+                    'PRIORIDAD: ' + caseData.prioridad + '\n' +
+                    'ESTADO: ' + caseData.estado + '\n\n' +
+                    'DESCRIPCIÓN DEL CASO:\n' + caseData.descripcion + '\n\n' +
+                    'RECOMENDACIONES:\n' + (caseData.recomendaciones || 'No especificadas') + '\n\n' +
+                    'PSICÓLOGO RESPONSABLE: ' + caseData.psicologo + '\n' +
+                    'FECHA DE REGISTRO: ' + new Date(caseData.timestamp).toLocaleString() + '\n' +
+                    'ÚLTIMA ACTUALIZACIÓN: ' + new Date(caseData.fechaActualizacion).toLocaleString();
+            }
+        }
+
+        function viewFile(fileId) {
+            const file = dashboard.data.files.find(f => f.id === fileId);
+            if (file) {
+                Swal.fire({
+                    title: file.name,
+                    html: '<div style="text-align: left;">' +
+                        '<p><strong>Enviado por:</strong> ' + file.sender + '</p>' +
+                        '<p><strong>Fecha:</strong> ' + new Date(file.timestamp).toLocaleString() + '</p>' +
+                        '<p><strong>Tipo:</strong> ' + file.type + '</p>' +
+                        '<p><strong>Contenido:</strong></p>' +
+                        '<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto;">' +
+                        file.content +
+                        '</div>' +
+                        '</div>',
+                    confirmButtonText: 'Cerrar'
+                });
+            }
+        }
+
+        function downloadFile(fileId) {
+            // Buscar el archivo en todas las categorías
+            let file = null;
+            let fileSource = '';
+            
+            // Buscar en archivos recibidos (excusas convertidas)
+            file = dashboard.data.files.find(f => f.id === fileId);
+            if (file) {
+                fileSource = 'recibidos';
+            }
+            
+            // Buscar en archivos enviados a dirección
+            if (!file) {
+                const data = window.systemDataManager.getAllData();
+                if (data.archivosDireccion) {
+                    file = data.archivosDireccion.find(f => f.id === fileId);
+                    if (file) fileSource = 'direccion';
+                }
+            }
+            
+            // Buscar en archivos enviados a profesores
+            if (!file) {
+                const data = window.systemDataManager.getAllData();
+                if (data.archivosProfesores) {
+                    file = data.archivosProfesores.find(f => f.id === fileId);
+                    if (file) fileSource = 'profesores';
+                }
+            }
+            
+            if (!file) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo No Encontrado',
+                    text: 'El archivo solicitado no existe o no está disponible.',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            
+            // Crear el contenido para descargar
+            let downloadContent = '';
+            let fileName = file.name || 'archivo.txt';
+            let mimeType = 'text/plain';
+            
+            // Determinar el tipo MIME según el tipo de archivo
+            if (file.type) {
+                const typeMap = {
+                    'pdf': 'application/pdf',
+                    'word': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'excel': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'powerpoint': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    'imagen': 'image/jpeg',
+                    'texto': 'text/plain',
+                    'video': 'video/mp4',
+                    'audio': 'audio/mpeg'
+                };
+                mimeType = typeMap[file.type] || 'text/plain';
+            }
+            
+            // Preparar el contenido según el método de envío
+            if (file.method === 'upload' && file.fileInfo) {
+                // Si fue subido, incluir información del archivo
+                downloadContent = `ARCHIVO: ${file.fileInfo.name}\n` +
+                    `TAMAÑO: ${dashboard.formatFileSize(file.fileInfo.size)}\n` +
+                    `TIPO: ${file.fileInfo.type}\n` +
+                    `FECHA: ${new Date(file.fileInfo.lastModified).toLocaleString()}\n\n` +
+                    `DESCRIPCIÓN:\n${file.description || 'Sin descripción'}\n\n` +
+                    `CONTENIDO:\n${file.content || 'Sin contenido disponible'}`;
+            } else if (file.method === 'link') {
+                // Si es un enlace, incluir el enlace
+                downloadContent = `ENLACE AL ARCHIVO: ${file.content}\n\n` +
+                    `DESCRIPCIÓN:\n${file.description || 'Sin descripción'}\n\n` +
+                    `REFERENCIA: ${file.reference || 'Sin referencia'}\n` +
+                    `ETIQUETAS: ${(file.tags || []).join(', ')}`;
+            } else {
+                // Si es texto, usar el contenido directamente
+                downloadContent = file.content || file.description || 'Sin contenido disponible';
+            }
+            
+            // Agregar metadatos al final
+            downloadContent += '\n\n--- METADATOS ---\n' +
+                `Nombre: ${file.name}\n` +
+                `Tipo: ${file.type}\n` +
+                `Remitente: ${file.remitenteNombre || file.sender}\n` +
+                `Destinatario: ${file.recipient}\n` +
+                `Fecha: ${new Date(file.timestamp).toLocaleString()}\n` +
+                `Prioridad: ${file.prioridad || 'normal'}\n` +
+                `Referencia: ${file.reference || 'N/A'}\n` +
+                `Etiquetas: ${(file.tags || []).join(', ')}\n` +
+                `Fuente: ${fileSource}`;
+            
+            // Crear el blob y descargar
+            try {
+                const blob = new Blob([downloadContent], { type: mimeType + ';charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Mostrar confirmación
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Descarga Exitosa',
+                    text: `El archivo "${fileName}" ha sido descargado exitosamente.`,
+                    confirmButtonText: 'Aceptar'
+                });
+                
+                // Registrar la descarga
+                console.log('Archivo descargado:', {
+                    id: fileId,
+                    name: fileName,
+                    source: fileSource,
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                console.error('Error al descargar archivo:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Descarga',
+                    text: 'No se pudo descargar el archivo. Por favor, inténtelo de nuevo.',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        }
+
+        function viewSentFile(fileId, category) {
+            let file = null;
+            
+            // Buscar el archivo según la categoría
+            if (category === 'archivo_direccion') {
+                file = dashboard.data.directionFiles.find(f => f.id === fileId);
+            } else if (category === 'archivo_profesor') {
+                file = dashboard.data.teacherFiles.find(f => f.id === fileId);
+            }
+            
+            if (!file) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo No Encontrado',
+                    text: 'El archivo solicitado no existe o no está disponible.',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            
+            // Preparar el contenido para mostrar
+            let contentHtml = '<div style="text-align: left;">' +
+                '<p><strong>Nombre:</strong> ' + file.name + '</p>' +
+                '<p><strong>Tipo:</strong> ' + file.type + '</p>' +
+                '<p><strong>Destinatario:</strong> ' + (category === 'archivo_direccion' ? 'Dirección' : dashboard.getRecipientName(file.recipient)) + '</p>' +
+                '<p><strong>Fecha:</strong> ' + new Date(file.timestamp).toLocaleString() + '</p>' +
+                '<p><strong>Prioridad:</strong> ' + (file.prioridad || 'normal') + '</p>';
+            
+            if (file.method === 'upload' && file.fileInfo) {
+                contentHtml += '<p><strong>Método:</strong> Archivo Subido</p>' +
+                    '<p><strong>Archivo Original:</strong> ' + file.fileInfo.name + '</p>' +
+                    '<p><strong>Tamaño:</strong> ' + dashboard.formatFileSize(file.fileInfo.size) + '</p>' +
+                    '<p><strong>Tipo MIME:</strong> ' + file.fileInfo.type + '</p>';
+            } else if (file.method === 'link') {
+                contentHtml += '<p><strong>Método:</strong> Enlace</p>' +
+                    '<p><strong>Enlace:</strong> <a href="' + file.content + '" target="_blank">' + file.content + '</a></p>';
+            } else {
+                contentHtml += '<p><strong>Método:</strong> Texto Directo</p>';
+            }
+            
+            if (file.description) {
+                contentHtml += '<p><strong>Descripción:</strong></p>' +
+                    '<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 15px;">' +
+                    file.description +
+                    '</div>';
+            }
+            
+            if (file.content && file.method !== 'link') {
+                contentHtml += '<p><strong>Contenido:</strong></p>' +
+                    '<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">' +
+                    file.content +
+                    '</div>';
+            }
+            
+            if (file.reference) {
+                contentHtml += '<p><strong>Referencia:</strong> ' + file.reference + '</p>';
+            }
+            
+            if (file.tags && file.tags.length > 0) {
+                contentHtml += '<p><strong>Etiquetas:</strong> ' + file.tags.join(', ') + '</p>';
+            }
+            
+            contentHtml += '</div>';
+            
+            Swal.fire({
+                title: 'Archivo Enviado',
+                html: contentHtml,
+                width: '800px',
+                confirmButtonText: 'Cerrar',
+                showCancelButton: true,
+                cancelButtonText: 'Descargar',
+                cancelButtonColor: '#28a745'
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Si hace clic en "Descargar", llamar a la función de descarga
+                    downloadFile(fileId);
+                }
+            });
+        }
+
+        function viewMessage(messageId) {
+            const message = dashboard.data.sentMessages.find(m => m.id === messageId);
+            if (message) {
+                Swal.fire({
+                    title: message.asunto,
+                    html: '<div style="text-align: left;">' +
+                        '<p><strong>Para:</strong> ' + dashboard.getRecipientName(message.para) + '</p>' +
+                        '<p><strong>Fecha:</strong> ' + new Date(message.timestamp).toLocaleString() + '</p>' +
+                        '<p><strong>Mensaje:</strong></p>' +
+                        '<div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">' +
+                        message.contenido +
+                        '</div>' +
+                        '</div>',
+                    confirmButtonText: 'Cerrar'
+                });
+            }
+        }
+
+        function logout() {
+            Swal.fire({
+                title: 'Cerrar Sesión',
+                text: '¿Estás seguro de cerrar sesión?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cerrar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('currentUser');
+                    sessionStorage.removeItem('currentUser');
+                    window.location.href = 'index.html';
+                }
+            });
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            dashboard = new EnhancedPsychologyDashboard();
+        });
+    </script>
+</body>
+</html>

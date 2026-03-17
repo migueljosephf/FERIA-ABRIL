@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Comedor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        .main-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .notifications-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .student-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .student-card.present {
+            border-left-color: #27ae60;
+            background: #f0fff4;
+        }
+
+        .student-card.absent {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .student-info {
+            margin-bottom: 15px;
+        }
+
+        .student-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .student-details {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .student-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .notification-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .notification-item.new {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        .notification-badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-utensils"></i>
+                Gestión de Comedor Escolar
+            </h1>
+            <div class="user-info">
+                <span id="userDisplay">Encargado de Comedor</span>
+                <div class="btn-group">
+                    <a href="index.html" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <button class="btn btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- Sección Principal -->
+            <div class="main-section">
+                <div class="section-title">
+                    <h2><i class="fas fa-users"></i> Control de Asistencias</h2>
+                    <div>
+                        <span id="newNotificationsBadge" class="notification-badge" style="display: none;">0</span>
+                        <button class="btn btn-primary" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double"></i> Marcar Todo Leído
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalStudents">0</span>
+                        <span class="stat-label">Total Estudiantes</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="presentToday">0</span>
+                        <span class="stat-label">Presentes Hoy</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="absentToday">0</span>
+                        <span class="stat-label">Ausentes Hoy</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="mealsServed">0</span>
+                        <span class="stat-label">Almuerzos Servidos</span>
+                    </div>
+                </div>
+
+                <!-- Lista de Estudiantes -->
+                <div class="section-title">
+                    <h3><i class="fas fa-list"></i> Estudiantes del Día</h3>
+                    <button class="btn btn-success" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+
+                <div class="students-grid" id="studentsGrid">
+                    <!-- Los estudiantes se cargan dinámicamente aquí -->
+                </div>
+            </div>
+
+            <!-- Panel de Notificaciones -->
+            <div class="notifications-panel">
+                <div class="section-title">
+                    <h2><i class="fas fa-bell"></i> Notificaciones</h2>
+                    <button class="btn btn-secondary" onclick="clearNotifications()">
+                        <i class="fas fa-trash"></i> Limpiar
+                    </button>
+                </div>
+
+                <div id="notificationsList">
+                    <!-- Las notificaciones se cargan dinámicamente aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let students = JSON.parse(localStorage.getItem('comedor_students')) || [];
+        let notifications = JSON.parse(localStorage.getItem('comedor_notifications')) || [];
+
+        // Cargar datos iniciales
+        function loadInitialData() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                const user = JSON.parse(userData);
+                document.getElementById('userDisplay').textContent = user.name;
+            }
+
+            renderStudents();
+            renderNotifications();
+            updateStats();
+            checkForNewData();
+            
+            // Verificar nuevos datos cada 5 segundos
+            setInterval(checkForNewData, 5000);
+        }
+
+        // Renderizar estudiantes
+        function renderStudents() {
+            const container = document.getElementById('studentsGrid');
+            
+            if (students.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-graduate"></i>
+                        <h3>No hay estudiantes registrados</h3>
+                        <p>Las asistencias enviadas por los maestros aparecerán aquí</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ordenar estudiantes: presentes primero
+            const sortedStudents = [...students].sort((a, b) => {
+                if (a.status === 'present' && b.status !== 'present') return -1;
+                if (a.status !== 'present' && b.status === 'present') return 1;
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            let html = '';
+            sortedStudents.forEach(student => {
+                const cardClass = `student-card ${student.status}`;
+                
+                html += `
+                    <div class="${cardClass}">
+                        <div class="student-info">
+                            <div class="student-name">${student.name}</div>
+                            <div class="student-details">
+                                <div>Grado: ${student.grade}</div>
+                                <div>Sección: ${student.section}</div>
+                                <div>Maestro: ${student.teacher}</div>
+                                <div>Hora: ${new Date(student.timestamp).toLocaleTimeString()}</div>
+                            </div>
+                        </div>
+                        <div class="student-actions">
+                            <button class="btn btn-success" onclick="markMealServed('${student.id}')">
+                                <i class="fas fa-utensils"></i> Almuerzo Entregado
+                            </button>
+                            <button class="btn btn-danger" onclick="removeStudent('${student.id}')">
+                                <i class="fas fa-times"></i> Quitar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Renderizar notificaciones
+        function renderNotifications() {
+            const container = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bell-slash"></i>
+                        <h3>No hay notificaciones</h3>
+                        <p>Las notificaciones de nuevas asistencias aparecerán aquí</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ordenar notificaciones: más recientes primero
+            const sortedNotifications = [...notifications].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let html = '';
+            sortedNotifications.forEach(notification => {
+                const isNew = !notification.read;
+                const notificationClass = `notification-item ${isNew ? 'new' : ''}`;
+                
+                html += `
+                    <div class="${notificationClass}">
+                        <div class="notification-header">
+                            <strong>${notification.title}</strong>
+                            <span class="notification-time">${new Date(notification.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div class="notification-message">
+                            ${notification.message}
+                        </div>
+                        ${isNew ? `
+                            <div style="margin-top: 10px;">
+                                <button class="btn btn-primary" onclick="markNotificationAsRead('${notification.id}')" style="font-size: 0.8rem; padding: 4px 8px;">
+                                    <i class="fas fa-check"></i> Marcar como leído
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const totalStudents = students.length;
+            const presentToday = students.filter(s => s.status === 'present').length;
+            const absentToday = students.filter(s => s.status === 'absent').length;
+            const mealsServed = students.filter(s => s.mealServed).length;
+
+            document.getElementById('totalStudents').textContent = totalStudents;
+            document.getElementById('presentToday').textContent = presentToday;
+            document.getElementById('absentToday').textContent = absentToday;
+            document.getElementById('mealsServed').textContent = mealsServed;
+
+            // Actualizar badge de notificaciones
+            const newNotifications = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('newNotificationsBadge');
+            if (newNotifications > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = newNotifications;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Verificar nuevos datos
+        function checkForNewData() {
+            // Simular recepción de nuevas asistencias (en un sistema real, esto vendría de una API)
+            const newStudents = students.filter(student => !student.notified);
+            
+            newStudents.forEach(student => {
+                // Crear notificación
+                const notification = {
+                    id: 'notif_' + Date.now(),
+                    title: 'Nueva Asistencia',
+                    message: `El estudiante ${student.name} del grado ${student.grade} está ${student.status === 'present' ? 'presente' : 'ausente'}`,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    studentId: student.id
+                };
+                
+                notifications.unshift(notification);
+                student.notified = true;
+                
+                // Mostrar notificación del sistema
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Nueva Asistencia', {
+                        body: `${student.name} - ${student.grade}`,
+                        icon: '/favicon.ico'
+                    });
+                }
+            });
+
+            // Guardar y actualizar
+            if (newStudents.length > 0) {
+                localStorage.setItem('comedor_students', JSON.stringify(students));
+                localStorage.setItem('comedor_notifications', JSON.stringify(notifications));
+                renderStudents();
+                renderNotifications();
+                updateStats();
+                
+                // Sonido de notificación
+                playNotificationSound();
+            }
+        }
+
+        // Marcar almuerzo servido
+        function markMealServed(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (student) {
+                student.mealServed = true;
+                student.mealTime = new Date().toISOString();
+                
+                // Crear notificación
+                const notification = {
+                    id: 'notif_' + Date.now(),
+                    title: 'Almuerzo Entregado',
+                    message: `Almuerzo servido a ${student.name}`,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    studentId: student.id
+                };
+                
+                notifications.unshift(notification);
+                
+                localStorage.setItem('comedor_students', JSON.stringify(students));
+                localStorage.setItem('comedor_notifications', JSON.stringify(notifications));
+                
+                renderStudents();
+                renderNotifications();
+                updateStats();
+            }
+        }
+
+        // Quitar estudiante
+        function removeStudent(studentId) {
+            if (confirm('¿Estás seguro de que deseas quitar este estudiante de la lista?')) {
+                students = students.filter(s => s.id !== studentId);
+                localStorage.setItem('comedor_students', JSON.stringify(students));
+                renderStudents();
+                updateStats();
+            }
+        }
+
+        // Marcar notificación como leída
+        function markNotificationAsRead(notificationId) {
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+                localStorage.setItem('comedor_notifications', JSON.stringify(notifications));
+                renderNotifications();
+                updateStats();
+            }
+        }
+
+        // Marcar todas como leídas
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                notification.read = true;
+            });
+            localStorage.setItem('comedor_notifications', JSON.stringify(notifications));
+            renderNotifications();
+            updateStats();
+        }
+
+        // Limpiar notificaciones
+        function clearNotifications() {
+            if (confirm('¿Estás seguro de que deseas eliminar todas las notificaciones?')) {
+                notifications = [];
+                localStorage.setItem('comedor_notifications', JSON.stringify(notifications));
+                renderNotifications();
+                updateStats();
+            }
+        }
+
+        // Actualizar datos
+        function refreshData() {
+            checkForNewData();
+            alert('Datos actualizados correctamente');
+        }
+
+        // Reproducir sonido de notificación
+        function playNotificationSound() {
+            // Implementación simple de sonido
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                console.log('No se pudo reproducir sonido de notificación');
+            }
+        }
+
+        // Solicitar permisos de notificación
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+        }
+
+        // Cerrar sesión
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInitialData();
+            requestNotificationPermission();
+            
+            // Verificar autenticación
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+
+    <!-- Conexión con núcleo SGECore -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/modules/comedorModule.js"></script>
+</body>
+</html>

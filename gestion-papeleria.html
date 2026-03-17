@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papelería y Uniformes - Emma Balaguer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .main-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+
+        .site-name {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .school-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .system-name {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .exit-store-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .exit-store-btn:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        /* Banner */
+        .store-banner {
+            background: linear-gradient(135deg, #4a6fa5, #2c4a7a);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            margin: 20px 0 30px 0;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .store-banner h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .store-banner p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.2em;
+        }
+
+        /* Filtros */
+        .store-filters {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .filter-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e8eff7;
+            border-radius: 8px;
+            background: white;
+            color: #2c3e50;
+            min-width: 150px;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #4a6fa5;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            padding: 10px 15px;
+            border: 2px solid #e8eff7;
+            border-radius: 8px;
+            min-width: 250px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4a6fa5;
+        }
+
+        .search-box button {
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-box button:hover {
+            background: #2c4a7a;
+        }
+
+        /* Productos */
+        .products-section {
+            margin-bottom: 50px;
+        }
+
+        .products-section h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 300;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .product-image {
+            height: 200px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-title {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .product-description {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+
+        .product-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .size-select, .gender-select {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px 12px;
+            border: 2px solid #e8eff7;
+            border-radius: 8px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .size-select:focus, .gender-select:focus {
+            outline: none;
+            border-color: #4a6fa5;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #219653;
+        }
+
+        /* Carrito Flotante */
+        .cart-floating {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .cart-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-btn:hover {
+            transform: scale(1.1);
+            background: #c0392b;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Modal del Carrito */
+        .cart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+        }
+
+        .cart-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 2px solid #e8eff7;
+            background: #f8fafc;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .cart-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s ease;
+        }
+
+        .close-cart:hover {
+            color: #e74c3c;
+        }
+
+        .cart-items {
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 2px solid #e8eff7;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info h4 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+
+        .item-details {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .remove-item {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .remove-item:hover {
+            background: #c0392b;
+        }
+
+        .cart-total {
+            padding: 20px;
+            border-top: 2px solid #e8eff7;
+            text-align: right;
+            font-size: 18px;
+            background: #f8fafc;
+        }
+
+        .cart-actions {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            border-top: 2px solid #e8eff7;
+        }
+
+        .btn-primary {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            font-weight: bold;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #219653;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .empty-cart {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        /* Modal de Reserva */
+        .reservation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+        }
+
+        .reservation-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 2px solid #e8eff7;
+            background: #f8fafc;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .reservation-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-reservation {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s ease;
+        }
+
+        .close-reservation:hover {
+            color: #e74c3c;
+        }
+
+        .reservation-form {
+            padding: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e8eff7;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4a6fa5;
+        }
+
+        .reservation-summary {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .reservation-summary h4 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #e8eff7;
+            padding-bottom: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 2px solid #e8eff7;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .reservation-total {
+            text-align: right;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e8eff7;
+            font-size: 18px;
+        }
+
+        .reservation-code {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .code-display {
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .code {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .store-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-options {
+                flex-direction: column;
+            }
+            
+            .filter-select {
+                min-width: 100%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .search-box input {
+                min-width: 0;
+                flex: 1;
+            }
+            
+            .cart-content, .reservation-content {
+                width: 95%;
+            }
+            
+            .cart-actions, .form-actions {
+                flex-direction: column;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .exit-store-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .store-banner h1 {
+                font-size: 2em;
+            }
+            
+            .products-section h2 {
+                font-size: 24px;
+            }
+            
+            .cart-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+            
+            .cart-count {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+            }
+            
+            .product-options {
+                flex-direction: column;
+            }
+            
+            .size-select, .gender-select {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="mainApp" class="main-app">
+        <header class="main-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <div class="logo">
+                            <img src="assets/logo.png" alt="Logo Emma Balaguer" style="width: 40px; height: 40px; border-radius: 5px;">
+                        </div>
+                        <div class="site-name">
+                            <span class="school-name">Emma Balaguer de Vallejo</span>
+                            <span class="system-name">Papelería y Uniformes</span>
+                        </div>
+                    </div>
+
+                    <div class="user-section">
+                        <button id="exitStoreBtn" class="exit-store-btn">
+                            <i class="fas fa-door-open"></i> Salir de Tienda
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <!-- Banner de Papelería -->
+            <section class="store-banner">
+                <div class="banner-content">
+                    <h1><i class="fas fa-store"></i> Tienda de Uniformes Escolares</h1>
+                    <p>Uniforme oficial de la institución - Calidad garantizada</p>
+                </div>
+            </section>
+
+            <!-- Filtros y Búsqueda -->
+            <section class="store-filters">
+                <div class="filter-section">
+                    <h3>Filtrar por:</h3>
+                    <div class="filter-options">
+                        <select id="categoryFilter" class="filter-select">
+                            <option value="all">Todos los productos</option>
+                            <option value="camisetas">Camisetas</option>
+                            <option value="pantalones">Pantalones</option>
+                            <option value="deportes">Ropa Deportiva</option>
+                            <option value="utiles">Útiles Escolares</option>
+                        </select>
+                        
+                        <select id="sizeFilter" class="filter-select">
+                            <option value="all">Todas las tallas</option>
+                            <option value="S">S - Pequeña</option>
+                            <option value="M">M - Mediana</option>
+                            <option value="L">L - Grande</option>
+                            <option value="XXL">XXL - Extra Grande</option>
+                        </select>
+
+                        <select id="genderFilter" class="filter-select">
+                            <option value="all">Ambos géneros</option>
+                            <option value="F">Femenino</option>
+                            <option value="M">Masculino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="search-section">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Buscar productos...">
+                        <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Productos -->
+            <section class="products-section">
+                <h2><i class="fas fa-tshirt"></i> Catálogo de Productos</h2>
+                <div class="products-grid" id="productsGrid">
+                    <!-- Los productos se cargarán dinámicamente -->
+                </div>
+            </section>
+
+            <!-- Carrito de Compras Flotante -->
+            <div class="cart-floating" id="cartFloating">
+                <button class="cart-btn" onclick="toggleCart()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+
+            <!-- Modal del Carrito -->
+            <div class="cart-modal" id="cartModal">
+                <div class="cart-content">
+                    <div class="cart-header">
+                        <h3><i class="fas fa-shopping-cart"></i> Tu Carrito de Compras</h3>
+                        <button class="close-cart" onclick="toggleCart()">&times;</button>
+                    </div>
+                    <div class="cart-items" id="cartItems">
+                        <!-- Los items del carrito se cargarán aquí -->
+                    </div>
+                    <div class="cart-total">
+                        <strong>Total: $<span id="cartTotal">0.00</span></strong>
+                    </div>
+                    <div class="cart-actions">
+                        <button class="btn-secondary" onclick="clearCart()">Vaciar Carrito</button>
+                        <button class="btn-primary" onclick="openReservationModal()">Proceder a Reservar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Reserva -->
+            <div class="reservation-modal" id="reservationModal">
+                <div class="reservation-content">
+                    <div class="reservation-header">
+                        <h3><i class="fas fa-clipboard-list"></i> Formulario de Reserva</h3>
+                        <button class="close-reservation" onclick="closeReservationModal()">&times;</button>
+                    </div>
+                    <form id="reservationForm" class="reservation-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerCedula">Cédula *</label>
+                                <input type="text" id="customerCedula" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customerName">Nombre *</label>
+                                <input type="text" id="customerName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerLastName">Apellido *</label>
+                                <input type="text" id="customerLastName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customerPhone">Teléfono *</label>
+                                <input type="tel" id="customerPhone" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerEmail">Email</label>
+                                <input type="email" id="customerEmail">
+                            </div>
+                            <div class="form-group">
+                                <label for="customerGrade">Grado del Estudiante</label>
+                                <select id="customerGrade">
+                                    <option value="">Seleccionar grado</option>
+                                    <option value="Inicial">Inicial</option>
+                                    <option value="1ro Primaria">1ro Primaria</option>
+                                    <option value="2do Primaria">2do Primaria</option>
+                                    <option value="3ro Primaria">3ro Primaria</option>
+                                    <option value="4to Primaria">4to Primaria</option>
+                                    <option value="5to Primaria">5to Primaria</option>
+                                    <option value="6to Primaria">6to Primaria</option>
+                                    <option value="1ro Secundaria">1ro Secundaria</option>
+                                    <option value="2do Secundaria">2do Secundaria</option>
+                                    <option value="3ro Secundaria">3ro Secundaria</option>
+                                    <option value="4to Secundaria">4to Secundaria</option>
+                                    <option value="5to Secundaria">5to Secundaria</option>
+                                    <option value="6to Secundaria">6to Secundaria</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="reservation-summary">
+                            <h4>Resumen de tu Pedido</h4>
+                            <div id="reservationSummary">
+                                <!-- Resumen dinámico -->
+                            </div>
+                            <div class="reservation-total">
+                                <strong>Total a Pagar: $<span id="reservationTotal">0.00</span></strong>
+                            </div>
+                        </div>
+
+                        <div class="reservation-code">
+                            <div class="code-display">
+                                <strong>Código de Reserva:</strong>
+                                <span class="code" id="reservationCode">-----</span>
+                            </div>
+                            <small>Este código se generará automáticamente al confirmar</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeReservationModal()">Cancelar</button>
+                            <button type="submit" class="btn-primary">Confirmar Reserva</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sistema de Papelería y Uniformes para Usuarios Comunes
+        class PapeleriaSystem {
+            constructor() {
+                this.products = this.getProducts();
+                this.cart = this.loadCart();
+                this.reservations = this.loadReservations();
+                this.usedCodes = new Set(this.reservations.map(r => r.code));
+                this.init();
+            }
+
+            init() {
+                this.renderProducts();
+                this.updateCartUI();
+                this.setupEventListeners();
+                this.setupExitButton();
+            }
+
+            getProducts() {
+                return [
+                    {
+                        id: 1,
+                        name: "Camiseta Blanca Oficial",
+                        category: "camisetas",
+                        price: 450,
+                        image: "assets/camiseta-blanca.jpg",
+                        description: "Camiseta blanca oficial del uniforme escolar",
+                        sizes: ["S", "M", "L", "XXL"],
+                        genders: ["M", "F"],
+                        stock: 50
+                    },
+                    {
+                        id: 2,
+                        name: "Camiseta Azul",
+                        category: "camisetas",
+                        price: 450,
+                        image: "assets/camiseta-azul.jpg",
+                        description: "Camiseta Azul oficial del uniforme escolar",
+                        sizes: ["S", "M", "L", "XXL"],
+                        genders: ["M", "F"],
+                        stock: 50
+                    },
+                    {
+                        id: 3,
+                        name: "Camiseta Azul con Cuello Rojo",
+                        category: "camisetas",
+                        price: 480,
+                        image: "assets/camiseta-azul-rojo.jpg",
+                        description: "Camiseta azul con cuello rojo - Uniforme especial",
+                        sizes: ["S", "M", "L", "XXL"],
+                        genders: ["M", "F"],
+                        stock: 35
+                    },
+                    {
+                        id: 4,
+                        name: "Pantalón Casual Azul Oscuro",
+                        category: "pantalones",
+                        price: 650,
+                        image: "assets/pantalon-azul.jpg",
+                        description: "Pantalón casual azul oscuro - Uniforme diario",
+                        sizes: ["S", "M", "L", "XXL"],
+                        genders: ["M", "F"],
+                        stock: 30
+                    },
+                    {
+                        id: 5,
+                        name: "Pantalón de Deportes",
+                        category: "deportes",
+                        price: 550,
+                        image: "assets/pantalon-deporte.jpg",
+                        description: "Pantalón deportivo para educación física",
+                        sizes: ["S", "M", "L", "XXL"],
+                        genders: ["M", "F"],
+                        stock: 45
+                    },
+                ];
+            }
+
+            renderProducts(filteredProducts = null) {
+                const productsToShow = filteredProducts || this.products;
+                const grid = document.getElementById('productsGrid');
+                
+                grid.innerHTML = productsToShow.map(product => `
+                    <div class="product-card" data-category="${product.category}">
+                        <div class="product-image">
+                            <img src="${product.image}" alt="${product.name}" 
+                                 onerror="this.src='https://via.placeholder.com/300x200/4a6fa5/ffffff?text=${encodeURIComponent(product.name)}'">
+                            <div class="product-badge">${product.stock} en stock</div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">${product.name}</h3>
+                            <p class="product-description">${product.description}</p>
+                            <div class="product-price">$${product.price}</div>
+                            
+                            <div class="product-options">
+                                <select class="size-select" id="size-${product.id}">
+                                    <option value="">Seleccionar talla</option>
+                                    ${product.sizes.map(size => `<option value="${size}">${size}</option>`).join('')}
+                                </select>
+                                
+                                ${product.genders[0] !== 'U' ? `
+                                <select class="gender-select" id="gender-${product.id}">
+                                    <option value="">Seleccionar género</option>
+                                    ${product.genders.map(gender => `<option value="${gender}">${gender === 'M' ? 'Masculino' : 'Femenino'}</option>`).join('')}
+                                </select>
+                                ` : ''}
+                            </div>
+                            
+                            <button class="add-to-cart-btn" onclick="papeleriaSystem.addToCart(${product.id})"
+                                    data-product-id="${product.id}">
+                                <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            addToCart(productId) {
+                const product = this.products.find(p => p.id === productId);
+                if (!product) {
+                    Swal.fire('Error', 'Producto no encontrado', 'error');
+                    return;
+                }
+
+                const sizeSelect = document.getElementById(`size-${productId}`);
+                const genderSelect = document.getElementById(`gender-${productId}`);
+                
+                const size = sizeSelect ? sizeSelect.value : 'Única';
+                const gender = genderSelect ? genderSelect.value : 'U';
+
+                if ((!size || size === '') || (genderSelect && !gender)) {
+                    Swal.fire('Error', 'Por favor selecciona las opciones requeridas', 'error');
+                    return;
+                }
+
+                const cartItem = {
+                    id: Date.now(),
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    size: size,
+                    gender: gender,
+                    quantity: 1,
+                    image: product.image
+                };
+
+                this.cart.push(cartItem);
+                this.saveCart();
+                this.updateCartUI();
+                
+                Swal.fire({
+                    title: '¡Agregado!',
+                    text: 'Producto agregado al carrito',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                
+                // Reset selects
+                if (sizeSelect) sizeSelect.value = '';
+                if (genderSelect) genderSelect.value = '';
+            }
+
+            removeFromCart(itemId) {
+                this.cart = this.cart.filter(item => item.id !== itemId);
+                this.saveCart();
+                this.updateCartUI();
+            }
+
+            clearCart() {
+                this.cart = [];
+                this.saveCart();
+                this.updateCartUI();
+                toggleCart();
+                
+                Swal.fire({
+                    title: 'Carrito vaciado',
+                    text: 'Todos los productos han sido removidos',
+                    icon: 'info',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+
+            updateCartUI() {
+                const cartCount = document.getElementById('cartCount');
+                const cartItems = document.getElementById('cartItems');
+                const cartTotal = document.getElementById('cartTotal');
+
+                cartCount.textContent = this.cart.length;
+
+                if (this.cart.length === 0) {
+                    cartItems.innerHTML = '<div class="empty-cart">Tu carrito está vacío</div>';
+                    cartTotal.textContent = '0.00';
+                    return;
+                }
+
+                let total = 0;
+                cartItems.innerHTML = this.cart.map(item => {
+                    total += item.price;
+                    return `
+                        <div class="cart-item">
+                            <div class="item-info">
+                                <h4>${item.name}</h4>
+                                <div class="item-details">
+                                    <span>Talla: ${item.size}</span>
+                                    ${item.gender !== 'U' ? `<span>Género: ${item.gender === 'M' ? 'Masculino' : 'Femenino'}</span>` : ''}
+                                    <span class="item-price">$${item.price}</span>
+                                </div>
+                            </div>
+                            <button class="remove-item" onclick="papeleriaSystem.removeFromCart(${item.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+                cartTotal.textContent = total.toFixed(2);
+            }
+
+            generateReservationCode() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let code = '';
+                
+                do {
+                    code = '';
+                    for (let i = 0; i < 6; i++) {
+                        code += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                } while (this.usedCodes.has(code));
+                
+                this.usedCodes.add(code);
+                return code;
+            }
+
+            createReservation(customerData) {
+                const code = this.generateReservationCode();
+                const reservation = {
+                    code: code,
+                    customer: customerData,
+                    items: [...this.cart],
+                    total: this.cart.reduce((sum, item) => sum + item.price, 0),
+                    date: new Date().toISOString(),
+                    status: 'pending'
+                };
+
+                this.reservations.push(reservation);
+                this.saveReservations();
+                
+                return reservation;
+            }
+
+            loadCart() {
+                const saved = localStorage.getItem('papeleria_cart');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveCart() {
+                localStorage.setItem('papeleria_cart', JSON.stringify(this.cart));
+            }
+
+            loadReservations() {
+                const saved = localStorage.getItem('papeleria_reservations');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveReservations() {
+                localStorage.setItem('papeleria_reservations', JSON.stringify(this.reservations));
+            }
+
+            setupEventListeners() {
+                // Filtros
+                document.getElementById('categoryFilter').addEventListener('change', () => this.filterProducts());
+                document.getElementById('sizeFilter').addEventListener('change', () => this.filterProducts());
+                document.getElementById('genderFilter').addEventListener('change', () => this.filterProducts());
+
+                // Búsqueda
+                document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.searchProducts();
+                    }
+                });
+
+                // Formulario de reserva
+                document.getElementById('reservationForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitReservation();
+                });
+            }
+
+            setupExitButton() {
+                document.getElementById('exitStoreBtn').addEventListener('click', () => {
+                    Swal.fire({
+                        title: '¿Salir de la tienda?',
+                        text: 'Serás redirigido a la página principal',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, salir',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = 'index.html';
+                        }
+                    });
+                });
+            }
+
+            filterProducts() {
+                const category = document.getElementById('categoryFilter').value;
+                const size = document.getElementById('sizeFilter').value;
+                const gender = document.getElementById('genderFilter').value;
+
+                let filtered = this.products;
+
+                if (category !== 'all') {
+                    filtered = filtered.filter(product => product.category === category);
+                }
+
+                if (size !== 'all') {
+                    filtered = filtered.filter(product => product.sizes.includes(size));
+                }
+
+                if (gender !== 'all') {
+                    filtered = filtered.filter(product => product.genders.includes(gender));
+                }
+
+                this.renderProducts(filtered);
+            }
+
+            searchProducts() {
+                const query = document.getElementById('searchInput').value.toLowerCase();
+                
+                if (!query) {
+                    this.renderProducts();
+                    return;
+                }
+
+                const filtered = this.products.filter(product => 
+                    product.name.toLowerCase().includes(query) ||
+                    product.description.toLowerCase().includes(query) ||
+                    product.category.toLowerCase().includes(query)
+                );
+
+                this.renderProducts(filtered);
+                
+                if (filtered.length === 0) {
+                    Swal.fire('Sin resultados', 'No se encontraron productos con esos criterios', 'info');
+                }
+            }
+
+            openReservationModal() {
+                if (this.cart.length === 0) {
+                    Swal.fire('Carrito vacío', 'Agrega productos al carrito antes de reservar', 'warning');
+                    return;
+                }
+
+                const modal = document.getElementById('reservationModal');
+                const summary = document.getElementById('reservationSummary');
+                const total = document.getElementById('reservationTotal');
+                
+                // Generar código de reserva
+                document.getElementById('reservationCode').textContent = this.generateReservationCode();
+                
+                // Actualizar resumen
+                let summaryHTML = '';
+                let reservationTotal = 0;
+                
+                this.cart.forEach(item => {
+                    reservationTotal += item.price;
+                    summaryHTML += `
+                        <div class="summary-item">
+                            <span>${item.name} (${item.size})</span>
+                            <span>$${item.price}</span>
+                        </div>
+                    `;
+                });
+                
+                summary.innerHTML = summaryHTML;
+                total.textContent = reservationTotal.toFixed(2);
+                
+                modal.style.display = 'block';
+                toggleCart(); // Cerrar carrito
+            }
+
+            submitReservation() {
+                const customerData = {
+                    cedula: document.getElementById('customerCedula').value,
+                    name: document.getElementById('customerName').value,
+                    lastName: document.getElementById('customerLastName').value,
+                    phone: document.getElementById('customerPhone').value,
+                    email: document.getElementById('customerEmail').value,
+                    grade: document.getElementById('customerGrade').value
+                };
+
+                // Validaciones básicas
+                if (!customerData.cedula || !customerData.name || !customerData.lastName || !customerData.phone) {
+                    Swal.fire('Error', 'Por favor completa todos los campos obligatorios', 'error');
+                    return;
+                }
+
+                const reservation = this.createReservation(customerData);
+                
+                Swal.fire({
+                    title: '¡Reserva Confirmada!',
+                    html: `
+                        <p>Tu reserva ha sido creada exitosamente</p>
+                        <p><strong>Código de reserva: ${reservation.code}</strong></p>
+                        <p>Total: $${reservation.total.toFixed(2)}</p>
+                        <p>Guarda este código para consultar tu reserva</p>
+                    `,
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar'
+                });
+
+                // Limpiar carrito y formulario
+                this.clearCart();
+                document.getElementById('reservationForm').reset();
+                closeReservationModal();
+            }
+        }
+
+        // Funciones globales para los eventos onclick
+        let papeleriaSystem;
+
+        function toggleCart() {
+            const modal = document.getElementById('cartModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function clearCart() {
+            papeleriaSystem.clearCart();
+        }
+
+        function openReservationModal() {
+            papeleriaSystem.openReservationModal();
+        }
+
+        function closeReservationModal() {
+            document.getElementById('reservationModal').style.display = 'none';
+        }
+
+        function searchProducts() {
+            papeleriaSystem.searchProducts();
+        }
+
+        // Inicializar el sistema cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            papeleriaSystem = new PapeleriaSystem();
+        });
+    </script>
+
+    <!-- Conexión con núcleo SGECore -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/modules/papeleriaModule.js"></script>
+</body>
+</html>

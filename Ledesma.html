@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Calificaciones - Prof. Raymond Ledesma</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, var(--dark-color) 0%, #1a252f 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .user-details h3 {
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .user-details p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .connection-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .connection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #95a5a6;
+        }
+        
+        .status-indicator.online {
+            background-color: #2ecc71;
+            box-shadow: 0 0 8px #2ecc71;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        .btn-connect {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--success-color) 0%, #27ae60 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+            margin-top: 15px;
+        }
+        
+        .btn-connect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-connect:active {
+            transform: translateY(0);
+        }
+        
+        .server-info {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 10px;
+            text-align: center;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        
+        .server-info.online {
+            color: #2ecc71;
+        }
+        
+        .server-info.demo {
+            color: #f39c12;
+        }
+        
+        .courses-section {
+            margin-top: 25px;
+        }
+        
+        .courses-section h3 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .courses-list {
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .courses-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .courses-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        
+        .courses-list::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+        
+        .course-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .course-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+        
+        .course-item.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .course-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .course-details {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .course-title {
+            font-size: 2rem;
+            color: var(--dark-color);
+            font-weight: 700;
+        }
+        
+        .course-subtitle {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #27ae60 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #d68910 100%);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        /* Resto de estilos se mantienen igual que en tu código original */
+        .period-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+        }
+        
+        .period-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .period-btn.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        }
+        
+        .students-table-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+        
+        .search-box {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 280px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        th {
+            padding: 20px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--dark-color);
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        td {
+            padding: 18px 20px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .student-number {
+            text-align: center;
+            width: 80px;
+            font-weight: 600;
+        }
+        
+        .grade-input {
+            width: 90px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .grade-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-block;
+            text-align: center;
+            min-width: 100px;
+        }
+        
+        .status-approved {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--success-color);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        
+        .status-pending {
+            background-color: rgba(243, 156, 18, 0.15);
+            color: var(--warning-color);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+        
+        .status-failed {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--danger-color);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        .no-course-selected {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .no-course-icon {
+            font-size: 5rem;
+            color: #ddd;
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .no-course-text {
+            font-size: 1.5rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, var(--success-color) 0%, #27ae60 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            font-weight: 600;
+            max-width: 400px;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.error {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #c0392b 100%);
+        }
+        
+        .toast.warning {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #d68910 100%);
+        }
+        
+        .toast.info {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+        
+        /* Stats Container */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 15px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+        
+        .stat-approved {
+            color: var(--success-color);
+        }
+        
+        .stat-pending {
+            color: var(--warning-color);
+        }
+        
+        .stat-failed {
+            color: var(--danger-color);
+        }
+        
+        /* Modal de exportación */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: modalAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .modal-header {
+            padding: 25px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+            }
+            
+            .courses-list {
+                max-height: 250px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .period-selector {
+                flex-direction: column;
+            }
+            
+            .period-btn {
+                min-width: 100%;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Estilos adicionales para las carpetas (si decides implementarlas) */
+        .folders-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .folder-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .folder-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar con lista de cursos -->
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar">RL</div>
+                <div class="user-details">
+                    <h3>Prof. Raymond Ledesma</h3>
+                    <p>Departamento de Informática</p>
+                    <p style="font-size: 0.8rem; margin-top: 5px; opacity: 0.7;">r.ledesma@instituto.edu</p>
+                </div>
+            </div>
+            
+            <!-- Sección de conexión al sistema -->
+            <div class="connection-section">
+                <div class="connection-header">
+                    <span style="font-weight: 600;">Sistema Principal</span>
+                    <div class="connection-status">
+                        <div class="status-indicator" id="systemStatus"></div>
+                        <span id="statusText">Conectando...</span>
+                    </div>
+                </div>
+                
+                <button class="btn-connect" id="connectToSystem">
+                    <span>🔗</span>
+                    Conectar al Módulo Principal
+                </button>
+                
+                <div class="server-info" id="serverInfo">
+                    <div>Servidor: <span id="serverAddress">192.168.1.100:8080</span></div>
+                    <div id="serverStatus">Verificando conexión...</div>
+                </div>
+            </div>
+            
+            <!-- Lista de cursos -->
+            <div class="courses-section">
+                <h3>Mis Cursos</h3>
+                <div class="courses-list" id="coursesList">
+                    <!-- Los cursos se cargarán dinámicamente -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenido principal -->
+        <div class="main-content">
+            <div class="header">
+                <div>
+                    <h1 class="course-title" id="courseTitle">Sistema de Gestión de Calificaciones</h1>
+                    <div class="course-subtitle" id="courseSubtitle">
+                        <span>Prof. Raymond Ledesma</span>
+                        <span>•</span>
+                        <span id="currentTime">Cargando hora...</span>
+                    </div>
+                </div>
+                <div class="actions" id="courseActions" style="display: none;">
+                    <button class="btn btn-outline" id="viewFolders">
+                        <span>📁</span>
+                        Ver Carpetas
+                    </button>
+                    <button class="btn btn-success" id="saveGrades">
+                        <span>💾</span>
+                        Guardar Cambios
+                    </button>
+                    <button class="btn btn-warning" id="sendToLAN">
+                        <span>📡</span>
+                        Enviar por LAN
+                    </button>
+                    <button class="btn btn-primary" id="exportAll">
+                        <span>📊</span>
+                        Exportar Todo
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Estadísticas del curso -->
+            <div id="statsContainer" style="display: none;"></div>
+            
+            <!-- Selector de periodos -->
+            <div id="periodSelector" style="display: none;"></div>
+            
+            <!-- Contenido del curso -->
+            <div id="courseContent">
+                <div class="no-course-selected">
+                    <div class="no-course-icon">📚</div>
+                    <h2 class="no-course-text">Bienvenido al Sistema de Gestión</h2>
+                    <p style="max-width: 500px; margin: 0 auto 25px; line-height: 1.6;">
+                        Seleccione un curso de la lista lateral para comenzar a gestionar calificaciones.
+                        Puede calificar estudiantes, generar reportes y exportar datos.
+                    </p>
+                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="gradeManager.quickStart()">
+                            <span>🚀</span>
+                            Inicio Rápido
+                        </button>
+                        <button class="btn btn-outline" onclick="gradeManager.showHelp()">
+                            <span>❓</span>
+                            Ayuda
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de transferencia LAN -->
+            <div id="lanTransferSection" style="display: none;">
+                <div class="lan-transfer-section">
+                    <h3>📡 Envío de Calificaciones por Red LAN</h3>
+                    <div class="lan-form">
+                        <input type="text" class="lan-input" id="lanIP" placeholder="Dirección IP del servidor (ej: 192.168.1.100)" value="192.168.1.100">
+                        <input type="text" class="lan-input" id="lanPort" placeholder="Puerto (ej: 8080)" value="8080">
+                        <button class="btn btn-warning" id="scanNetwork">
+                            <span>🔍</span>
+                            Escanear Red
+                        </button>
+                        <button class="btn btn-primary" id="sendFiles">
+                            <span>📤</span>
+                            Enviar Archivos
+                        </button>
+                    </div>
+                    <div class="lan-status" id="lanStatus">
+                        Estado: Listo para enviar archivos
+                    </div>
+                    <div class="transfer-progress" id="transferProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0% completado</div>
+                    </div>
+                    <div class="network-devices" id="networkDevices" style="display: none;">
+                        <h4>Dispositivos encontrados en la red:</h4>
+                        <div class="device-list" id="deviceList">
+                            <!-- Los dispositivos se cargarán dinámicamente -->
+                        </div>
+                    </div>
+                    <div class="file-list" id="fileList" style="display: none;">
+                        <h4>Archivos preparados para envío:</h4>
+                        <div id="filesToSend">
+                            <!-- Los archivos se cargarán dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast para notificaciones -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Modal de exportación -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Exportar Calificaciones</h2>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <p style="margin-bottom: 15px;">Se va a exportar el siguiente curso:</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p><strong id="exportCourseName"></strong></p>
+                        <p style="margin-top: 10px;"><strong>Total de estudiantes:</strong> <span id="exportStudentCount" style="font-weight: 700;"></span></p>
+                        <p><strong>Fecha de exportación:</strong> <span id="exportDate" style="font-weight: 700;"></span></p>
+                    </div>
+                    <p>¿Desea continuar con la exportación?</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelExport">Cancelar</button>
+                <button class="btn btn-primary" id="confirmExport">Exportar a Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // SISTEMA DE GESTIÓN DE CALIFICACIONES
+        // Prof. Raymond Ledesma
+        // =============================================
+        
+        class GradeManager {
+            constructor() {
+                this.courses = [];
+                this.selectedCourseId = null;
+                this.selectedPeriod = 1;
+                this.currentView = 'table';
+                this.gradesData = {};
+                this.filesToTransfer = [];
+                this.teacherProfile = {
+                    id: 'ledesma_r',
+                    name: 'Raymond Ledesma',
+                    initials: 'RL',
+                    department: 'Informática',
+                    email: 'r.ledesma@instituto.edu',
+                    status: 'online',
+                    serverIP: '192.168.1.100:8080'
+                };
+                
+                this.initializeApp();
+            }
+            
+            initializeApp() {
+                console.log('🚀 Iniciando sistema del Prof. Raymond Ledesma...');
+                
+                // Inicializar componentes
+                this.loadCourses();
+                this.renderCourses();
+                this.setupEventListeners();
+                this.updateCurrentTime();
+                this.checkServerConnection();
+                
+                // Actualizar hora cada minuto
+                setInterval(() => this.updateCurrentTime(), 60000);
+                
+                console.log('✅ Sistema inicializado correctamente');
+            }
+            
+            loadCourses() {
+                console.log('📚 Cargando cursos del profesor...');
+                
+                // Cursos de 4to año
+                const fourthGrade = [
+                    {
+                        id: 1,
+                        name: "4to E - Desarrollo de Bases de Datos",
+                        code: "DBD-4E",
+                        subject: "Desarrollo de Bases de Datos",
+                        schedule: "Lunes y Miércoles 7:00-9:00",
+                        room: "Lab. 301",
+                        students: this.generateStudents(22)
+                    },
+                    {
+                        id: 2,
+                        name: "4to D - Desarrollo de Bases de Datos",
+                        code: "DBD-4D",
+                        subject: "Desarrollo de Bases de Datos",
+                        schedule: "Martes y Jueves 9:00-11:00",
+                        room: "Lab. 302",
+                        students: this.generateStudents(24)
+                    }
+                ];
+                
+                // Cursos de 5to año
+                const fifthGrade = [
+                    {
+                        id: 3,
+                        name: "5to E - Portales Web",
+                        code: "PW-5E",
+                        subject: "Portales Web y Recursos Multimedia",
+                        schedule: "Lunes y Viernes 11:00-13:00",
+                        room: "Lab. 401",
+                        students: this.generateStudents(20)
+                    },
+                    {
+                        id: 4,
+                        name: "5to F - Portales Web",
+                        code: "PW-5F",
+                        subject: "Portales Web y Recursos Multimedia",
+                        schedule: "Martes y Jueves 14:00-16:00",
+                        room: "Lab. 402",
+                        students: this.generateStudents(18)
+                    }
+                ];
+                
+                this.courses = [...fourthGrade, ...fifthGrade];
+                
+                // Inicializar datos de calificaciones
+                this.courses.forEach(course => {
+                    this.gradesData[course.id] = {};
+                    course.students.forEach(student => {
+                        this.gradesData[course.id][student.id] = {
+                            period1: student.initialGrade || null,
+                            period2: null,
+                            period3: null,
+                            period4: null
+                        };
+                    });
+                });
+                
+                console.log(`✅ ${this.courses.length} cursos cargados correctamente`);
+            }
+            
+            generateStudents(count) {
+                const students = [];
+                const names = [
+                    "Ana García López", "Carlos Rodríguez Martínez", "María Fernández García", 
+                    "José Martínez Sánchez", "Laura González Pérez", "David López Ruiz",
+                    "Elena Sánchez Gómez", "Francisco Jiménez Díaz", "Isabel Torres Romero",
+                    "Javier Romero Ortega", "Marta Díaz Castro", "Óscar Vega Morales",
+                    "Patricia Ortega Silva", "Raúl Navarro Mendoza", "Sara Castro Herrera",
+                    "Daniel Morales Ríos", "Carmen Ruiz Vargas", "Alejandro Silva Paredes",
+                    "Rosa Mendoza Montes", "Miguel Ángel Cruz Peña", "Teresa Herrera Ortega",
+                    "Roberto Vargas Rojas", "Lucía Paredes Núñez", "Fernando Ríos Medina"
+                ];
+                
+                for (let i = 0; i < count; i++) {
+                    const studentId = i + 1;
+                    const nameIndex = i % names.length;
+                    const hasGrade = Math.random() > 0.3;
+                    const initialGrade = hasGrade ? Math.floor(Math.random() * 31) + 70 : null;
+                    
+                    students.push({
+                        id: studentId,
+                        name: names[nameIndex],
+                        listNumber: studentId,
+                        initialGrade: initialGrade
+                    });
+                }
+                
+                return students;
+            }
+            
+            renderCourses() {
+                const coursesList = document.getElementById('coursesList');
+                if (!coursesList) return;
+                
+                coursesList.innerHTML = '';
+                
+                this.courses.forEach(course => {
+                    const courseElement = document.createElement('div');
+                    courseElement.className = `course-item ${this.selectedCourseId === course.id ? 'active' : ''}`;
+                    courseElement.dataset.courseId = course.id;
+                    
+                    courseElement.innerHTML = `
+                        <div class="course-name">${course.name}</div>
+                        <div class="course-details">${course.code} • ${course.schedule}</div>
+                        <div class="course-details">${course.room} • ${course.students.length} estudiantes</div>
+                    `;
+                    
+                    coursesList.appendChild(courseElement);
+                });
+            }
+            
+            setupEventListeners() {
+                console.log('🔧 Configurando eventos...');
+                
+                // Evento para seleccionar cursos
+                document.getElementById('coursesList').addEventListener('click', (e) => {
+                    const courseItem = e.target.closest('.course-item');
+                    if (courseItem) {
+                        const courseId = parseInt(courseItem.dataset.courseId);
+                        this.selectCourse(courseId);
+                    }
+                });
+                
+                // Botón de conexión al sistema principal
+                document.getElementById('connectToSystem').addEventListener('click', () => {
+                    this.connectToMainSystem();
+                });
+                
+                // Botones de acciones del curso
+                document.getElementById('saveGrades')?.addEventListener('click', () => {
+                    this.saveGrades();
+                });
+                
+                document.getElementById('exportAll')?.addEventListener('click', () => {
+                    this.showExportModal();
+                });
+                
+                document.getElementById('viewFolders')?.addEventListener('click', () => {
+                    this.toggleView();
+                });
+                
+                document.getElementById('sendToLAN')?.addEventListener('click', () => {
+                    this.toggleLANSection();
+                });
+                
+                // Botones de escaneo y envío LAN
+                document.getElementById('scanNetwork')?.addEventListener('click', () => {
+                    this.scanNetwork();
+                });
+                
+                document.getElementById('sendFiles')?.addEventListener('click', () => {
+                    this.sendFilesToLAN();
+                });
+                
+                // Eventos del modal de exportación
+                document.getElementById('closeModal')?.addEventListener('click', () => {
+                    this.hideExportModal();
+                });
+                
+                document.getElementById('cancelExport')?.addEventListener('click', () => {
+                    this.hideExportModal();
+                });
+                
+                document.getElementById('confirmExport')?.addEventListener('click', () => {
+                    this.exportToExcel();
+                });
+                
+                // Cerrar modal haciendo clic fuera
+                document.getElementById('exportModal')?.addEventListener('click', (e) => {
+                    if (e.target.id === 'exportModal') {
+                        this.hideExportModal();
+                    }
+                });
+                
+                console.log('✅ Eventos configurados correctamente');
+            }
+            
+            async checkServerConnection() {
+                console.log('🌐 Verificando conexión con el servidor...');
+                
+                const systemStatus = document.getElementById('systemStatus');
+                const statusText = document.getElementById('statusText');
+                const serverInfo = document.getElementById('serverInfo');
+                const serverAddress = document.getElementById('serverAddress');
+                const serverStatus = document.getElementById('serverStatus');
+                
+                if (!systemStatus || !statusText) return;
+                
+                try {
+                    // Simular verificación de conexión (en producción sería una solicitud real)
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Para demostración, simulamos conexión exitosa
+                    const isConnected = Math.random() > 0.2; // 80% de probabilidad de éxito
+                    
+                    if (isConnected) {
+                        systemStatus.className = 'status-indicator online';
+                        statusText.textContent = 'En línea';
+                        statusText.style.color = '#2ecc71';
+                        
+                        serverInfo.className = 'server-info online';
+                        serverAddress.textContent = this.teacherProfile.serverIP;
+                        serverStatus.textContent = 'Conectado al servidor principal';
+                        serverStatus.style.color = '#2ecc71';
+                        
+                        console.log('✅ Servidor principal conectado');
+                    } else {
+                        systemStatus.className = 'status-indicator';
+                        statusText.textContent = 'Desconectado';
+                        statusText.style.color = '#e74c3c';
+                        
+                        serverInfo.className = 'server-info demo';
+                        serverAddress.textContent = this.teacherProfile.serverIP;
+                        serverStatus.textContent = 'Modo demostración activado';
+                        serverStatus.style.color = '#f39c12';
+                        
+                        console.log('⚠️ Servidor desconectado - Modo demostración');
+                    }
+                } catch (error) {
+                    console.error('❌ Error verificando conexión:', error);
+                    
+                    systemStatus.className = 'status-indicator';
+                    statusText.textContent = 'Error de conexión';
+                    statusText.style.color = '#e74c3c';
+                    
+                    serverInfo.className = 'server-info demo';
+                    serverStatus.textContent = 'Error al conectar con el servidor';
+                }
+            }
+            
+            connectToMainSystem() {
+                console.log('🔗 Conectando al sistema principal...');
+                
+                // Verificar si hay conexión
+                const statusText = document.getElementById('statusText')?.textContent;
+                const isOnline = statusText === 'En línea';
+                
+                if (!isOnline) {
+                    const useDemo = confirm('No hay conexión con el servidor principal. ¿Desea continuar en modo demostración?');
+                    if (!useDemo) return;
+                }
+                
+                // Mostrar mensaje de conexión
+                this.showToast('Conectando al módulo principal...', 'info');
+                
+                // Preparar datos del profesor
+                const teacherData = {
+                    id: this.teacherProfile.id,
+                    name: this.teacherProfile.name,
+                    department: this.teacherProfile.department,
+                    email: this.teacherProfile.email,
+                    status: 'online',
+                    courses: this.courses.length,
+                    lastConnection: new Date().toISOString(),
+                    timestamp: Date.now()
+                };
+                
+                // Almacenar datos en localStorage
+                try {
+                    localStorage.setItem('currentTeacher', JSON.stringify(teacherData));
+                    localStorage.setItem('teacherSessionActive', 'true');
+                    localStorage.setItem('sessionStartTime', Date.now().toString());
+                    
+                    console.log('✅ Datos del profesor almacenados en localStorage');
+                    
+                    // Redirigir después de 1.5 segundos
+                    setTimeout(() => {
+                        this.showToast('Redirigiendo al módulo principal...', 'success');
+                        
+                        // En producción, esta sería la URL real del sistema
+                        setTimeout(() => {
+                            window.location.href = 'modulo-docentes.html';
+                        }, 1000);
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('❌ Error almacenando datos:', error);
+                    this.showToast('Error al conectar con el sistema', 'error');
+                }
+            }
+            
+            selectCourse(courseId) {
+                console.log(`🎯 Seleccionando curso ID: ${courseId}`);
+                
+                this.selectedCourseId = courseId;
+                this.selectedPeriod = 1;
+                this.currentView = 'table';
+                
+                this.renderCourses();
+                this.renderCourseDetails();
+                
+                this.showToast('Curso seleccionado correctamente', 'success');
+            }
+            
+            renderCourseDetails() {
+                const course = this.courses.find(c => c.id === this.selectedCourseId);
+                if (!course) return;
+                
+                // Actualizar título
+                document.getElementById('courseTitle').textContent = course.name;
+                document.getElementById('courseSubtitle').innerHTML = `
+                    <span>${course.code}</span>
+                    <span>•</span>
+                    <span>${course.schedule}</span>
+                    <span>•</span>
+                    <span>${course.room}</span>
+                `;
+                
+                // Mostrar acciones
+                document.getElementById('courseActions').style.display = 'flex';
+                
+                // Calcular y mostrar estadísticas
+                const stats = this.calculateCourseStats(course);
+                this.renderCourseStats(stats, course.students.length);
+                
+                // Renderizar tabla de estudiantes
+                this.renderStudentsTable(course);
+            }
+            
+            renderCourseStats(stats, totalStudents) {
+                const statsContainer = document.getElementById('statsContainer');
+                statsContainer.style.display = 'block';
+                
+                statsContainer.innerHTML = `
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Estudiantes</div>
+                            <div class="stat-value">${totalStudents}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Aprobados</div>
+                            <div class="stat-value stat-approved">${stats.approved}</div>
+                            <div class="stat-label">${Math.round((stats.approved / totalStudents) * 100)}%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Pendientes</div>
+                            <div class="stat-value stat-pending">${stats.pending}</div>
+                            <div class="stat-label">${Math.round((stats.pending / totalStudents) * 100)}%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Reprobados</div>
+                            <div class="stat-value stat-failed">${stats.failed}</div>
+                            <div class="stat-label">${Math.round((stats.failed / totalStudents) * 100)}%</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            calculateCourseStats(course) {
+                let approved = 0;
+                let pending = 0;
+                let failed = 0;
+                
+                if (!course || !this.gradesData[course.id]) {
+                    return { approved, pending, failed };
+                }
+                
+                Object.values(this.gradesData[course.id]).forEach(grades => {
+                    const finalGrade = this.calculateFinalGrade(grades);
+                    const status = this.getGradeStatus(finalGrade);
+                    
+                    if (status === 'approved') approved++;
+                    else if (status === 'pending') pending++;
+                    else if (status === 'failed') failed++;
+                });
+                
+                return { approved, pending, failed };
+            }
+            
+            renderStudentsTable(course) {
+                const courseContent = document.getElementById('courseContent');
+                if (!courseContent) return;
+                
+                // Renderizar selector de periodos
+                this.renderPeriodSelector();
+                
+                // Renderizar tabla
+                courseContent.innerHTML = `
+                    <div class="students-table-container">
+                        <div class="table-header">
+                            <div class="table-title">Calificaciones - ${course.name}</div>
+                            <input type="text" class="search-box" id="studentSearch" placeholder="Buscar estudiante por nombre o número...">
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="student-number">No.</th>
+                                        <th>Estudiante</th>
+                                        <th>Calificación</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody">
+                                    ${this.renderStudentRows(course.students)}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+                // Configurar eventos
+                this.setupGradeInputListeners();
+                this.setupSearchFunctionality();
+            }
+            
+            renderStudentRows(students) {
+                return students.map(student => {
+                    const grade = this.gradesData[this.selectedCourseId][student.id][`period${this.selectedPeriod}`];
+                    const status = this.getGradeStatus(grade);
+                    const statusText = this.getStatusText(status);
+                    
+                    return `
+                        <tr>
+                            <td class="student-number">${student.listNumber}</td>
+                            <td>${student.name}</td>
+                            <td>
+                                <input type="number" 
+                                       min="0" 
+                                       max="100" 
+                                       class="grade-input" 
+                                       data-student-id="${student.id}"
+                                       value="${grade !== null ? grade : ''}"
+                                       placeholder="0-100">
+                            </td>
+                            <td>
+                                <span class="status-badge status-${status}">${statusText}</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem;" 
+                                        onclick="gradeManager.viewStudentDetails(${student.id})">
+                                    Ver
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            setupGradeInputListeners() {
+                const gradeInputs = document.querySelectorAll('.grade-input');
+                gradeInputs.forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        this.handleGradeChange(e);
+                    });
+                    
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.handleGradeChange(e);
+                            e.target.blur();
+                        }
+                    });
+                });
+            }
+            
+            handleGradeChange(event) {
+                const studentId = parseInt(event.target.dataset.studentId);
+                const gradeValue = event.target.value.trim();
+                const grade = gradeValue !== '' ? parseInt(gradeValue) : null;
+                
+                if (grade !== null && (isNaN(grade) || grade < 0 || grade > 100)) {
+                    this.showToast('La calificación debe estar entre 0 y 100', 'error');
+                    event.target.value = this.gradesData[this.selectedCourseId][studentId][`period${this.selectedPeriod}`] || '';
+                    return;
+                }
+                
+                // Actualizar datos
+                this.gradesData[this.selectedCourseId][studentId][`period${this.selectedPeriod}`] = grade;
+                
+                // Actualizar estado visual
+                this.updateStudentStatus(studentId, grade);
+                
+                // Actualizar estadísticas
+                this.updateCourseStats();
+                
+                this.showToast('Calificación guardada', 'success');
+            }
+            
+            updateStudentStatus(studentId, grade) {
+                const row = document.querySelector(`.grade-input[data-student-id="${studentId}"]`)?.closest('tr');
+                if (!row) return;
+                
+                const statusCell = row.querySelector('.status-badge');
+                if (!statusCell) return;
+                
+                const status = this.getGradeStatus(grade);
+                const statusText = this.getStatusText(status);
+                
+                statusCell.className = `status-badge status-${status}`;
+                statusCell.textContent = statusText;
+            }
+            
+            updateCourseStats() {
+                const course = this.courses.find(c => c.id === this.selectedCourseId);
+                if (!course) return;
+                
+                const stats = this.calculateCourseStats(course);
+                this.renderCourseStats(stats, course.students.length);
+            }
+            
+            renderPeriodSelector() {
+                const periodSelector = document.getElementById('periodSelector');
+                periodSelector.style.display = 'block';
+                
+                periodSelector.innerHTML = `
+                    <div class="period-selector">
+                        <button class="period-btn ${this.selectedPeriod === 1 ? 'active' : ''}" data-period="1">
+                            Periodo 1
+                        </button>
+                        <button class="period-btn ${this.selectedPeriod === 2 ? 'active' : ''}" data-period="2">
+                            Periodo 2
+                        </button>
+                        <button class="period-btn ${this.selectedPeriod === 3 ? 'active' : ''}" data-period="3">
+                            Periodo 3
+                        </button>
+                        <button class="period-btn ${this.selectedPeriod === 4 ? 'active' : ''}" data-period="4">
+                            Periodo 4
+                        </button>
+                        <button class="period-btn ${this.selectedPeriod === 'final' ? 'active' : ''}" data-period="final">
+                            Nota Final
+                        </button>
+                    </div>
+                `;
+                
+                // Configurar eventos de los botones de periodo
+                document.querySelectorAll('.period-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const period = e.target.dataset.period;
+                        this.selectedPeriod = period === 'final' ? 'final' : parseInt(period);
+                        this.renderCourseDetails();
+                    });
+                });
+            }
+            
+            setupSearchFunctionality() {
+                const searchBox = document.getElementById('studentSearch');
+                if (!searchBox) return;
+                
+                searchBox.addEventListener('input', (e) => {
+                    this.filterStudents(e.target.value);
+                });
+            }
+            
+            filterStudents(searchTerm) {
+                const rows = document.querySelectorAll('#studentsTableBody tr');
+                const term = searchTerm.toLowerCase().trim();
+                
+                rows.forEach(row => {
+                    const studentName = row.cells[1].textContent.toLowerCase();
+                    const studentNumber = row.cells[0].textContent;
+                    const isVisible = studentName.includes(term) || studentNumber.includes(term);
+                    
+                    row.style.display = isVisible ? '' : 'none';
+                });
+            }
+            
+            getGradeStatus(grade) {
+                if (grade === null || grade === undefined) return 'pending';
+                if (grade >= 70) return 'approved';
+                if (grade >= 60) return 'pending';
+                return 'failed';
+            }
+            
+            getStatusText(status) {
+                const statusMap = {
+                    'approved': 'Aprobado',
+                    'pending': 'Pendiente',
+                    'failed': 'Reprobado'
+                };
+                return statusMap[status] || 'Desconocido';
+            }
+            
+            calculateFinalGrade(grades) {
+                const validGrades = Object.values(grades).filter(grade => grade !== null);
+                if (validGrades.length === 0) return null;
+                
+                const sum = validGrades.reduce((total, grade) => total + grade, 0);
+                return sum / validGrades.length;
+            }
+            
+            saveGrades() {
+                if (!this.selectedCourseId) {
+                    this.showToast('No hay ningún curso seleccionado', 'error');
+                    return;
+                }
+                
+                console.log('💾 Guardando calificaciones...', this.gradesData[this.selectedCourseId]);
+                
+                // Simular guardado
+                setTimeout(() => {
+                    this.showToast('Calificaciones guardadas correctamente', 'success');
+                }, 800);
+            }
+            
+            showExportModal() {
+                if (!this.selectedCourseId) {
+                    this.showToast('Seleccione un curso primero', 'error');
+                    return;
+                }
+                
+                const course = this.courses.find(c => c.id === this.selectedCourseId);
+                if (!course) return;
+                
+                document.getElementById('exportCourseName').textContent = `${course.name} (${course.code})`;
+                document.getElementById('exportStudentCount').textContent = course.students.length;
+                document.getElementById('exportDate').textContent = this.getFormattedDate();
+                
+                document.getElementById('exportModal').style.display = 'flex';
+            }
+            
+            hideExportModal() {
+                document.getElementById('exportModal').style.display = 'none';
+            }
+            
+            exportToExcel() {
+                const course = this.courses.find(c => c.id === this.selectedCourseId);
+                if (!course) return;
+                
+                console.log(`📊 Exportando curso: ${course.name}`);
+                
+                try {
+                    // Crear datos para exportación
+                    const exportData = [
+                        ['LISTA DE CALIFICACIONES'],
+                        [`Curso: ${course.name}`],
+                        [`Código: ${course.code}`],
+                        [`Profesor: ${this.teacherProfile.name}`],
+                        [`Fecha: ${this.getFormattedDate()}`],
+                        [],
+                        ['No.', 'Estudiante', 'P1', 'P2', 'P3', 'P4', 'Promedio', 'Estado']
+                    ];
+                    
+                    // Agregar datos de estudiantes
+                    course.students.forEach(student => {
+                        const grades = this.gradesData[course.id][student.id];
+                        const finalGrade = this.calculateFinalGrade(grades);
+                        const status = this.getGradeStatus(finalGrade);
+                        
+                        exportData.push([
+                            student.listNumber,
+                            student.name,
+                            grades.period1 !== null ? grades.period1 : '-',
+                            grades.period2 !== null ? grades.period2 : '-',
+                            grades.period3 !== null ? grades.period3 : '-',
+                            grades.period4 !== null ? grades.period4 : '-',
+                            finalGrade !== null ? finalGrade.toFixed(1) : '-',
+                            this.getStatusText(status)
+                        ]);
+                    });
+                    
+                    // Crear libro de Excel
+                    const wb = XLSX.utils.book_new();
+                    const ws = XLSX.utils.aoa_to_sheet(exportData);
+                    
+                    // Ajustar anchos de columna
+                    const colWidths = [
+                        { wch: 6 },   // No.
+                        { wch: 30 },  // Estudiante
+                        { wch: 8 },   // P1
+                        { wch: 8 },   // P2
+                        { wch: 8 },   // P3
+                        { wch: 8 },   // P4
+                        { wch: 12 },  // Promedio
+                        { wch: 12 }   // Estado
+                    ];
+                    ws['!cols'] = colWidths;
+                    
+                    XLSX.utils.book_append_sheet(wb, ws, 'Calificaciones');
+                    
+                    // Descargar archivo
+                    const fileName = `calificaciones_${course.code}_${this.getFormattedDate('file')}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
+                    
+                    this.hideExportModal();
+                    this.showToast('Archivo Excel exportado correctamente', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ Error al exportar:', error);
+                    this.showToast('Error al exportar el archivo', 'error');
+                }
+            }
+            
+            toggleView() {
+                this.currentView = this.currentView === 'table' ? 'folders' : 'table';
+                
+                const viewButton = document.getElementById('viewFolders');
+                if (viewButton) {
+                    viewButton.innerHTML = this.currentView === 'table' ? 
+                        '<span>📁</span> Ver Carpetas' : 
+                        '<span>📋</span> Ver Tabla';
+                }
+                
+                // Aquí podrías implementar la vista de carpetas
+                this.showToast('Vista de carpetas en desarrollo', 'info');
+            }
+            
+            toggleLANSection() {
+                const lanSection = document.getElementById('lanTransferSection');
+                const isVisible = lanSection.style.display === 'block';
+                
+                lanSection.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible) {
+                    this.updateLANStatus('info', 'Listo para enviar archivos');
+                }
+            }
+            
+            async scanNetwork() {
+                this.updateLANStatus('info', 'Escaneando la red en busca de dispositivos...');
+                
+                // Simular escaneo
+                setTimeout(() => {
+                    this.updateLANStatus('success', 'Escaneo completado');
+                    this.showNetworkDevices();
+                }, 2000);
+            }
+            
+            showNetworkDevices() {
+                // Implementar lógica para mostrar dispositivos de red
+                this.showToast('Funcionalidad de escaneo en desarrollo', 'info');
+            }
+            
+            sendFilesToLAN() {
+                this.updateLANStatus('info', 'Enviando archivos...');
+                
+                // Simular envío
+                setTimeout(() => {
+                    this.updateLANStatus('success', 'Archivos enviados correctamente');
+                }, 1500);
+            }
+            
+            updateLANStatus(type, message) {
+                const statusElement = document.getElementById('lanStatus');
+                if (statusElement) {
+                    statusElement.textContent = `Estado: ${message}`;
+                    statusElement.className = `lan-status ${type}`;
+                }
+            }
+            
+            updateCurrentTime() {
+                const timeElement = document.getElementById('currentTime');
+                if (!timeElement) return;
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                const dateString = now.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                timeElement.innerHTML = `
+                    <span>${dateString}</span>
+                    <span>•</span>
+                    <span>${timeString}</span>
+                `;
+            }
+            
+            getFormattedDate(format = 'display') {
+                const now = new Date();
+                
+                if (format === 'file') {
+                    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+                }
+                
+                return now.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+            
+            showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                
+                toast.textContent = message;
+                toast.className = 'toast';
+                
+                if (type === 'error') {
+                    toast.classList.add('error');
+                } else if (type === 'warning') {
+                    toast.classList.add('warning');
+                } else if (type === 'info') {
+                    toast.classList.add('info');
+                }
+                
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Métodos de utilidad para demostración
+            quickStart() {
+                if (this.courses.length > 0) {
+                    this.selectCourse(this.courses[0].id);
+                } else {
+                    this.showToast('No hay cursos disponibles', 'warning');
+                }
+            }
+            
+            showHelp() {
+                alert('📚 Sistema de Gestión de Calificaciones\n\n' +
+                      '1. Seleccione un curso de la lista lateral\n' +
+                      '2. Ingrese calificaciones en la tabla\n' +
+                      '3. Use los botones superiores para guardar o exportar\n' +
+                      '4. Conéctese al sistema principal para más funcionalidades\n\n' +
+                      'Prof. Raymond Ledesma\nDepartamento de Informática');
+            }
+            
+            viewStudentDetails(studentId) {
+                const course = this.courses.find(c => c.id === this.selectedCourseId);
+                if (!course) return;
+                
+                const student = course.students.find(s => s.id === studentId);
+                if (!student) return;
+                
+                const grades = this.gradesData[this.selectedCourseId][studentId];
+                const finalGrade = this.calculateFinalGrade(grades);
+                
+                alert(`📋 Detalles del Estudiante\n\n` +
+                      `Nombre: ${student.name}\n` +
+                      `No. Lista: ${student.listNumber}\n\n` +
+                      `Calificaciones:\n` +
+                      `• Periodo 1: ${grades.period1 !== null ? grades.period1 : 'Pendiente'}\n` +
+                      `• Periodo 2: ${grades.period2 !== null ? grades.period2 : 'Pendiente'}\n` +
+                      `• Periodo 3: ${grades.period3 !== null ? grades.period3 : 'Pendiente'}\n` +
+                      `• Periodo 4: ${grades.period4 !== null ? grades.period4 : 'Pendiente'}\n\n` +
+                      `Promedio Final: ${finalGrade !== null ? finalGrade.toFixed(1) : 'Pendiente'}\n` +
+                      `Estado: ${this.getStatusText(this.getGradeStatus(finalGrade))}`);
+            }
+        }
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                window.gradeManager = new GradeManager();
+                console.log('🎉 Aplicación cargada correctamente');
+            } catch (error) {
+                console.error('❌ Error al inicializar la aplicación:', error);
+                alert('Error al cargar la aplicación. Por favor, recargue la página.');
+            }
+        });
+    </script>
+    
+    <!-- Biblioteca para exportación a Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Conexión con núcleo SGECore -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/modules/docentesModule.js"></script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo de Psicología - SGE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --psi-primary: #7c3aed;
+            --psi-primary-dark: #6d28d9;
+            --psi-light: #a78bfa;
+            --psi-bg: #f5f3ff;
+            --psi-card: #ffffff;
+            --psi-text: #1e1b4b;
+            --psi-success: #10b981;
+            --psi-warning: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--psi-bg); color: var(--psi-text); min-height: 100vh; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        .header {
+            background: linear-gradient(135deg, var(--psi-primary), var(--psi-primary-dark));
+            color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+        .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        .header a { color: white; text-decoration: none; font-size: 0.9rem; opacity: 0.9; }
+        .header a:hover { opacity: 1; text-decoration: underline; }
+        .card {
+            background: var(--psi-card); border-radius: 12px; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+            padding: 24px; margin-bottom: 24px; border-left: 4px solid var(--psi-primary);
+        }
+        .card h2 { color: var(--psi-primary); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-weight: 600; font-size: 0.9rem; color: var(--psi-text); }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 12px; border: 1px solid #e9d5ff; border-radius: 8px; font-size: 0.95rem;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--psi-primary); box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+        }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            font-size: 0.95rem; transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background: var(--psi-primary); color: white; }
+        .btn-secondary { background: #e9d5ff; color: var(--psi-primary-dark); }
+        .btn-success { background: var(--psi-success); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 10px 18px; border: none; background: #e9d5ff; color: var(--psi-primary-dark); border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .tab:hover { background: #ddd6fe; }
+        .tab.active { background: var(--psi-primary); color: white; }
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+        .caso-item {
+            padding: 16px; border: 1px solid #e9d5ff; border-radius: 8px; margin-bottom: 12px;
+            background: #faf5ff; transition: background 0.2s;
+        }
+        .caso-item:hover { background: #f3e8ff; }
+        .caso-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .caso-title { font-weight: 600; color: var(--psi-primary-dark); }
+        .caso-meta { font-size: 0.85rem; color: #6b7280; }
+        .caso-desc { font-size: 0.9rem; margin-top: 8px; line-height: 1.5; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-abierto { background: #dbeafe; color: #1d4ed8; }
+        .badge-cerrado { background: #d1fae5; color: #047857; }
+        .badge-direccion { background: #fef3c7; color: #b45309; }
+        .empty-state { text-align: center; padding: 40px; color: #6b7280; }
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-brain"></i> Módulo de Psicología</h1>
+            <a href="../index.html"><i class="fas fa-arrow-left"></i> Volver al sistema</a>
+        </header>
+
+        <div class="card">
+            <h2><i class="fas fa-plus-circle"></i> Registrar nuevo caso</h2>
+            <form id="formCaso" class="form-grid">
+                <div class="form-group">
+                    <label for="fecha">Fecha *</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="estudiante">Nombre del estudiante *</label>
+                    <input type="text" id="estudiante" placeholder="Nombre completo" required>
+                </div>
+                <div class="form-group">
+                    <label for="grado">Curso o grado *</label>
+                    <input type="text" id="grado" placeholder="Ej: 10mo A" required>
+                </div>
+                <div class="form-group">
+                    <label for="padrePresente">¿Asistió padre o tutor? *</label>
+                    <select id="padrePresente" required>
+                        <option value="false">No</option>
+                        <option value="true">Sí</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tipoCaso">Tipo de caso *</label>
+                    <select id="tipoCaso" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="conflicto_estudiantes">Conflicto entre estudiantes</option>
+                        <option value="conducta">Problema de conducta</option>
+                        <option value="emocional">Problema emocional</option>
+                        <option value="academico">Problema académico</option>
+                        <option value="familiar">Problema familiar</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group full">
+                    <label for="descripcion">Descripción detallada del caso *</label>
+                    <textarea id="descripcion" placeholder="Describa lo sucedido..." required></textarea>
+                </div>
+                <div class="form-group full">
+                    <label for="acciones">Acciones tomadas</label>
+                    <textarea id="acciones" placeholder="Qué se hizo o se recomienda..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="enviadoDireccion">¿Enviar reporte a Dirección?</label>
+                    <select id="enviadoDireccion">
+                        <option value="false">No</option>
+                        <option value="true">Sí</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="psicologaResponsable">Psicóloga responsable</label>
+                    <input type="text" id="psicologaResponsable" placeholder="Nombre">
+                </div>
+                <div class="form-group full" style="flex-direction: row; gap: 12px;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar caso</button>
+                    <button type="reset" class="btn btn-secondary">Limpiar</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-folder-open"></i> Historial y seguimiento</h2>
+            <div class="tabs">
+                <button class="tab active" data-tab="historial">Historial completo</button>
+                <button class="tab" data-tab="abiertos">Casos abiertos</button>
+                <button class="tab" data-tab="direccion">Enviados a Dirección</button>
+            </div>
+            <div id="sectionHistorial" class="section-content active">
+                <div id="listHistorial"></div>
+            </div>
+            <div id="sectionAbiertos" class="section-content">
+                <div id="listAbiertos"></div>
+            </div>
+            <div id="sectionDireccion" class="section-content">
+                <div id="listDireccion"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/core/eventBus.js"></script>
+    <script src="../js/core/dataStore.js"></script>
+    <script src="../js/core/authSystem.js"></script>
+    <script src="../js/core/systemCore.js"></script>
+    <script src="../js/modules/psicologiaModule.js"></script>
+    <script>
+        (function () {
+            const psi = window.SGECore && window.SGECore.psicologia;
+            if (!psi) {
+                console.warn('[psicologia] SGECore.psicologia no disponible');
+                return;
+            }
+
+            psi.suscribirCasosDeDocentes();
+
+            document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                try {
+                    const u = JSON.parse(userData);
+                    document.getElementById('psicologaResponsable').value = u.name || '';
+                } catch (_) {}
+            }
+
+            document.getElementById('formCaso').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const datos = {
+                    fecha: document.getElementById('fecha').value,
+                    estudiante: document.getElementById('estudiante').value,
+                    grado: document.getElementById('grado').value,
+                    padrePresente: document.getElementById('padrePresente').value === 'true',
+                    tipoCaso: document.getElementById('tipoCaso').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    acciones: document.getElementById('acciones').value,
+                    enviadoDireccion: document.getElementById('enviadoDireccion').value === 'true',
+                    psicologaResponsable: document.getElementById('psicologaResponsable').value
+                };
+                psi.registrarCaso(datos);
+                this.reset();
+                document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+                renderAll();
+            });
+
+            document.querySelectorAll('.tab').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
+                    document.querySelectorAll('.section-content').forEach(function (s) { s.classList.remove('active'); });
+                    this.classList.add('active');
+                    const tab = this.getAttribute('data-tab');
+                    document.getElementById('section' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+                    renderAll();
+                });
+            });
+
+            function renderCaso(c) {
+                const badges = [];
+                if (c.estado === 'abierto') badges.push('<span class="badge badge-abierto">Abierto</span>');
+                else badges.push('<span class="badge badge-cerrado">Cerrado</span>');
+                if (c.enviadoDireccion) badges.push('<span class="badge badge-direccion">Enviado a Dirección</span>');
+                const tipoLabels = {
+                    conflicto_estudiantes: 'Conflicto entre estudiantes',
+                    conducta: 'Problema de conducta',
+                    emocional: 'Problema emocional',
+                    academico: 'Problema académico',
+                    familiar: 'Problema familiar',
+                    otro: 'Otro'
+                };
+                const div = document.createElement('div');
+                div.className = 'caso-item';
+                div.innerHTML = '<div class="caso-header"><span class="caso-title">' + c.estudiante + ' - ' + c.grado + '</span><div>' + badges.join(' ') + '</div></div>' +
+                    '<div class="caso-meta">' + c.fecha + ' | ' + (tipoLabels[c.tipoCaso] || c.tipoCaso) + (c.padrePresente ? ' | Padre/tutor presente' : '') + '</div>' +
+                    '<div class="caso-desc">' + (c.descripcion || '').substring(0, 150) + (c.descripcion && c.descripcion.length > 150 ? '...' : '') + '</div>' +
+                    (c.acciones ? '<div class="caso-meta" style="margin-top:8px">Acciones: ' + c.acciones.substring(0, 80) + (c.acciones.length > 80 ? '...' : '') + '</div>' : '') +
+                    '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">' +
+                    (c.estado === 'abierto' ? '<button class="btn btn-sm btn-success btn-cerrar" data-id="' + c.id + '"><i class="fas fa-check"></i> Cerrar caso</button>' : '') +
+                    (!c.enviadoDireccion ? '<button class="btn btn-sm btn-primary btn-enviar" data-id="' + c.id + '"><i class="fas fa-paper-plane"></i> Enviar a Dirección</button>' : '') +
+                    '</div>';
+                return div;
+            }
+
+            function renderList(containerId, casos) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                el.innerHTML = '';
+                if (!casos || casos.length === 0) {
+                    el.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay casos en esta sección</p></div>';
+                    return;
+                }
+                casos.forEach(function (c) {
+                    const item = renderCaso(c);
+                    el.appendChild(item);
+                });
+                el.querySelectorAll('.btn-cerrar').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        psi.cerrarCaso(this.getAttribute('data-id'));
+                        renderAll();
+                    });
+                });
+                el.querySelectorAll('.btn-enviar').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        psi.enviarReporteDireccion(this.getAttribute('data-id'));
+                        renderAll();
+                    });
+                });
+            }
+
+            function renderAll() {
+                if (!psi) return;
+                renderList('listHistorial', psi.obtenerCasos());
+                renderList('listAbiertos', psi.obtenerCasos('abiertos'));
+                renderList('listDireccion', psi.obtenerCasos('enviados_direccion'));
+            }
+
+            psi.subscribeReportes(renderAll);
+            renderAll();
+
+            if (window.SGECore && window.SGECore.systemCore && typeof window.SGECore.systemCore.init === 'function') {
+                window.SGECore.systemCore.init();
+            }
+        })();
+    </script>
+</body>
+</html>

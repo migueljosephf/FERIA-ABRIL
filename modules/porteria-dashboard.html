@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Escolar - Portería</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Sistema de Diseño Unificado -->
+    <link rel="stylesheet" href="../css/design-system.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Sistema Central de Comunicación -->
+    <script src="../js/systemDataManager.js"></script>
+    <script src="../js/systemBridge.js"></script>
+    
+    <style>
+        :root {
+            --porteria-color: #e67e22;
+            --porteria-light: #fdebd0;
+            --porteria-dark: #d35400;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--porteria-color), var(--porteria-dark));
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: var(--porteria-color);
+            font-size: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--porteria-color);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Sections */
+        .content-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--porteria-light);
+        }
+
+        .section-title {
+            color: var(--porteria-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--porteria-color);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-porteria {
+            background: var(--porteria-color);
+            color: white;
+        }
+
+        .btn-porteria:hover {
+            background: var(--porteria-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: var(--porteria-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tr:hover {
+            background: var(--porteria-light);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-puntual {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-tarde {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+        
+        /* ESTILOS ESPECÍFICOS DEL MÓDULO USANDO SISTEMA DE DISEÑO */
+        
+        /* Sidebar específico del módulo */
+        .sidebar {
+            background: var(--primary);
+        }
+        
+        .sidebar-header {
+            background: var(--primary-dark);
+        }
+        
+        /* Botones específicos del módulo */
+        .btn-porteria {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-porteria:hover {
+            background: var(--primary-hover);
+        }
+        
+        /* Tarjetas específicas del módulo */
+        .stat-card {
+            border-left: 4px solid var(--primary);
+        }
+        
+        .stat-icon {
+            color: var(--primary);
+        }
+        
+        /* Tablas específicas del módulo */
+        .data-table th {
+            background: var(--primary);
+        }
+        
+        /* Badges específicos del módulo */
+        .badge-activo {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .badge-pendiente {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .balance-positive {
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .balance-negative {
+            color: var(--error);
+            font-weight: bold;
+        }
+        
+        /* Secciones específicas del módulo */
+        .section-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        /* Animaciones específicas del módulo */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight var(--transition);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-shield-alt"></i> Portería</h2>
+            <p>Control de Acceso</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-action="showSection" data-section="dashboardSection">
+                    <i class="fas fa-tachometer-alt"></i> Panel Principal
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="registroSection">
+                    <i class="fas fa-user-plus"></i> Registro de Acceso
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="historialSection">
+                    <i class="fas fa-history"></i> Historial
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="amonestacionesSection">
+                    <i class="fas fa-exclamation-triangle"></i> Amonestaciones
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="logout">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> Sistema de Control de Acceso</h1>
+            <div class="user-info">
+                <span id="userRole">Portería</span>
+                <button class="btn btn-danger" onclick="porteriaDashboard.logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <section id="dashboardSection" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-tachometer-alt"></i> Panel Principal
+                </h2>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3 id="totalAccesos">0</h3>
+                    <p>Total de Accesos Hoy</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <h3 id="totalTardanzas">0</h3>
+                    <p>Tardanzas Hoy</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-user-tie"></i>
+                    <h3 id="totalVisitantes">0</h3>
+                    <p>Visitantes Hoy</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3 id="totalEstudiantes">0</h3>
+                    <p>Estudiantes Hoy</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registro Section -->
+        <section id="registroSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-user-plus"></i> Registro de Acceso
+                </h2>
+            </div>
+            
+            <form id="accesoForm">
+                <div class="form-group">
+                    <label for="nombreVisitante">Nombre Completo:</label>
+                    <input type="text" id="nombreVisitante" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cedula">Cédula:</label>
+                    <input type="text" id="cedula" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tipoPersona">Tipo de Persona:</label>
+                    <select id="tipoPersona" class="form-control" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="estudiante">Estudiante</option>
+                        <option value="empleado">Empleado</option>
+                        <option value="visitante">Visitante</option>
+                        <option value="docente">Docente</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="horaEntrada">Hora de Entrada:</label>
+                    <input type="time" id="horaEntrada" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivo">Motivo de Visita:</label>
+                    <textarea id="motivo" class="form-control" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-porteria">
+                    <i class="fas fa-save"></i> Registrar Acceso
+                </button>
+            </form>
+        </section>
+
+        <!-- Historial Section -->
+        <section id="historialSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-history"></i> Historial de Accesos
+                </h2>
+                <button class="btn btn-porteria" onclick="porteriaDashboard.exportarExcel()">
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>Tipo</th>
+                            <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Amonestaciones Section -->
+        <section id="amonestacionesSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-exclamation-triangle"></i> Amonestaciones
+                </h2>
+                <button class="btn btn-porteria" onclick="porteriaDashboard.generarAmonestaciones()">
+                    <i class="fas fa-sync"></i> Generar Reporte
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Estudiante</th>
+                            <th>Cédula</th>
+                            <th>Hora Llegada</th>
+                            <th>Minutos Tardanza</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="amonestacionesTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        class PorteriaDashboard {
+            constructor() {
+                this.currentUser = null;
+                this.systemDataManager = null;
+                this.accesos = [];
+                this.amonestaciones = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.loadUserData();
+                this.setupEventListeners();
+                this.loadInitialData();
+                this.updateStats();
+            }
+
+            loadUserData() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const username = urlParams.get('user') || 'porteria';
+                this.currentUser = { username, name: 'Portería', role: 'porteria' };
+                
+                if (typeof window.systemDataManager !== 'undefined') {
+                    this.systemDataManager = window.systemDataManager;
+                }
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const action = link.dataset.action;
+                        const section = link.dataset.section;
+                        this.handleAction(action, { section });
+                    });
+                });
+
+                // Form submission
+                const accesoForm = document.getElementById('accesoForm');
+                if (accesoForm) {
+                    accesoForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.registrarAcceso();
+                    });
+                }
+
+                // Auto set current time
+                const horaEntrada = document.getElementById('horaEntrada');
+                if (horaEntrada) {
+                    const now = new Date();
+                    horaEntrada.value = now.toTimeString().slice(0, 5);
+                }
+            }
+
+            handleAction(action, data = {}) {
+                switch (action) {
+                    case 'showSection':
+                        this.showSection(data.section);
+                        break;
+                    case 'logout':
+                        this.logout();
+                        break;
+                    default:
+                        console.log('Acción no reconocida:', action);
+                }
+            }
+
+            showSection(sectionId) {
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Show selected section
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+
+                // Update nav active state
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+
+                // Load section-specific data
+                if (sectionId === 'historialSection') {
+                    this.loadHistorial();
+                } else if (sectionId === 'amonestacionesSection') {
+                    this.loadAmonestaciones();
+                }
+            }
+
+            loadInitialData() {
+                const storedAccesos = localStorage.getItem('porteria_accesos');
+                const storedAmonestaciones = localStorage.getItem('porteria_amonestaciones');
+                
+                if (storedAccesos) {
+                    this.accesos = JSON.parse(storedAccesos);
+                }
+                
+                if (storedAmonestaciones) {
+                    this.amonestaciones = JSON.parse(storedAmonestaciones);
+                }
+            }
+
+            registrarAcceso() {
+                const nombre = document.getElementById('nombreVisitante').value;
+                const cedula = document.getElementById('cedula').value;
+                const tipoPersona = document.getElementById('tipoPersona').value;
+                const horaEntrada = document.getElementById('horaEntrada').value;
+                const motivo = document.getElementById('motivo').value;
+
+                // Determinar estado (puntual/tarde)
+                const horaLimite = '07:30';
+                const estado = horaEntrada > horaLimite ? 'tarde' : 'puntual';
+
+                const acceso = {
+                    id: 'acc_' + Date.now(),
+                    nombre,
+                    cedula,
+                    tipoPersona,
+                    horaEntrada,
+                    horaSalida: '',
+                    motivo,
+                    estado,
+                    fecha: new Date().toISOString().split('T')[0],
+                    timestamp: new Date().toISOString()
+                };
+
+                this.accesos.push(acceso);
+                this.saveAccesos();
+
+                // Si es tarde, generar amonestación
+                if (estado === 'tarde' && (tipoPersona === 'estudiante' || tipoPersona === 'docente')) {
+                    this.generarAmonestacion(acceso);
+                }
+
+                this.showToast('Acceso registrado correctamente', 'success');
+                document.getElementById('accesoForm').reset();
+                
+                // Reset time
+                const horaEntradaInput = document.getElementById('horaEntrada');
+                const now = new Date();
+                horaEntradaInput.value = now.toTimeString().slice(0, 5);
+                
+                this.updateStats();
+            }
+
+            generarAmonestacion(acceso) {
+                const horaLimite = new Date(`2000-01-01T07:30:00`);
+                const horaLlegada = new Date(`2000-01-01T${acceso.horaEntrada}:00`);
+                const minutosTardanza = Math.floor((horaLlegada - horaLimite) / 60000);
+
+                const amonestacion = {
+                    id: 'amo_' + Date.now(),
+                    estudiante: acceso.nombre,
+                    cedula: acceso.cedula,
+                    horaLlegada: acceso.horaEntrada,
+                    minutosTardanza,
+                    motivo: 'Llegada tarde al centro educativo',
+                    estado: 'activa',
+                    fecha: acceso.fecha,
+                    idAcceso: acceso.id
+                };
+
+                this.amonestaciones.push(amonestacion);
+                this.saveAmonestaciones();
+            }
+
+            saveAccesos() {
+                localStorage.setItem('porteria_accesos', JSON.stringify(this.accesos));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarAcceso) {
+                    this.accesos.forEach(acceso => {
+                        this.systemDataManager.guardarAcceso(acceso);
+                    });
+                }
+            }
+
+            saveAmonestaciones() {
+                localStorage.setItem('porteria_amonestaciones', JSON.stringify(this.amonestaciones));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarAmonestacion) {
+                    this.amonestaciones.forEach(amonestacion => {
+                        this.systemDataManager.guardarAmonestacion(amonestacion);
+                    });
+                }
+            }
+
+            updateStats() {
+                const today = new Date().toISOString().split('T')[0];
+                const todayAccesos = this.accesos.filter(a => a.fecha === today);
+                const todayTardanzas = todayAccesos.filter(a => a.estado === 'tarde');
+                const todayVisitantes = todayAccesos.filter(a => a.tipoPersona === 'visitante');
+                const todayEstudiantes = todayAccesos.filter(a => a.tipoPersona === 'estudiante');
+
+                document.getElementById('totalAccesos').textContent = todayAccesos.length;
+                document.getElementById('totalTardanzas').textContent = todayTardanzas.length;
+                document.getElementById('totalVisitantes').textContent = todayVisitantes.length;
+                document.getElementById('totalEstudiantes').textContent = todayEstudiantes.length;
+            }
+
+            loadHistorial() {
+                const tbody = document.getElementById('historialTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.accesos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay registros de acceso</td></tr>';
+                    return;
+                }
+
+                // Ordenar por fecha descendente
+                const sortedAccesos = [...this.accesos].sort((a, b) => 
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                );
+
+                sortedAccesos.forEach(acceso => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${acceso.fecha}</td>
+                        <td>${acceso.nombre}</td>
+                        <td>${acceso.cedula}</td>
+                        <td>${acceso.tipoPersona}</td>
+                        <td>${acceso.horaEntrada}</td>
+                        <td>${acceso.horaSalida || '-'}</td>
+                        <td>
+                            <span class="status-badge status-${acceso.estado}">
+                                ${acceso.estado === 'puntual' ? 'Puntual' : 'Tarde'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="porteriaDashboard.registrarSalida('${acceso.id}')">
+                                <i class="fas fa-sign-out-alt"></i> Salida
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            loadAmonestaciones() {
+                const tbody = document.getElementById('amonestacionesTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.amonestaciones.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay amonestaciones registradas</td></tr>';
+                    return;
+                }
+
+                const sortedAmonestaciones = [...this.amonestaciones].sort((a, b) => 
+                    new Date(b.fecha) - new Date(a.fecha)
+                );
+
+                sortedAmonestaciones.forEach(amonestacion => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${amonestacion.fecha}</td>
+                        <td>${amonestacion.estudiante}</td>
+                        <td>${amonestacion.cedula}</td>
+                        <td>${amonestacion.horaLlegada}</td>
+                        <td>${amonestacion.minutosTardanza} min</td>
+                        <td>${amonestacion.motivo}</td>
+                        <td>
+                            <span class="status-badge status-tarde">
+                                ${amonestacion.estado}
+                            </span>
+                        </td>
+                    `;
+                });
+            }
+
+            registrarSalida(accesoId) {
+                const acceso = this.accesos.find(a => a.id === accesoId);
+                if (acceso) {
+                    const now = new Date();
+                    acceso.horaSalida = now.toTimeString().slice(0, 5);
+                    this.saveAccesos();
+                    this.loadHistorial();
+                    this.showToast('Salida registrada correctamente', 'success');
+                }
+            }
+
+            generarAmonestaciones() {
+                this.loadAmonestaciones();
+                this.showToast('Reporte de amonestaciones generado', 'success');
+            }
+
+            exportarExcel() {
+                if (this.accesos.length === 0) {
+                    this.showToast('No hay datos para exportar', 'warning');
+                    return;
+                }
+
+                const data = this.accesos.map(acceso => ({
+                    'Fecha': acceso.fecha,
+                    'Nombre': acceso.nombre,
+                    'Cédula': acceso.cedula,
+                    'Tipo': acceso.tipoPersona,
+                    'Hora Entrada': acceso.horaEntrada,
+                    'Hora Salida': acceso.horaSalida || 'Pendiente',
+                    'Estado': acceso.estado === 'puntual' ? 'Puntual' : 'Tarde',
+                    'Motivo': acceso.motivo || 'N/A'
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Accesos');
+
+                const fileName = `accesos_porteria_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+
+                this.showToast('Datos exportados correctamente', 'success');
+            }
+
+            showToast(message, type = 'info') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    icon: type,
+                    title: message
+                });
+            }
+
+            logout() {
+                Swal.fire({
+                    title: 'Cerrar Sesión',
+                    text: '¿Estás seguro de que deseas cerrar sesión?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e67e22',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: 'Sí, cerrar sesión',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '../index.html';
+                    }
+                });
+            }
+        }
+
+        // Initialize dashboard
+        let porteriaDashboard;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            porteriaDashboard = new PorteriaDashboard();
+            window.porteriaDashboard = porteriaDashboard;
+        });
+    </script>
+</body>
+</html>

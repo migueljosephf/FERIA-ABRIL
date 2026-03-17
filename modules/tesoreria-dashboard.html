@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Escolar - Tesorería</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Sistema de Diseño Unificado -->
+    <link rel="stylesheet" href="../css/design-system.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Sistema Central de Comunicación -->
+    <script src="../js/systemDataManager.js"></script>
+    <script src="../js/systemBridge.js"></script>
+    
+    <style>
+        /* ESTILOS ESPECÍFICOS DEL MÓDULO USANDO SISTEMA DE DISEÑO */
+        
+        /* Sidebar específico del módulo */
+        .sidebar {
+            background: var(--primary-dark);
+        }
+        
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+        
+        /* Botones específicos del módulo */
+        .btn-tesoreria {
+            background: var(--primary-dark);
+            color: white;
+        }
+        
+        .btn-tesoreria:hover {
+            background: var(--primary);
+        }
+        
+        /* Tarjetas específicas del módulo */
+        .stat-card {
+            border-left: 4px solid var(--primary-dark);
+        }
+        
+        .stat-icon {
+            color: var(--primary-dark);
+        }
+        
+        /* Tablas específicas del módulo */
+        .data-table th {
+            background: var(--primary-dark);
+        }
+        
+        /* Secciones específicas del módulo */
+        .section-title {
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        /* Balance específico */
+        .balance-positive {
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .balance-negative {
+            color: var(--error);
+            font-weight: bold;
+        }
+        
+        /* Estados financieros */
+        .badge-ingreso {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .badge-egreso {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+        
+        .badge-pendiente {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-coins"></i> Tesorería</h2>
+            <p>Contabilidad y Finanzas</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-action="showSection" data-section="dashboardSection">
+                    <i class="fas fa-tachometer-alt"></i> Panel Principal
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="movimientosSection">
+                    <i class="fas fa-exchange-alt"></i> Movimientos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="catalogoSection">
+                    <i class="fas fa-book"></i> Catálogo de Cuentas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="conciliacionSection">
+                    <i class="fas fa-balance-scale"></i> Conciliación Bancaria
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="reportesSection">
+                    <i class="fas fa-file-invoice"></i> Reportes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="logout">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-coins"></i> Tesorería y Contabilidad</h1>
+            <div class="user-info">
+                <span id="userRole">Tesorería</span>
+                <button class="btn btn-danger" onclick="tesoreriaDashboard.logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <section id="dashboardSection" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-tachometer-alt"></i> Panel Principal
+                </h2>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-arrow-down"></i>
+                    <h3 id="totalIngresos">$0.00</h3>
+                    <p>Total Ingresos</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-arrow-up"></i>
+                    <h3 id="totalEgresos">$0.00</h3>
+                    <p>Total Egresos</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-balance-scale"></i>
+                    <h3 id="balanceTotal" class="balance-positive">$0.00</h3>
+                    <p>Balance Total</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-list-alt"></i>
+                    <h3 id="totalMovimientos">0</h3>
+                    <p>Total Movimientos</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Movimientos Section -->
+        <section id="movimientosSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-exchange-alt"></i> Registro de Movimientos
+                </h2>
+                <button class="btn btn-tesoreria" onclick="tesoreriaDashboard.nuevoMovimiento()">
+                    <i class="fas fa-plus"></i> Nuevo Movimiento
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Monto</th>
+                            <th>Referencia</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="movimientosTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Catálogo Section -->
+        <section id="catalogoSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-book"></i> Catálogo de Cuentas
+                </h2>
+                <button class="btn btn-tesoreria" onclick="tesoreriaDashboard.nuevaCuenta()">
+                    <i class="fas fa-plus"></i> Nueva Cuenta
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre de Cuenta</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Saldo Inicial</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="catalogoTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Conciliación Section -->
+        <section id="conciliacionSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-balance-scale"></i> Conciliación Bancaria
+                </h2>
+                <button class="btn btn-tesoreria" onclick="tesoreriaDashboard.nuevaConciliacion()">
+                    <i class="fas fa-plus"></i> Nueva Conciliación
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Banco</th>
+                            <th>Cuenta</th>
+                            <th>Saldo Libros</th>
+                            <th>Saldo Banco</th>
+                            <th>Diferencia</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="conciliacionTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Reportes Section -->
+        <section id="reportesSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-file-invoice"></i> Reportes Financieros
+                </h2>
+                <div>
+                    <button class="btn btn-success" onclick="tesoreriaDashboard.generarReporteMensual()">
+                        <i class="fas fa-calendar-alt"></i> Reporte Mensual
+                    </button>
+                    <button class="btn btn-warning" onclick="tesoreriaDashboard.generarReporteAnual()">
+                        <i class="fas fa-calendar"></i> Reporte Anual
+                    </button>
+                    <button class="btn btn-tesoreria" onclick="tesoreriaDashboard.exportarExcel()">
+                        <i class="fas fa-file-excel"></i> Exportar Excel
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo de Reporte</th>
+                            <th>Período</th>
+                            <th>Total Ingresos</th>
+                            <th>Total Egresos</th>
+                            <th>Balance</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportesTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        class TesoreriaDashboard {
+            constructor() {
+                this.currentUser = null;
+                this.systemDataManager = null;
+                this.movimientos = [];
+                this.cuentas = [];
+                this.conciliaciones = [];
+                this.reportes = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.loadUserData();
+                this.setupEventListeners();
+                this.loadInitialData();
+                this.updateStats();
+            }
+
+            loadUserData() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const username = urlParams.get('user') || 'tesoreria';
+                this.currentUser = { username, name: 'Tesorería', role: 'tesoreria' };
+                
+                if (typeof window.systemDataManager !== 'undefined') {
+                    this.systemDataManager = window.systemDataManager;
+                }
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const action = link.dataset.action;
+                        const section = link.dataset.section;
+                        this.handleAction(action, { section });
+                    });
+                });
+            }
+
+            handleAction(action, data = {}) {
+                switch (action) {
+                    case 'showSection':
+                        this.showSection(data.section);
+                        break;
+                    case 'logout':
+                        this.logout();
+                        break;
+                    default:
+                        console.log('Acción no reconocida:', action);
+                }
+            }
+
+            showSection(sectionId) {
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Show selected section
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+
+                // Update nav active state
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+
+                // Load section-specific data
+                if (sectionId === 'movimientosSection') {
+                    this.loadMovimientos();
+                } else if (sectionId === 'catalogoSection') {
+                    this.loadCatalogo();
+                } else if (sectionId === 'conciliacionSection') {
+                    this.loadConciliaciones();
+                } else if (sectionId === 'reportesSection') {
+                    this.loadReportes();
+                }
+            }
+
+            loadInitialData() {
+                const storedMovimientos = localStorage.getItem('tesoreria_movimientos');
+                const storedCuentas = localStorage.getItem('tesoreria_cuentas');
+                const storedConciliaciones = localStorage.getItem('tesoreria_conciliaciones');
+                const storedReportes = localStorage.getItem('tesoreria_reportes');
+                
+                if (storedMovimientos) {
+                    this.movimientos = JSON.parse(storedMovimientos);
+                }
+                
+                if (storedCuentas) {
+                    this.cuentas = JSON.parse(storedCuentas);
+                }
+                
+                if (storedConciliaciones) {
+                    this.conciliaciones = JSON.parse(storedConciliaciones);
+                }
+                
+                if (storedReportes) {
+                    this.reportes = JSON.parse(storedReportes);
+                }
+
+                // Cargar datos iniciales si no existen
+                if (this.cuentas.length === 0) {
+                    this.loadCuentasIniciales();
+                }
+            }
+
+            loadCuentasIniciales() {
+                this.cuentas = [
+                    {
+                        id: 'cta_1',
+                        codigo: '1-01-01-01',
+                        nombre: 'Caja Chica',
+                        tipo: 'Activo',
+                        descripcion: 'Fondos para gastos menores',
+                        saldoInicial: 5000.00,
+                        estado: 'Activa'
+                    },
+                    {
+                        id: 'cta_2',
+                        codigo: '1-01-01-02',
+                        nombre: 'Banco Popular - Cuenta Corriente',
+                        tipo: 'Activo',
+                        descripcion: 'Cuenta bancaria principal',
+                        saldoInicial: 50000.00,
+                        estado: 'Activa'
+                    },
+                    {
+                        id: 'cta_3',
+                        codigo: '4-01-01-01',
+                        nombre: 'Matrículas',
+                        tipo: 'Ingreso',
+                        descripcion: 'Ingresos por matrículas escolares',
+                        saldoInicial: 0.00,
+                        estado: 'Activa'
+                    },
+                    {
+                        id: 'cta_4',
+                        codigo: '5-01-01-01',
+                        nombre: 'Sueldos y Salarios',
+                        tipo: 'Egreso',
+                        descripcion: 'Pagos de personal',
+                        saldoInicial: 0.00,
+                        estado: 'Activa'
+                    }
+                ];
+                
+                this.saveCuentas();
+            }
+
+            nuevoMovimiento() {
+                Swal.fire({
+                    title: 'Nuevo Movimiento',
+                    html: `
+                        <div style="text-align: left;">
+                            <div class="form-group">
+                                <label>Fecha:</label>
+                                <input type="date" id="movimientoFecha" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Movimiento:</label>
+                                <select id="movimientoTipo" class="swal2-input">
+                                    <option value="ingreso">Ingreso</option>
+                                    <option value="egreso">Egreso</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción:</label>
+                                <input type="text" id="movimientoDescripcion" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Categoría:</label>
+                                <select id="movimientoCategoria" class="swal2-input">
+                                    <option value="matricula">Matrícula</option>
+                                    <option value="mensualidad">Mensualidad</option>
+                                    <option value="servicios">Servicios</option>
+                                    <option value="sueldos">Sueldos</option>
+                                    <option value="suministros">Suministros</option>
+                                    <option value="mantenimiento">Mantenimiento</option>
+                                    <option value="otros">Otros</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Monto:</label>
+                                <input type="number" id="movimientoMonto" class="swal2-input" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Referencia:</label>
+                                <input type="text" id="movimientoReferencia" class="swal2-input" placeholder="Factura, Recibo, etc.">
+                            </div>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'Guardar',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const fecha = document.getElementById('movimientoFecha').value;
+                        const tipo = document.getElementById('movimientoTipo').value;
+                        const descripcion = document.getElementById('movimientoDescripcion').value;
+                        const categoria = document.getElementById('movimientoCategoria').value;
+                        const monto = parseFloat(document.getElementById('movimientoMonto').value);
+                        const referencia = document.getElementById('movimientoReferencia').value;
+                        
+                        if (!fecha || !descripcion || !monto || monto <= 0) {
+                            Swal.showValidationMessage('Por favor complete todos los campos requeridos');
+                            return false;
+                        }
+                        
+                        return { fecha, tipo, descripcion, categoria, monto, referencia };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const movimiento = {
+                            id: 'mov_' + Date.now(),
+                            ...result.value
+                        };
+                        
+                        this.movimientos.push(movimiento);
+                        this.saveMovimientos();
+                        this.loadMovimientos();
+                        this.updateStats();
+                        this.showToast('Movimiento registrado correctamente', 'success');
+                    }
+                });
+            }
+
+            nuevaCuenta() {
+                Swal.fire({
+                    title: 'Nueva Cuenta',
+                    html: `
+                        <div style="text-align: left;">
+                            <div class="form-group">
+                                <label>Código:</label>
+                                <input type="text" id="cuentaCodigo" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nombre de Cuenta:</label>
+                                <input type="text" id="cuentaNombre" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo:</label>
+                                <select id="cuentaTipo" class="swal2-input">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Pasivo">Pasivo</option>
+                                    <option value="Patrimonio">Patrimonio</option>
+                                    <option value="Ingreso">Ingreso</option>
+                                    <option value="Egreso">Egreso</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción:</label>
+                                <textarea id="cuentaDescripcion" class="swal2-input" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Saldo Inicial:</label>
+                                <input type="number" id="cuentaSaldoInicial" class="swal2-input" step="0.01" value="0.00">
+                            </div>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'Guardar',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const codigo = document.getElementById('cuentaCodigo').value;
+                        const nombre = document.getElementById('cuentaNombre').value;
+                        const tipo = document.getElementById('cuentaTipo').value;
+                        const descripcion = document.getElementById('cuentaDescripcion').value;
+                        const saldoInicial = parseFloat(document.getElementById('cuentaSaldoInicial').value);
+                        
+                        if (!codigo || !nombre || !descripcion) {
+                            Swal.showValidationMessage('Por favor complete todos los campos requeridos');
+                            return false;
+                        }
+                        
+                        return { codigo, nombre, tipo, descripcion, saldoInicial };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const cuenta = {
+                            id: 'cta_' + Date.now(),
+                            ...result.value,
+                            estado: 'Activa'
+                        };
+                        
+                        this.cuentas.push(cuenta);
+                        this.saveCuentas();
+                        this.loadCatalogo();
+                        this.showToast('Cuenta creada correctamente', 'success');
+                    }
+                });
+            }
+
+            nuevaConciliacion() {
+                Swal.fire({
+                    title: 'Nueva Conciliación Bancaria',
+                    html: `
+                        <div style="text-align: left;">
+                            <div class="form-group">
+                                <label>Fecha:</label>
+                                <input type="date" id="conciliacionFecha" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Banco:</label>
+                                <select id="conciliacionBanco" class="swal2-input">
+                                    <option value="Banco Popular">Banco Popular</option>
+                                    <option value="Banreservas">Banreservas</option>
+                                    <option value="BHD">BHD</option>
+                                    <option value="Scotiabank">Scotiabank</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Número de Cuenta:</label>
+                                <input type="text" id="conciliacionCuenta" class="swal2-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Saldo según Libros:</label>
+                                <input type="number" id="conciliacionSaldoLibros" class="swal2-input" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Saldo según Banco:</label>
+                                <input type="number" id="conciliacionSaldoBanco" class="swal2-input" step="0.01" required>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'Guardar',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const fecha = document.getElementById('conciliacionFecha').value;
+                        const banco = document.getElementById('conciliacionBanco').value;
+                        const cuenta = document.getElementById('conciliacionCuenta').value;
+                        const saldoLibros = parseFloat(document.getElementById('conciliacionSaldoLibros').value);
+                        const saldoBanco = parseFloat(document.getElementById('conciliacionSaldoBanco').value);
+                        
+                        if (!fecha || !banco || !cuenta || isNaN(saldoLibros) || isNaN(saldoBanco)) {
+                            Swal.showValidationMessage('Por favor complete todos los campos');
+                            return false;
+                        }
+                        
+                        const diferencia = saldoLibros - saldoBanco;
+                        return { fecha, banco, cuenta, saldoLibros, saldoBanco, diferencia };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const conciliacion = {
+                            id: 'conc_' + Date.now(),
+                            ...result.value,
+                            estado: Math.abs(result.value.diferencia) < 0.01 ? 'Conciliado' : 'Pendiente'
+                        };
+                        
+                        this.conciliaciones.push(conciliacion);
+                        this.saveConciliaciones();
+                        this.loadConciliaciones();
+                        this.showToast('Conciliación registrada correctamente', 'success');
+                    }
+                });
+            }
+
+            generarReporteMensual() {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                const monthName = new Date(currentYear, currentMonth).toLocaleDateString('es-ES', { month: 'long' });
+                
+                // Filtrar movimientos del mes actual
+                const movimientosMes = this.movimientos.filter(mov => {
+                    const movDate = new Date(mov.fecha);
+                    return movDate.getMonth() === currentMonth && movDate.getFullYear() === currentYear;
+                });
+
+                const totalIngresos = movimientosMes
+                    .filter(m => m.tipo === 'ingreso')
+                    .reduce((sum, m) => sum + m.monto, 0);
+
+                const totalEgresos = movimientosMes
+                    .filter(m => m.tipo === 'egreso')
+                    .reduce((sum, m) => sum + m.monto, 0);
+
+                const balance = totalIngresos - totalEgresos;
+
+                const reporte = {
+                    id: 'rep_' + Date.now(),
+                    fecha: new Date().toISOString().split('T')[0],
+                    tipoReporte: 'Mensual',
+                    periodo: `${monthName} ${currentYear}`,
+                    totalIngresos,
+                    totalEgresos,
+                    balance,
+                    estado: 'Generado'
+                };
+
+                this.reportes.push(reporte);
+                this.saveReportes();
+                this.loadReportes();
+                
+                Swal.fire({
+                    title: 'Reporte Mensual Generado',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>Período:</strong> ${reporte.periodo}</p>
+                            <p><strong>Total Ingresos:</strong> $${totalIngresos.toFixed(2)}</p>
+                            <p><strong>Total Egresos:</strong> $${totalEgresos.toFixed(2)}</p>
+                            <p><strong>Balance:</strong> $${balance.toFixed(2)}</p>
+                        </div>
+                    `,
+                    icon: 'success'
+                });
+            }
+
+            generarReporteAnual() {
+                const currentYear = new Date().getFullYear();
+                
+                // Filtrar movimientos del año actual
+                const movimientosAnio = this.movimientos.filter(mov => {
+                    const movDate = new Date(mov.fecha);
+                    return movDate.getFullYear() === currentYear;
+                });
+
+                const totalIngresos = movimientosAnio
+                    .filter(m => m.tipo === 'ingreso')
+                    .reduce((sum, m) => sum + m.monto, 0);
+
+                const totalEgresos = movimientosAnio
+                    .filter(m => m.tipo === 'egreso')
+                    .reduce((sum, m) => sum + m.monto, 0);
+
+                const balance = totalIngresos - totalEgresos;
+
+                const reporte = {
+                    id: 'rep_' + Date.now(),
+                    fecha: new Date().toISOString().split('T')[0],
+                    tipoReporte: 'Anual',
+                    periodo: `Año ${currentYear}`,
+                    totalIngresos,
+                    totalEgresos,
+                    balance,
+                    estado: 'Generado'
+                };
+
+                this.reportes.push(reporte);
+                this.saveReportes();
+                this.loadReportes();
+                
+                Swal.fire({
+                    title: 'Reporte Anual Generado',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>Período:</strong> ${reporte.periodo}</p>
+                            <p><strong>Total Ingresos:</strong> $${totalIngresos.toFixed(2)}</p>
+                            <p><strong>Total Egresos:</strong> $${totalEgresos.toFixed(2)}</p>
+                            <p><strong>Balance:</strong> $${balance.toFixed(2)}</p>
+                        </div>
+                    `,
+                    icon: 'success'
+                });
+            }
+
+            exportarExcel() {
+                if (this.movimientos.length === 0) {
+                    this.showToast('No hay datos para exportar', 'warning');
+                    return;
+                }
+
+                const data = this.movimientos.map(mov => ({
+                    'Fecha': mov.fecha,
+                    'Tipo': mov.tipo === 'ingreso' ? 'Ingreso' : 'Egreso',
+                    'Descripción': mov.descripcion,
+                    'Categoría': mov.categoria,
+                    'Monto': mov.monto,
+                    'Referencia': mov.referencia || 'N/A'
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Movimientos');
+
+                const fileName = `movimientos_tesoreria_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+
+                this.showToast('Datos exportados correctamente', 'success');
+            }
+
+            saveMovimientos() {
+                localStorage.setItem('tesoreria_movimientos', JSON.stringify(this.movimientos));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarMovimiento) {
+                    this.movimientos.forEach(movimiento => {
+                        this.systemDataManager.guardarMovimiento(movimiento);
+                    });
+                }
+            }
+
+            saveCuentas() {
+                localStorage.setItem('tesoreria_cuentas', JSON.stringify(this.cuentas));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarCuenta) {
+                    this.cuentas.forEach(cuenta => {
+                        this.systemDataManager.guardarCuenta(cuenta);
+                    });
+                }
+            }
+
+            saveConciliaciones() {
+                localStorage.setItem('tesoreria_conciliaciones', JSON.stringify(this.conciliaciones));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarConciliacion) {
+                    this.conciliaciones.forEach(conciliacion => {
+                        this.systemDataManager.guardarConciliacion(conciliacion);
+                    });
+                }
+            }
+
+            saveReportes() {
+                localStorage.setItem('tesoreria_reportes', JSON.stringify(this.reportes));
+                
+                if (this.systemDataManager && this.systemDataManager.guardarReporteFinanciero) {
+                    this.reportes.forEach(reporte => {
+                        this.systemDataManager.guardarReporteFinanciero(reporte);
+                    });
+                }
+            }
+
+            updateStats() {
+                const totalIngresos = this.movimientos
+                    .filter(m => m.tipo === 'ingreso')
+                    .reduce((sum, m) => sum + m.monto, 0);
+
+                const totalEgresos = this.movimientos
+                    .filter(m => m.tipo === 'egreso')
+                    .reduce((sum, m) => sum + m.monto, 0);
+
+                const balance = totalIngresos - totalEgresos;
+
+                document.getElementById('totalIngresos').textContent = `$${totalIngresos.toFixed(2)}`;
+                document.getElementById('totalEgresos').textContent = `$${totalEgresos.toFixed(2)}`;
+                document.getElementById('balanceTotal').textContent = `$${balance.toFixed(2)}`;
+                document.getElementById('balanceTotal').className = balance >= 0 ? 'balance-positive' : 'balance-negative';
+                document.getElementById('totalMovimientos').textContent = this.movimientos.length;
+            }
+
+            loadMovimientos() {
+                const tbody = document.getElementById('movimientosTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.movimientos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay movimientos registrados</td></tr>';
+                    return;
+                }
+
+                // Ordenar por fecha descendente
+                const sortedMovimientos = [...this.movimientos].sort((a, b) => 
+                    new Date(b.fecha) - new Date(a.fecha)
+                );
+
+                sortedMovimientos.forEach(movimiento => {
+                    const row = tbody.insertRow();
+                    const montoClass = movimiento.tipo === 'ingreso' ? 'balance-positive' : 'balance-negative';
+                    const montoSign = movimiento.tipo === 'ingreso' ? '+' : '-';
+                    
+                    row.innerHTML = `
+                        <td>${movimiento.fecha}</td>
+                        <td>
+                            <span class="status-badge status-${movimiento.tipo === 'ingreso' ? 'activa' : 'pendiente'}">
+                                ${movimiento.tipo === 'ingreso' ? 'Ingreso' : 'Egreso'}
+                            </span>
+                        </td>
+                        <td>${movimiento.descripcion}</td>
+                        <td>${movimiento.categoria}</td>
+                        <td class="${montoClass}">${montoSign}$${movimiento.monto.toFixed(2)}</td>
+                        <td>${movimiento.referencia || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="tesoreriaDashboard.verMovimiento('${movimiento.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            loadCatalogo() {
+                const tbody = document.getElementById('catalogoTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.cuentas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay cuentas registradas</td></tr>';
+                    return;
+                }
+
+                this.cuentas.forEach(cuenta => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${cuenta.codigo}</td>
+                        <td>${cuenta.nombre}</td>
+                        <td>${cuenta.tipo}</td>
+                        <td>${cuenta.descripcion}</td>
+                        <td>$${cuenta.saldoInicial.toFixed(2)}</td>
+                        <td>
+                            <span class="status-badge status-activa">
+                                ${cuenta.estado}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="tesoreriaDashboard.verCuenta('${cuenta.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            loadConciliaciones() {
+                const tbody = document.getElementById('conciliacionTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.conciliaciones.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay conciliaciones registradas</td></tr>';
+                    return;
+                }
+
+                this.conciliaciones.forEach(conciliacion => {
+                    const row = tbody.insertRow();
+                    const diferenciaClass = Math.abs(conciliacion.diferencia) < 0.01 ? 'balance-positive' : 'balance-negative';
+                    
+                    row.innerHTML = `
+                        <td>${conciliacion.fecha}</td>
+                        <td>${conciliacion.banco}</td>
+                        <td>${conciliacion.cuenta}</td>
+                        <td>$${conciliacion.saldoLibros.toFixed(2)}</td>
+                        <td>$${conciliacion.saldoBanco.toFixed(2)}</td>
+                        <td class="${diferenciaClass}">$${Math.abs(conciliacion.diferencia).toFixed(2)}</td>
+                        <td>
+                            <span class="status-badge status-${conciliacion.estado === 'Conciliado' ? 'activa' : 'pendiente'}">
+                                ${conciliacion.estado}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="tesoreriaDashboard.verConciliacion('${conciliacion.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            loadReportes() {
+                const tbody = document.getElementById('reportesTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (this.reportes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center">No hay reportes generados</td></tr>';
+                    return;
+                }
+
+                this.reportes.forEach(reporte => {
+                    const row = tbody.insertRow();
+                    const balanceClass = reporte.balance >= 0 ? 'balance-positive' : 'balance-negative';
+                    
+                    row.innerHTML = `
+                        <td>${reporte.fecha}</td>
+                        <td>${reporte.tipoReporte}</td>
+                        <td>${reporte.periodo}</td>
+                        <td class="balance-positive">$${reporte.totalIngresos.toFixed(2)}</td>
+                        <td class="balance-negative">$${reporte.totalEgresos.toFixed(2)}</td>
+                        <td class="${balanceClass}">$${reporte.balance.toFixed(2)}</td>
+                        <td>
+                            <span class="status-badge status-activa">
+                                ${reporte.estado}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="tesoreriaDashboard.verReporte('${reporte.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            verMovimiento(id) {
+                const movimiento = this.movimientos.find(m => m.id === id);
+                if (movimiento) {
+                    Swal.fire({
+                        title: 'Detalles del Movimiento',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Fecha:</strong> ${movimiento.fecha}</p>
+                                <p><strong>Tipo:</strong> ${movimiento.tipo === 'ingreso' ? 'Ingreso' : 'Egreso'}</p>
+                                <p><strong>Descripción:</strong> ${movimiento.descripcion}</p>
+                                <p><strong>Categoría:</strong> ${movimiento.categoria}</p>
+                                <p><strong>Monto:</strong> $${movimiento.monto.toFixed(2)}</p>
+                                <p><strong>Referencia:</strong> ${movimiento.referencia || 'N/A'}</p>
+                            </div>
+                        `,
+                        icon: 'info'
+                    });
+                }
+            }
+
+            verCuenta(id) {
+                const cuenta = this.cuentas.find(c => c.id === id);
+                if (cuenta) {
+                    Swal.fire({
+                        title: 'Detalles de la Cuenta',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Código:</strong> ${cuenta.codigo}</p>
+                                <p><strong>Nombre:</strong> ${cuenta.nombre}</p>
+                                <p><strong>Tipo:</strong> ${cuenta.tipo}</p>
+                                <p><strong>Descripción:</strong> ${cuenta.descripcion}</p>
+                                <p><strong>Saldo Inicial:</strong> $${cuenta.saldoInicial.toFixed(2)}</p>
+                                <p><strong>Estado:</strong> ${cuenta.estado}</p>
+                            </div>
+                        `,
+                        icon: 'info'
+                    });
+                }
+            }
+
+            verConciliacion(id) {
+                const conciliacion = this.conciliaciones.find(c => c.id === id);
+                if (conciliacion) {
+                    Swal.fire({
+                        title: 'Detalles de la Conciliación',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Fecha:</strong> ${conciliacion.fecha}</p>
+                                <p><strong>Banco:</strong> ${conciliacion.banco}</p>
+                                <p><strong>Cuenta:</strong> ${conciliacion.cuenta}</p>
+                                <p><strong>Saldo Libros:</strong> $${conciliacion.saldoLibros.toFixed(2)}</p>
+                                <p><strong>Saldo Banco:</strong> $${conciliacion.saldoBanco.toFixed(2)}</p>
+                                <p><strong>Diferencia:</strong> $${Math.abs(conciliacion.diferencia).toFixed(2)}</p>
+                                <p><strong>Estado:</strong> ${conciliacion.estado}</p>
+                            </div>
+                        `,
+                        icon: 'info'
+                    });
+                }
+            }
+
+            verReporte(id) {
+                const reporte = this.reportes.find(r => r.id === id);
+                if (reporte) {
+                    Swal.fire({
+                        title: 'Detalles del Reporte',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Fecha:</strong> ${reporte.fecha}</p>
+                                <p><strong>Tipo:</strong> ${reporte.tipoReporte}</p>
+                                <p><strong>Período:</strong> ${reporte.periodo}</p>
+                                <p><strong>Total Ingresos:</strong> $${reporte.totalIngresos.toFixed(2)}</p>
+                                <p><strong>Total Egresos:</strong> $${reporte.totalEgresos.toFixed(2)}</p>
+                                <p><strong>Balance:</strong> $${reporte.balance.toFixed(2)}</p>
+                                <p><strong>Estado:</strong> ${reporte.estado}</p>
+                            </div>
+                        `,
+                        icon: 'info'
+                    });
+                }
+            }
+
+            showToast(message, type = 'info') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    icon: type,
+                    title: message
+                });
+            }
+
+            logout() {
+                Swal.fire({
+                    title: 'Cerrar Sesión',
+                    text: '¿Estás seguro de que deseas cerrar sesión?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2c3e50',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: 'Sí, cerrar sesión',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '../index.html';
+                    }
+                });
+            }
+        }
+
+        // Initialize dashboard
+        let tesoreriaDashboard;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            tesoreriaDashboard = new TesoreriaDashboard();
+            window.tesoreriaDashboard = tesoreriaDashboard;
+        });
+    </script>
+</body>
+</html>

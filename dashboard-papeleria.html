@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Papelería</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        .orders-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .notifications-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .order-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .order-card.new {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .order-card.processing {
+            border-left-color: #f39c12;
+            background: #fffbf0;
+        }
+
+        .order-card.completed {
+            border-left-color: #27ae60;
+            background: #f0fff4;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .order-code {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-details {
+            margin-bottom: 15px;
+        }
+
+        .order-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-new {
+            background: #ffeaea;
+            color: #e74c3c;
+        }
+
+        .status-processing {
+            background: #fff5e6;
+            color: #f39c12;
+        }
+
+        .status-completed {
+            background: #e6ffe6;
+            color: #27ae60;
+        }
+
+        .notification-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .notification-item.new {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        .notification-badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-store"></i>
+                Dashboard - Gestión de Papelería
+            </h1>
+            <div class="user-info">
+                <span id="userDisplay">Encargado de Papelería</span>
+                <div class="btn-group">
+                    <a href="index.html" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <button class="btn btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- Sección Principal de Pedidos -->
+            <div class="orders-section">
+                <div class="section-title">
+                    <h2><i class="fas fa-list"></i> Pedidos de Uniformes</h2>
+                    <div>
+                        <span id="newOrdersBadge" class="notification-badge" style="display: none;">0</span>
+                        <button class="btn btn-primary" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double"></i> Marcar Todo como Leído
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Estadísticas Rápidas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalOrders">0</span>
+                        <span class="stat-label">Total Pedidos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="newOrders">0</span>
+                        <span class="stat-label">Nuevos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="processingOrders">0</span>
+                        <span class="stat-label">En Proceso</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="completedOrders">0</span>
+                        <span class="stat-label">Completados</span>
+                    </div>
+                </div>
+
+                <!-- Grid de Pedidos -->
+                <div class="orders-grid" id="ordersGrid">
+                    <!-- Los pedidos se cargan dinámicamente aquí -->
+                </div>
+            </div>
+
+            <!-- Panel de Notificaciones -->
+            <div class="notifications-panel">
+                <div class="section-title">
+                    <h2><i class="fas fa-bell"></i> Notificaciones</h2>
+                    <button class="btn btn-secondary" onclick="clearNotifications()">
+                        <i class="fas fa-trash"></i> Limpiar
+                    </button>
+                </div>
+
+                <div id="notificationsList">
+                    <!-- Las notificaciones se cargan dinámicamente aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let orders = JSON.parse(localStorage.getItem('papeleria_orders')) || [];
+        let notifications = JSON.parse(localStorage.getItem('papeleria_notifications')) || [];
+
+        // Cargar datos iniciales
+        function loadInitialData() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                const user = JSON.parse(userData);
+                document.getElementById('userDisplay').textContent = user.name;
+            }
+
+            renderOrders();
+            renderNotifications();
+            updateStats();
+            checkForNewOrders();
+            
+            // Verificar nuevos pedidos cada 5 segundos
+            setInterval(checkForNewOrders, 5000);
+        }
+
+        // Renderizar pedidos
+        function renderOrders() {
+            const container = document.getElementById('ordersGrid');
+            
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-t-shirt"></i>
+                        <h3>No hay pedidos de uniformes</h3>
+                        <p>Los pedidos aparecerán aquí cuando los estudiantes generen sus códigos</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ordenar pedidos: nuevos primero
+            const sortedOrders = [...orders].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let html = '';
+            sortedOrders.forEach(order => {
+                const statusClass = `status-${order.status}`;
+                const cardClass = `order-card ${order.status}`;
+                
+                html += `
+                    <div class="${cardClass}">
+                        <div class="order-code">
+                            ${order.code}
+                            <span class="status-badge ${statusClass}">${getStatusText(order.status)}</span>
+                        </div>
+                        <div class="order-details">
+                            <div class="order-detail">
+                                <span>Estudiante:</span>
+                                <strong>${order.studentName}</strong>
+                            </div>
+                            <div class="order-detail">
+                                <span>Uniforme:</span>
+                                <strong>${order.uniformType}</strong>
+                            </div>
+                            <div class="order-detail">
+                                <span>Talla:</span>
+                                <strong>${order.size}</strong>
+                            </div>
+                            <div class="order-detail">
+                                <span>Fecha:</span>
+                                <span>${new Date(order.timestamp).toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            ${order.status === 'new' ? `
+                                <button class="btn btn-success" onclick="updateOrderStatus('${order.id}', 'processing')">
+                                    <i class="fas fa-cog"></i> Procesar
+                                </button>
+                            ` : ''}
+                            ${order.status === 'processing' ? `
+                                <button class="btn btn-success" onclick="updateOrderStatus('${order.id}', 'completed')">
+                                    <i class="fas fa-check"></i> Completar
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-danger" onclick="deleteOrder('${order.id}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Renderizar notificaciones
+        function renderNotifications() {
+            const container = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bell-slash"></i>
+                        <h3>No hay notificaciones</h3>
+                        <p>Las notificaciones de nuevos pedidos aparecerán aquí</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ordenar notificaciones: más recientes primero
+            const sortedNotifications = [...notifications].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let html = '';
+            sortedNotifications.forEach(notification => {
+                const isNew = !notification.read;
+                const notificationClass = `notification-item ${isNew ? 'new' : ''}`;
+                
+                html += `
+                    <div class="${notificationClass}">
+                        <div class="notification-header">
+                            <strong>${notification.title}</strong>
+                            <span class="notification-time">${new Date(notification.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div class="notification-message">
+                            ${notification.message}
+                        </div>
+                        ${isNew ? `
+                            <div style="margin-top: 10px;">
+                                <button class="btn btn-primary" onclick="markNotificationAsRead('${notification.id}')" style="font-size: 0.8rem; padding: 4px 8px;">
+                                    <i class="fas fa-check"></i> Marcar como leído
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const totalOrders = orders.length;
+            const newOrders = orders.filter(order => order.status === 'new').length;
+            const processingOrders = orders.filter(order => order.status === 'processing').length;
+            const completedOrders = orders.filter(order => order.status === 'completed').length;
+
+            document.getElementById('totalOrders').textContent = totalOrders;
+            document.getElementById('newOrders').textContent = newOrders;
+            document.getElementById('processingOrders').textContent = processingOrders;
+            document.getElementById('completedOrders').textContent = completedOrders;
+
+            // Actualizar badge de notificaciones
+            const newNotifications = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('newOrdersBadge');
+            if (newNotifications > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = newNotifications;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Verificar nuevos pedidos
+        function checkForNewOrders() {
+            // Simular recepción de nuevos pedidos (en un sistema real, esto vendría de una API)
+            const newOrders = orders.filter(order => order.status === 'new' && !order.notified);
+            
+            newOrders.forEach(order => {
+                // Crear notificación
+                const notification = {
+                    id: 'notif_' + Date.now(),
+                    title: 'Nuevo Pedido de Uniforme',
+                    message: `El estudiante ${order.studentName} ha solicitado un uniforme ${order.uniformType} talla ${order.size}. Código: ${order.code}`,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    orderId: order.id
+                };
+                
+                notifications.unshift(notification);
+                order.notified = true;
+                
+                // Mostrar notificación del sistema
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Nuevo Pedido de Uniforme', {
+                        body: `Código: ${order.code} - ${order.studentName}`,
+                        icon: '/favicon.ico'
+                    });
+                }
+            });
+
+            // Guardar y actualizar
+            if (newOrders.length > 0) {
+                localStorage.setItem('papeleria_orders', JSON.stringify(orders));
+                localStorage.setItem('papeleria_notifications', JSON.stringify(notifications));
+                renderOrders();
+                renderNotifications();
+                updateStats();
+                
+                // Sonido de notificación (opcional)
+                playNotificationSound();
+            }
+        }
+
+        // Reproducir sonido de notificación
+        function playNotificationSound() {
+            // Crear un sonido simple de notificación
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Actualizar estado del pedido
+        function updateOrderStatus(orderId, newStatus) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = newStatus;
+                order.updatedAt = new Date().toISOString();
+                
+                // Crear notificación de actualización
+                const notification = {
+                    id: 'notif_' + Date.now(),
+                    title: 'Pedido Actualizado',
+                    message: `El pedido ${order.code} ha sido marcado como ${getStatusText(newStatus)}`,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    orderId: order.id
+                };
+                
+                notifications.unshift(notification);
+                
+                localStorage.setItem('papeleria_orders', JSON.stringify(orders));
+                localStorage.setItem('papeleria_notifications', JSON.stringify(notifications));
+                
+                renderOrders();
+                renderNotifications();
+                updateStats();
+            }
+        }
+
+        // Eliminar pedido
+        function deleteOrder(orderId) {
+            if (confirm('¿Estás seguro de que deseas eliminar este pedido?')) {
+                orders = orders.filter(o => o.id !== orderId);
+                localStorage.setItem('papeleria_orders', JSON.stringify(orders));
+                renderOrders();
+                updateStats();
+            }
+        }
+
+        // Marcar notificación como leída
+        function markNotificationAsRead(notificationId) {
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+                localStorage.setItem('papeleria_notifications', JSON.stringify(notifications));
+                renderNotifications();
+                updateStats();
+            }
+        }
+
+        // Marcar todas como leídas
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                notification.read = true;
+            });
+            localStorage.setItem('papeleria_notifications', JSON.stringify(notifications));
+            renderNotifications();
+            updateStats();
+        }
+
+        // Limpiar notificaciones
+        function clearNotifications() {
+            if (confirm('¿Estás seguro de que deseas eliminar todas las notificaciones?')) {
+                notifications = [];
+                localStorage.setItem('papeleria_notifications', JSON.stringify(notifications));
+                renderNotifications();
+                updateStats();
+            }
+        }
+
+        // Obtener texto del estado
+        function getStatusText(status) {
+            const statusMap = {
+                'new': 'Nuevo',
+                'processing': 'En Proceso',
+                'completed': 'Completado'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Cerrar sesión
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Solicitar permisos de notificación
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInitialData();
+            requestNotificationPermission();
+            
+            // Verificar autenticación
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+
+    <!-- Conexión con núcleo SGECore -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/modules/papeleriaModule.js"></script>
+</body>
+</html>

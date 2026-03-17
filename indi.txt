@@ -1,0 +1,7 @@
+ahora quiero que me generes la parte de los usuarios de la cafeteria, donde ellos solo harán el cuadre de caja cada que termine su jorndada de hora, son 3 y el sistema tirara una alerta con sonido para que empiecen a hacer el cuadre, sin hora limite, solo se terminara el cuadre y eso se enviará a la parte de la direccion y el administrador donde se pdora ver el cuadre de caja y cuanto se genero en esas 3 jornadas en especifico, con un monto total y todo el dinero obtenido segun la jornada, tendra un boton para enviar y guardar los cuadres de manera automatica, estos datos viajaran desde el apartado de la cafeteria hasta la direccion y administrador, todo ese tipo de datos deben de recibirce dentro del apartado que generaste.
+
+ahora necesito conectar los datos e informacion personal, los accesos al login a un base de datos/servidor que sea funcional.
+
+lo que estas viendo es parte de un proyecto, necesito ahora crear una base de datos, para generar tablas acordes a lo necesario, los datos de cuando se genera la venta, los triggers, los usuarios y sus roles dentro de la app web, los usuarios de los docentes, sus datos personales, las calificaciones de lo estudiantes, los datos de los de los estudiantes
+
+

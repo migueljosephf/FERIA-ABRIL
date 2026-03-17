@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuadre de Caja - Cafetería</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SheetJS para Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- SystemDataManager -->
+    <script src="js/systemDataManager.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .cash-register {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .register-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .status-indicator {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .status-open {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .status-closed {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .action-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .action-icon {
+            font-size: 2rem;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .transactions-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transactions-list {
+            max-height: 400px;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        .transaction-actions {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .transaction-actions .btn {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .transaction-actions .btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .transaction-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .transaction-item.edited {
+            border-left: 4px solid #3498db;
+            background: #f0f8ff;
+        }
+        
+        .edited-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+
+        .transaction-item:hover {
+            background: #f8f9fa;
+        }
+
+        .transaction-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .transaction-positive {
+            color: #27ae60;
+        }
+
+        .transaction-negative {
+            color: #e74c3c;
+        }
+
+        .transaction-time {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .summary-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e8eff7;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #f8fafc;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-calculator"></i>
+                Cuadre de Caja - Cajero
+            </h1>
+            <div class="user-info">
+                <span id="userDisplay">Cajero</span>
+                <div class="btn-group">
+                    <a href="index.html" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <button class="btn btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Caja -->
+        <div class="cash-register">
+            <div class="register-status">
+                <div>
+                    <h3>Estado de Caja</h3>
+                    <p id="currentTime"></p>
+                </div>
+                <div class="status-indicator status-open" id="registerStatus">
+                    <i class="fas fa-circle"></i> CAJA ABIERTA
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="actions-grid">
+                <div class="action-card" onclick="showTransactionForm('sale')">
+                    <div class="action-icon">
+                        <i class="fas fa-cash-register"></i>
+                    </div>
+                    <h4>Registrar Venta</h4>
+                    <p>Agregar transacción de venta</p>
+                </div>
+
+                <div class="action-card" onclick="showTransactionForm('expense')">
+                    <div class="action-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h4>Gasto/Retiro</h4>
+                    <p>Registrar gasto o retiro</p>
+                </div>
+
+                <div class="action-card" onclick="showPrestamoForm()">
+                    <div class="action-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <h4>Solicitar Préstamo</h4>
+                    <p>Para gastos obligatorios (pizza, agua, faldos)</p>
+                </div>
+
+                <div class="action-card" onclick="enviarCuadreDelDia()">
+                    <div class="action-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h4>Enviar Cuadre del Día</h4>
+                    <p>Enviar reporte a dirección</p>
+                </div>
+
+                <div class="action-card" onclick="printReport()">
+                    <div class="action-icon">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <h4>Imprimir Reporte</h4>
+                    <p>Generar reporte del día</p>
+                </div>
+
+                <div class="action-card" onclick="generarReporteMensual()">
+                    <div class="action-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h4>Reporte Mensual</h4>
+                    <p>Sumatoria de ingresos del mes completo</p>
+                </div>
+
+                <div class="action-card" onclick="closeRegister()">
+                    <div class="action-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4>Cerrar Caja</h4>
+                    <p>Finalizar turno</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transacciones del Día -->
+        <div class="transactions-section">
+            <div class="section-title">
+                <h2><i class="fas fa-list"></i> Transacciones del Turno</h2>
+                <button class="btn btn-primary" onclick="showTransactionForm('sale')">
+                    <i class="fas fa-plus"></i> Nueva Transacción
+                </button>
+            </div>
+
+            <div class="transactions-list" id="transactionsList">
+                <!-- Estado vacío -->
+                <div class="empty-state">
+                    <i class="fas fa-receipt"></i>
+                    <h3>No hay transacciones registradas</h3>
+                    <p>Comienza agregando tu primera transacción usando los botones arriba</p>
+                </div>
+            </div>
+
+            <!-- Resumen -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-value" id="totalSales">$0.00</div>
+                    <div class="summary-label">Ventas Totales</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="totalExpenses">$0.00</div>
+                    <div class="summary-label">Gastos Totales</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="transactionCount">0</div>
+                    <div class="summary-label">Total Transacciones</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="netAmount">$0.00</div>
+                    <div class="summary-label">Saldo Neto</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar transacción -->
+    <div class="form-modal" id="transactionModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Registrar Transacción</h3>
+            <form id="transactionForm">
+                <div class="form-group">
+                    <label for="transactionType">Tipo de Transacción:</label>
+                    <select id="transactionType" required>
+                        <option value="sale">Venta</option>
+                        <option value="expense">Gasto/Retiro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transactionDescription">Descripción:</label>
+                    <input type="text" id="transactionDescription" required placeholder="Ej: Venta de almuerzos">
+                </div>
+                <div class="form-group">
+                    <label for="transactionAmount">Monto:</label>
+                    <input type="number" id="transactionAmount" step="0.01" required placeholder="0.00">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideTransactionForm()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let transactions = [];
+        let currentTransactionType = 'sale';
+
+        // Cargar datos iniciales
+        function loadInitialData() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                const user = JSON.parse(userData);
+                document.getElementById('userDisplay').textContent = user.name;
+            }
+
+            updateTime();
+            updateSummary();
+        }
+
+        // Actualizar hora actual
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                `Fecha: ${now.toLocaleDateString()} - Hora: ${now.toLocaleTimeString()}`;
+        }
+
+        // Mostrar formulario de transacción
+        function showTransactionForm(type) {
+            currentTransactionType = type;
+            const modal = document.getElementById('transactionModal');
+            const title = document.getElementById('modalTitle');
+            const typeSelect = document.getElementById('transactionType');
+            const form = document.getElementById('transactionForm');
+            
+            // Configurar modal según el tipo
+            if (type === 'sale') {
+                title.textContent = 'Registrar Venta';
+                typeSelect.value = 'sale';
+            } else {
+                title.textContent = 'Registrar Gasto/Retiro';
+                typeSelect.value = 'expense';
+            }
+            
+            // Resetear formulario
+            form.reset();
+            modal.classList.add('active');
+        }
+
+        // Ocultar formulario
+        function hideTransactionForm() {
+            document.getElementById('transactionModal').classList.remove('active');
+        }
+
+        // Procesar formulario de transacción
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('transactionType').value;
+            const description = document.getElementById('transactionDescription').value;
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Por favor ingrese un monto válido mayor a 0');
+                return;
+            }
+
+            const now = new Date();
+            const transaction = {
+                id: Date.now(),
+                type: type,
+                description: description,
+                amount: type === 'sale' ? amount : -amount,
+                time: now.toLocaleTimeString(),
+                date: now.toLocaleDateString()
+            };
+
+            transactions.push(transaction);
+            renderTransactions();
+            updateSummary();
+            hideTransactionForm();
+            
+            alert('Transacción registrada exitosamente');
+        });
+
+        // Renderizar lista de transacciones
+        function renderTransactions() {
+            const container = document.getElementById('transactionsList');
+            
+            if (transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h3>No hay transacciones registradas</h3>
+                        <p>Comienza agregando tu primera transacción usando los botones arriba</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            transactions.forEach((transaction, index) => {
+                const isEdited = transaction.edited;
+                html += `
+                    <div class="transaction-item ${isEdited ? 'edited' : ''}" data-index="${index}">
+                        <div class="transaction-info">
+                            <strong>${transaction.description}</strong>
+                            <span class="transaction-time">${transaction.time} - ${transaction.date}</span>
+                            ${isEdited ? `<span class="edited-badge">✏️ Editado (${transaction.editedAt})</span>` : ''}
+                        </div>
+                        <div class="transaction-amount ${transaction.amount > 0 ? 'transaction-positive' : 'transaction-negative'}">
+                            ${transaction.amount > 0 ? '+' : ''}$${Math.abs(transaction.amount).toFixed(2)}
+                        </div>
+                        <div class="transaction-actions">
+                            <button class="btn btn-sm btn-primary" onclick="editTransaction(${index})" title="Editar transacción">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteTransaction(${index})" title="Eliminar transacción">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+        
+        // CORRECCIÓN: Función para editar transacción
+        function editTransaction(index) {
+            const transaction = transactions[index];
+            
+            Swal.fire({
+                title: '✏️ Editar Transacción',
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <p><strong>Transacción actual:</strong></p>
+                            <p>📝 ${transaction.description}</p>
+                            <p>💰 $${Math.abs(transaction.amount).toFixed(2)} (${transaction.type === 'sale' ? 'Venta' : 'Gasto'})</p>
+                            <p>🕐 ${transaction.time} - ${transaction.date}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">📝 Descripción:</label>
+                            <input type="text" id="editDescription" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" value="${transaction.description}" placeholder="Descripción de la transacción">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">💰 Monto:</label>
+                            <input type="number" id="editAmount" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" value="${Math.abs(transaction.amount)}" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">📋 Tipo:</label>
+                            <select id="editType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="sale" ${transaction.type === 'sale' ? 'selected' : ''}>💰 Venta</option>
+                                <option value="expense" ${transaction.type === 'expense' ? 'selected' : ''}>💸 Gasto/Retiro</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#3498db',
+                cancelButtonColor: '#e74c3c',
+                confirmButtonText: '✅ Guardar Cambios',
+                cancelButtonText: '❌ Cancelar',
+                width: 500
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const newDescription = document.getElementById('editDescription').value;
+                    const newAmount = parseFloat(document.getElementById('editAmount').value);
+                    const newType = document.getElementById('editType').value;
+                    
+                    // Validaciones
+                    if (!newDescription || newDescription.trim() === '') {
+                        Swal.fire('Error', 'La descripción no puede estar vacía', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(newAmount) || newAmount <= 0) {
+                        Swal.fire('Error', 'El monto debe ser mayor a 0', 'error');
+                        return;
+                    }
+                    
+                    // Actualizar transacción
+                    transactions[index] = {
+                        ...transaction,
+                        description: newDescription.trim(),
+                        amount: newType === 'sale' ? newAmount : -newAmount,
+                        type: newType,
+                        edited: true,
+                        editedAt: new Date().toLocaleTimeString(),
+                        originalAmount: transaction.amount,
+                        originalDescription: transaction.description
+                    };
+                    
+                    // Actualizar interfaz
+                    renderTransactions();
+                    updateSummary();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '✅ Transacción Actualizada',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>📝 Nueva descripción:</strong> ${newDescription}</p>
+                                <p><strong>💰 Nuevo monto:</strong> $${newAmount.toFixed(2)} (${newType === 'sale' ? 'Venta' : 'Gasto'})</p>
+                                <p><strong>🕐 Hora de edición:</strong> ${new Date().toLocaleTimeString()}</p>
+                            </div>
+                        `,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+        
+        // CORRECCIÓN: Función para eliminar transacción
+        function deleteTransaction(index) {
+            const transaction = transactions[index];
+            
+            Swal.fire({
+                title: '🗑️ Eliminar Transacción',
+                html: `
+                    <div style="text-align: left;">
+                        <p>¿Estás seguro de que deseas eliminar esta transacción?</p>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <p><strong>📝 Descripción:</strong> ${transaction.description}</p>
+                            <p><strong>💰 Monto:</strong> $${Math.abs(transaction.amount).toFixed(2)} (${transaction.type === 'sale' ? 'Venta' : 'Gasto'})</p>
+                            <p><strong>🕐 Hora:</strong> ${transaction.time} - ${transaction.date}</p>
+                        </div>
+                        <p style="color: #e74c3c; margin-top: 15px;">
+                            <strong>⚠️ Esta acción no se puede deshacer</strong>
+                        </p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '🗑️ Sí, Eliminar',
+                cancelButtonText: '❌ Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Eliminar transacción
+                    transactions.splice(index, 1);
+                    
+                    // Actualizar interfaz
+                    renderTransactions();
+                    updateSummary();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '✅ Transacción Eliminada',
+                        text: 'La transacción ha sido eliminada exitosamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+        
+        // CORRECCIÓN: Función para ver historial de ediciones
+        function viewTransactionHistory(index) {
+            const transaction = transactions[index];
+            
+            if (!transaction.edited) {
+                Swal.fire('Información', 'Esta transacción no ha sido editada', 'info');
+                return;
+            }
+            
+            Swal.fire({
+                title: '📜 Historial de Ediciones',
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 10px;">📝 Datos Actuales</h4>
+                            <p><strong>Descripción:</strong> ${transaction.description}</p>
+                            <p><strong>Monto:</strong> $${Math.abs(transaction.amount).toFixed(2)} (${transaction.type === 'sale' ? 'Venta' : 'Gasto'})</p>
+                            <p><strong>Última edición:</strong> ${transaction.editedAt}</p>
+                        </div>
+                        
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="color: #856404; margin-bottom: 10px;">📋 Datos Originales</h4>
+                            <p><strong>Descripción original:</strong> ${transaction.originalDescription}</p>
+                            <p><strong>Monto original:</strong> $${Math.abs(transaction.originalAmount).toFixed(2)} (${transaction.originalAmount > 0 ? 'Venta' : 'Gasto'})</p>
+                        </div>
+                        
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px;">
+                            <h4 style="color: #155724; margin-bottom: 10px;">📊 Cambios Realizados</h4>
+                            <p><strong>Cambio en descripción:</strong> ${transaction.originalDescription !== transaction.description ? '✅ Sí' : '❌ No'}</p>
+                            <p><strong>Cambio en monto:</strong> ${transaction.originalAmount !== transaction.amount ? `$${Math.abs(transaction.originalAmount - transaction.amount).toFixed(2)}` : '❌ No'}</p>
+                            <p><strong>Cambio en tipo:</strong> ${Math.sign(transaction.originalAmount) !== Math.sign(transaction.amount) ? '✅ Sí' : '❌ No'}</p>
+                        </div>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonColor: '#17a2b8',
+                confirmButtonText: 'Cerrar',
+                width: 600
+            });
+        }
+        
+        // CORRECCIÓN: Agregar botón de historial en las acciones
+        function renderTransactions() {
+            const container = document.getElementById('transactionsList');
+            
+            if (transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h3>No hay transacciones registradas</h3>
+                        <p>Comienza agregando tu primera transacción usando los botones arriba</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            transactions.forEach((transaction, index) => {
+                const isEdited = transaction.edited;
+                html += `
+                    <div class="transaction-item ${isEdited ? 'edited' : ''}" data-index="${index}">
+                        <div class="transaction-info">
+                            <strong>${transaction.description}</strong>
+                            <span class="transaction-time">${transaction.time} - ${transaction.date}</span>
+                            ${isEdited ? `<span class="edited-badge">✏️ Editado (${transaction.editedAt})</span>` : ''}
+                        </div>
+                        <div class="transaction-amount ${transaction.amount > 0 ? 'transaction-positive' : 'transaction-negative'}">
+                            ${transaction.amount > 0 ? '+' : ''}$${Math.abs(transaction.amount).toFixed(2)}
+                        </div>
+                        <div class="transaction-actions">
+                            ${isEdited ? `<button class="btn btn-sm btn-info" onclick="viewTransactionHistory(${index})" title="Ver historial de ediciones">
+                                <i class="fas fa-history"></i>
+                            </button>` : ''}
+                            <button class="btn btn-sm btn-primary" onclick="editTransaction(${index})" title="Editar transacción">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteTransaction(${index})" title="Eliminar transacción">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+        
+        // CORRECCIÓN: Función para solicitar préstamo
+        function showPrestamoForm() {
+            Swal.fire({
+                title: '💰 Solicitar Préstamo',
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="color: #856404; margin-bottom: 10px;">⚠️ Información Importante</h4>
+                            <p>Los préstamos son para gastos <strong>obligatorios y necesarios</strong>:</p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>🍕 Cajas de pizza para eventos</li>
+                                <li>💧 Fundas de agua para personal</li>
+                                <li>👕 Faldos o uniformes necesarios</li>
+                                <li>📦 Materiales esenciales para la cafetería</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">📝 Motivo del Préstamo:</label>
+                            <select id="motivoPrestamo" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="">Selecciona un motivo...</option>
+                                <option value="pizza">🍕 Cajas de Pizza</option>
+                                <option value="agua">💧 Fundas de Agua</option>
+                                <option value="faldos">👕 Faldos/Uniformes</option>
+                                <option value="materiales">📦 Materiales Cafetería</option>
+                                <option value="otro">📋 Otro Gasto Obligatorio</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">💰 Monto Solicitado:</label>
+                            <input type="number" id="montoPrestamo" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">📋 Descripción Detallada:</label>
+                            <textarea id="descripcionPrestamo" style="width: 100%; height: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Describe detalladamente para qué necesitas el préstamo..."></textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">📅 Fecha de Devolución Estimada:</label>
+                            <input type="date" id="fechaDevolucion" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: '💰 Solicitar Préstamo',
+                cancelButtonText: '❌ Cancelar',
+                width: 600
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const motivo = document.getElementById('motivoPrestamo').value;
+                    const monto = parseFloat(document.getElementById('montoPrestamo').value);
+                    const descripcion = document.getElementById('descripcionPrestamo').value;
+                    const fechaDevolucion = document.getElementById('fechaDevolucion').value;
+                    
+                    // Validaciones
+                    if (!motivo) {
+                        Swal.fire('Error', 'Debes seleccionar un motivo para el préstamo', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(monto) || monto <= 0) {
+                        Swal.fire('Error', 'El monto debe ser mayor a 0', 'error');
+                        return;
+                    }
+                    
+                    if (!descripcion || descripcion.trim() === '') {
+                        Swal.fire('Error', 'Debes proporcionar una descripción detallada', 'error');
+                        return;
+                    }
+                    
+                    // Crear transacción de préstamo
+                    const prestamoTransaction = {
+                        id: 'prestamo_' + Date.now(),
+                        description: `PRÉSTAMO: ${getMotivoTexto(motivo)} - ${descripcion}`,
+                        amount: -monto,
+                        type: 'prestamo',
+                        time: new Date().toLocaleTimeString(),
+                        date: new Date().toLocaleDateString(),
+                        motivo: motivo,
+                        fechaDevolucion: fechaDevolucion,
+                        estado: 'pendiente',
+                        solicitante: getCurrentUser().name
+                    };
+                    
+                    // Agregar a transacciones
+                    transactions.push(prestamoTransaction);
+                    renderTransactions();
+                    updateSummary();
+                    
+                    // Guardar en systemDataManager como préstamo
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        window.systemDataManager.guardarPrestamo({
+                            ...prestamoTransaction,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '✅ Préstamo Registrado',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>💰 Monto:</strong> $${monto.toFixed(2)}</p>
+                                <p><strong>📝 Motivo:</strong> ${getMotivoTexto(motivo)}</p>
+                                <p><strong>📋 Descripción:</strong> ${descripcion}</p>
+                                <p><strong>📅 Devolución estimada:</strong> ${fechaDevolucion || 'No especificada'}</p>
+                                <p><strong>👤 Solicitante:</strong> ${getCurrentUser().name}</p>
+                            </div>
+                            <p style="margin-top: 15px; color: #28a745;">
+                                <strong>✅ El préstamo ha sido registrado y descontado del saldo actual.</strong>
+                            </p>
+                        `,
+                        timer: 4000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+        
+        // CORRECCIÓN: Función auxiliar para obtener texto del motivo
+        function getMotivoTexto(motivo) {
+            const motivos = {
+                'pizza': 'Cajas de Pizza',
+                'agua': 'Fundas de Agua',
+                'faldos': 'Faldos/Uniformes',
+                'materiales': 'Materiales Cafetería',
+                'otro': 'Otro Gasto Obligatorio'
+            };
+            return motivos[motivo] || motivo;
+        }
+        
+        // CORRECCIÓN: Función para generar reporte mensual
+        function generarReporteMensual() {
+            // Obtener reportes del mes
+            const reportes = obtenerReportesMesActual();
+            
+            if (reportes.length === 0) {
+                Swal.fire('Información', 'No hay cuadres registrados este mes', 'info');
+                return;
+            }
+            
+            // Generar Excel mensual
+            generarExcelMensual(reportes);
+        }
+        
+        // CORRECCIÓN: Función para obtener reportes del mes actual
+        function obtenerReportesMesActual() {
+            if (typeof window.systemDataManager === 'undefined') {
+                Swal.fire('Error', 'Sistema de datos no disponible', 'error');
+                return [];
+            }
+            
+            const data = window.systemDataManager.getAllData();
+            const todosReportes = data.reportesCafeteria || [];
+            
+            const now = new Date();
+            const mesActual = now.getMonth();
+            const añoActual = now.getFullYear();
+            
+            return todosReportes.filter(reporte => {
+                const fechaReporte = new Date(reporte.fecha);
+                return fechaReporte.getMonth() === mesActual && 
+                       fechaReporte.getFullYear() === añoActual;
+            }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        }
+        
+        // CORRECCIÓN: Función para generar Excel mensual
+        function generarExcelMensual(reportes) {
+            const wb = XLSX.utils.book_new();
+            
+            // Hoja 1: Resumen Mensual
+            const resumenMensual = [
+                ['REPORTE MENSUAL DE CAJA CHICA'],
+                ['SISTEMA GESTIÓN ESCOLAR'],
+                [''],
+                ['PERÍODO'],
+                ['Mes:', getNombreMes(new Date().getMonth())],
+                ['Año:', new Date().getFullYear()],
+                ['Total de Cuadres:', reportes.length],
+                [''],
+                ['RESUMEN ECONÓMICO MENSUAL'],
+                ['Total Ventas:', reportes.reduce((sum, r) => sum + (r.montoVentas || r.ingresos || r.resumen?.ventasTotales || 0), 0)],
+                ['Total Gastos:', reportes.reduce((sum, r) => sum + (r.montoGastos || r.egresos || r.resumen?.gastosTotales || 0), 0)],
+                ['Saldo Neto Mensual:', reportes.reduce((sum, r) => sum + (r.saldoNeto || r.balance || r.resumen?.saldoNeto || 0), 0)],
+                ['Promedio Diario Ventas:', (reportes.reduce((sum, r) => sum + (r.montoVentas || r.ingresos || r.resumen?.ventasTotales || 0), 0) / reportes.length).toFixed(2)],
+                [''],
+                ['ESTADÍSTICAS'],
+                ['Días con Cuadres:', reportes.length],
+                ['Cajeras Diferentes:', [...new Set(reportes.map(r => r.cajera || r.responsable))].length],
+                ['Promedio Transacciones por Día:', (reportes.reduce((sum, r) => sum + (r.totalTransacciones || 0), 0) / reportes.length).toFixed(0)],
+                [''],
+                ['GENERADO EL:', new Date().toLocaleString()]
+            ];
+            
+            const wsResumen = XLSX.utils.aoa_to_sheet(resumenMensual);
+            wsResumen['!cols'] = [{ wch: 25 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Mensual');
+            
+            // Hoja 2: Detalle Diario
+            const detalleDiario = [
+                ['DETALLE DIARIO DE CUADRES'],
+                [''],
+                ['Fecha', 'Día Semana', 'Cajera', 'Ventas', 'Gastos', 'Saldo Neto', 'Transacciones', 'Turno', 'Incidencias', 'Estado'],
+                ...reportes.map(r => {
+                    const fecha = new Date(r.fecha);
+                    return [
+                        fecha.toLocaleDateString(),
+                        getDiaSemana(fecha.getDay()),
+                        r.cajera || r.responsable || 'N/A',
+                        r.montoVentas || r.ingresos || r.resumen?.ventasTotales || 0,
+                        r.montoGastos || r.egresos || r.resumen?.gastosTotales || 0,
+                        r.saldoNeto || r.balance || r.resumen?.saldoNeto || 0,
+                        r.totalTransacciones || 0,
+                        r.especificaciones?.turno || 'N/A',
+                        r.especificaciones?.incidencias || 'sin_incidencias',
+                        r.estado || 'activo'
+                    ];
+                })
+            ];
+            
+            const wsDetalle = XLSX.utils.aoa_to_sheet(detalleDiario);
+            wsDetalle['!cols'] = [
+                { wch: 12 }, // Fecha
+                { wch: 12 }, // Día Semana
+                { wch: 20 }, // Cajera
+                { wch: 12 }, // Ventas
+                { wch: 12 }, // Gastos
+                { wch: 12 }, // Saldo Neto
+                { wch: 12 }, // Transacciones
+                { wch: 15 }, // Turno
+                { wch: 15 }, // Incidencias
+                { wch: 10 }  // Estado
+            ];
+            XLSX.utils.book_append_sheet(wb, wsDetalle, 'Detalle Diario');
+            
+            // Hoja 3: Resumen por Cajera
+            const resumenCajeras = [
+                ['RESUMEN POR CAJERA'],
+                [''],
+                ['Cajera', 'Días Trabajados', 'Total Ventas', 'Total Gastos', 'Saldo Neto', 'Promedio Ventas', 'Promedio Transacciones'],
+                ...getResumenPorCajera(reportes)
+            ];
+            
+            const wsCajeras = XLSX.utils.aoa_to_sheet(resumenCajeras);
+            wsCajeras['!cols'] = [
+                { wch: 25 }, // Cajera
+                { wch: 15 }, // Días Trabajados
+                { wch: 15 }, // Total Ventas
+                { wch: 15 }, // Total Gastos
+                { wch: 15 }, // Saldo Neto
+                { wch: 15 }, // Promedio Ventas
+                { wch: 20 }  // Promedio Transacciones
+            ];
+            XLSX.utils.book_append_sheet(wb, wsCajeras, 'Resumen por Cajera');
+            
+            // Hoja 4: Tendencias Semanales
+            if (reportes.length > 7) {
+                const tendencias = [
+                    ['TENDENCIAS SEMANALES'],
+                    [''],
+                    ['Semana', 'Ventas', 'Gastos', 'Saldo Neto', 'Cuadres'],
+                    ...getTendenciasSemanales(reportes)
+                ];
+                
+                const wsTendencias = XLSX.utils.aoa_to_sheet(tendencias);
+                wsTendencias['!cols'] = [
+                    { wch: 15 }, // Semana
+                    { wch: 12 }, // Ventas
+                    { wch: 12 }, // Gastos
+                    { wch: 12 }, // Saldo Neto
+                    { wch: 10 }  // Cuadres
+                ];
+                XLSX.utils.book_append_sheet(wb, wsTendencias, 'Tendencias Semanales');
+            }
+            
+            // Generar y descargar archivo
+            const fileName = `reporte_mensual_caja_${getNombreMes(new Date().getMonth())}_${new Date().getFullYear()}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            Swal.fire({
+                icon: 'success',
+                title: '✅ Reporte Mensual Generado',
+                html: `
+                    <div style="text-align: left;">
+                        <p><strong>📊 Archivo:</strong> ${fileName}</p>
+                        <p><strong>📋 Cuadres procesados:</strong> ${reportes.length}</p>
+                        <p><strong>📅 Período:</strong> ${getNombreMes(new Date().getMonth())} ${new Date().getFullYear()}</p>
+                        <p><strong>📄 Hojas incluidas:</strong></p>
+                        <ul style="text-align: left; margin-left: 20px;">
+                            <li>📊 Resumen Mensual</li>
+                            <li>📋 Detalle Diario</li>
+                            <li>👥 Resumen por Cajera</li>
+                            <li>📈 Tendencias Semanales</li>
+                        </ul>
+                    </div>
+                `,
+                timer: 5000,
+                showConfirmButton: false
+            });
+        }
+        
+        // CORRECCIÓN: Funciones auxiliares para reporte mensual
+        function getNombreMes(mes) {
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            return meses[mes];
+        }
+        
+        function getDiaSemana(dia) {
+            const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            return dias[dia];
+        }
+        
+        function getResumenPorCajera(reportes) {
+            const cajeras = {};
+            
+            reportes.forEach(reporte => {
+                const cajera = reporte.cajera || reporte.responsable || 'Desconocido';
+                const ventas = reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0;
+                const gastos = reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0;
+                const saldo = reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || 0;
+                const transacciones = reporte.totalTransacciones || 0;
+                
+                if (!cajeras[cajera]) {
+                    cajeras[cajera] = {
+                        dias: 0,
+                        ventas: 0,
+                        gastos: 0,
+                        saldo: 0,
+                        transacciones: 0
+                    };
+                }
+                
+                cajeras[cajera].dias++;
+                cajeras[cajera].ventas += ventas;
+                cajeras[cajera].gastos += gastos;
+                cajeras[cajera].saldo += saldo;
+                cajeras[cajera].transacciones += transacciones;
+            });
+            
+            return Object.entries(cajeras)
+                .map(([cajera, stats]) => [
+                    cajera,
+                    stats.dias,
+                    stats.ventas,
+                    stats.gastos,
+                    stats.saldo,
+                    (stats.ventas / stats.dias).toFixed(2),
+                    (stats.transacciones / stats.dias).toFixed(0)
+                ])
+                .sort(([,a], [,b]) => b[2] - a[2]); // Ordenar por ventas totales
+        }
+        
+        function getTendenciasSemanales(reportes) {
+            const semanas = {};
+            
+            reportes.forEach(reporte => {
+                const fecha = new Date(reporte.fecha);
+                const semana = Math.ceil((fecha.getDate() + new Date(fecha.getFullYear(), fecha.getMonth(), 1).getDay()) / 7);
+                const clave = `Semana ${semana}`;
+                
+                if (!semanas[clave]) {
+                    semanas[clave] = {
+                        ventas: 0,
+                        gastos: 0,
+                        saldo: 0,
+                        cuadres: 0
+                    };
+                }
+                
+                semanas[clave].ventas += reporte.montoVentas || reporte.ingresos || reporte.resumen?.ventasTotales || 0;
+                semanas[clave].gastos += reporte.montoGastos || reporte.egresos || reporte.resumen?.gastosTotales || 0;
+                semanas[clave].saldo += reporte.saldoNeto || reporte.balance || reporte.resumen?.saldoNeto || 0;
+                semanas[clave].cuadres++;
+            });
+            
+            return Object.entries(semanas)
+                .map(([semana, datos]) => [
+                    semana,
+                    datos.ventas,
+                    datos.gastos,
+                    datos.saldo,
+                    datos.cuadres
+                ])
+                .sort((a, b) => a[0].localeCompare(b[0]));
+        }
+
+        // Actualizar resumen
+            function updateSummary() {
+                const totalSales = transactions
+                    .filter(t => t.type === 'sale')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const totalExpenses = transactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+                const netAmount = totalSales - totalExpenses;
+                
+                // CORRECCIÓN: Calcular estadísticas de ediciones
+                const editedTransactions = transactions.filter(t => t.edited);
+                const editedCount = editedTransactions.length;
+                
+                document.getElementById('totalSales').textContent = `$${totalSales.toFixed(2)}`;
+                document.getElementById('totalExpenses').textContent = `$${totalExpenses.toFixed(2)}`;
+                document.getElementById('transactionCount').textContent = transactions.length;
+                document.getElementById('netAmount').textContent = `$${netAmount.toFixed(2)}`;
+                
+                // CORRECCIÓN: Mostrar estadísticas de ediciones si hay transacciones editadas
+                if (editedCount > 0) {
+                    const editedInfo = document.getElementById('editedInfo');
+                    if (!editedInfo) {
+                        const summaryGrid = document.querySelector('.summary-grid');
+                        const editedCard = document.createElement('div');
+                        editedCard.className = 'summary-card';
+                        editedCard.id = 'editedInfo';
+                        editedCard.innerHTML = `
+                            <div class="summary-value" style="color: #3498db;">${editedCount}</div>
+                            <div class="summary-label">Transacciones Editadas</div>
+                            <button class="btn btn-sm btn-info" onclick="showEditedTransactions()" style="margin-top: 5px;">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        `;
+                        summaryGrid.appendChild(editedCard);
+                    } else {
+                        editedInfo.querySelector('.summary-value').textContent = editedCount;
+                    }
+                }
+            }
+            
+            // CORRECCIÓN: Función para mostrar transacciones editadas
+            function showEditedTransactions() {
+                const editedTransactions = transactions.filter(t => t.edited);
+                
+                if (editedTransactions.length === 0) {
+                    Swal.fire('Información', 'No hay transacciones editadas', 'info');
+                    return;
+                }
+                
+                const html = editedTransactions.map((t, index) => {
+                    const originalIndex = transactions.indexOf(t);
+                    return `
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                            <p><strong>${t.description}</strong></p>
+                            <p><strong>Original:</strong> $${Math.abs(t.originalAmount).toFixed(2)} → <strong>Actual:</strong> $${Math.abs(t.amount).toFixed(2)}</p>
+                            <p><strong>Editado:</strong> ${t.editedAt}</p>
+                            <button class="btn btn-sm btn-info" onclick="viewTransactionHistory(${originalIndex})">Ver Historial</button>
+                        </div>
+                    `;
+                }).join('');
+                
+                Swal.fire({
+                    title: '📝 Transacciones Editadas',
+                    html: `
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <p><strong>Total de transacciones editadas:</strong> ${editedTransactions.length}</p>
+                            ${html}
+                        </div>
+                    `,
+                    confirmButtonColor: '#3498db',
+                    confirmButtonText: 'Cerrar',
+                    width: 600
+                });
+            }
+
+        // Obtener usuario actual
+        function getCurrentUser() {
+            const userData = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+            return userData ? JSON.parse(userData) : { name: 'Usuario desconocido' };
+        }
+
+        // Imprimir reporte
+        function printReport() {
+            const reportData = {
+                id: 'cafeteria_' + Date.now(),
+                fecha: new Date().toISOString().split('T')[0],
+                tipo: 'cuadre_diario',
+                hora: new Date().toLocaleTimeString(),
+                transacciones: transactions,
+                resumen: {
+                    ventasTotales: transactions.filter(t => t.type === 'sale').reduce((sum, t) => sum + t.amount, 0),
+                    gastosTotales: transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0),
+                    totalTransacciones: transactions.length,
+                    saldoNeto: transactions.filter(t => t.type === 'sale').reduce((sum, t) => sum + t.amount, 0) - 
+                            transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                },
+                responsable: getCurrentUser().name,
+                username: getCurrentUser().username,
+                estado: 'activo',
+                timestamp: new Date().toISOString()
+            };
+            
+            // Guardar en systemDataManager
+            if (typeof window.systemDataManager !== 'undefined') {
+                window.systemDataManager.guardarReporteCafeteria(reportData);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reporte Generado',
+                    text: 'El reporte ha sido guardado en el sistema y está disponible para consulta en dirección.',
+                    confirmButtonText: 'Aceptar'
+                });
+            } else {
+                alert('Reporte generado exitosamente. Listo para imprimir.');
+            }
+            
+            console.log('Reporte de caja:', reportData);
+            // Aquí iría la lógica de impresión real
+        }
+        
+        // CORRECCIÓN: Función mejorada para enviar cuadre del día con especificaciones
+        function enviarCuadreDelDia() {
+            console.log('📊 ENVIANDO CUADRE DEL DÍA');
+            
+            // Obtener datos del usuario actual
+            const currentUser = getCurrentUser();
+            const now = new Date();
+            
+            // Calcular totales
+            const totalVentas = transactions.filter(t => t.type === 'sale').reduce((sum, t) => sum + t.amount, 0);
+            const totalGastos = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0);
+            const saldoNeto = totalVentas - totalGastos;
+            
+            // CORRECCIÓN: Mostrar formulario de especificaciones adicionales
+            Swal.fire({
+                title: '📋 Especificaciones del Cuadre',
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 10px;">📊 Resumen del Turno</h4>
+                            <p><strong>💰 Ventas:</strong> $${totalVentas.toFixed(2)}</p>
+                            <p><strong>💸 Gastos:</strong> $${totalGastos.toFixed(2)}</p>
+                            <p><strong>💵 Saldo Neto:</strong> $${saldoNeto.toFixed(2)}</p>
+                            <p><strong>📋 Transacciones:</strong> ${transactions.length}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">📝 Observaciones del Turno:</label>
+                            <textarea id="observacionesCuadre" style="width: 100%; height: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Describe cualquier incidencia, novedades o comentarios importantes del turno..."></textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">🏦 Turno:</label>
+                            <select id="tipoTurno" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="mañana">🌅 Mañana (6:00 - 14:00)</option>
+                                <option value="tarde">🌇 Tarde (14:00 - 22:00)</option>
+                                <option value="noche">🌙 Noche (22:00 - 6:00)</option>
+                                <option value="completo">📅 Completo</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">💳 Método de Pago Predominante:</label>
+                            <select id="metodoPago" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="efectivo">💵 Efectivo</option>
+                                <option value="tarjeta">💳 Tarjeta</option>
+                                <option value="mixto">🔄 Mixto</option>
+                                <option value="transferencia">📱 Transferencia</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">👥 Número de Clientes Atendidos:</label>
+                            <input type="number" id="clientesAtendidos" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Ej: 45" min="0" value="${transactions.length}">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">⚠️ Incidencias:</label>
+                            <select id="incidencias" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="sin_incidencias">✅ Sin incidencias</option>
+                                <option value="menor">⚠️ Incidencias menores</option>
+                                <option value="mayor">🚨 Incidencias mayores</option>
+                                <option value="sistema">🔧 Problemas con el sistema</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#27ae60',
+                cancelButtonColor: '#e74c3c',
+                confirmButtonText: '✅ Enviar Cuadre',
+                cancelButtonText: '❌ Cancelar',
+                width: 600
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Obtener valores del formulario
+                    const observaciones = document.getElementById('observacionesCuadre').value;
+                    const tipoTurno = document.getElementById('tipoTurno').value;
+                    const metodoPago = document.getElementById('metodoPago').value;
+                    const clientesAtendidos = document.getElementById('clientesAtendidos').value || transactions.length;
+                    const incidencias = document.getElementById('incidencias').value;
+                    
+                    // Crear reporte completo con especificaciones
+                    const cuadreData = {
+                        id: 'cuadre_' + Date.now(),
+                        fecha: now.toISOString().split('T')[0],
+                        hora: now.toLocaleTimeString(),
+                        tipo: 'cuadre_caja_detallado',
+                        montoVentas: totalVentas,
+                        montoGastos: totalGastos,
+                        saldoNeto: saldoNeto,
+                        totalTransacciones: transactions.length,
+                        cajera: currentUser.name,
+                        usernameCajera: currentUser.username,
+                        timestamp: now.toISOString(),
+                        // CORRECCIÓN: Agregar especificaciones adicionales
+                        especificaciones: {
+                            turno: tipoTurno,
+                            metodoPagoPredominante: metodoPago,
+                            clientesAtendidos: parseInt(clientesAtendidos),
+                            incidencias: incidencias,
+                            ticketPromedio: totalVentas / parseInt(clientesAtendidos),
+                            horaInicio: getHoraInicioTurno(tipoTurno),
+                            horaFin: getHoraFinTurno(tipoTurno)
+                        },
+                        detalles: {
+                            transacciones: transactions,
+                            resumen: {
+                                ventasTotales: totalVentas,
+                                gastosTotales: totalGastos,
+                                saldoNeto: saldoNeto,
+                                cantidadVentas: transactions.filter(t => t.type === 'sale').length,
+                                cantidadGastos: transactions.filter(t => t.type === 'expense').length
+                            }
+                        },
+                        estado: 'enviado_direccion',
+                        observaciones: observaciones || `Cuadre del día ${now.toLocaleDateString()} generado por ${currentUser.name}`,
+                        prioridad: incidencias === 'mayor' ? 'alta' : incidencias === 'menor' ? 'media' : 'normal'
+                    };
+                    
+                    // Validar que haya transacciones
+                    if (transactions.length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Sin Transacciones',
+                            text: 'No hay transacciones registradas para enviar el cuadre del día.',
+                            confirmButtonColor: '#f39c12'
+                        });
+                        return;
+                    }
+                    
+                    // Guardar en systemDataManager
+                    if (typeof window.systemDataManager !== 'undefined') {
+                        try {
+                            const resultado = window.systemDataManager.guardarReporteCafeteria(cuadreData);
+                            
+                            if (resultado) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '✅ Cuadre Enviado Exitosamente',
+                                    html: `
+                                        <div style="text-align: left;">
+                                            <p><strong>📅 Fecha:</strong> ${cuadreData.fecha}</p>
+                                            <p><strong>🕐 Hora:</strong> ${cuadreData.hora}</p>
+                                            <p><strong>💰 Ventas:</strong> $${totalVentas.toFixed(2)}</p>
+                                            <p><strong>💸 Gastos:</strong> $${totalGastos.toFixed(2)}</p>
+                                            <p><strong>💵 Saldo Neto:</strong> $${saldoNeto.toFixed(2)}</p>
+                                            <p><strong>👤 Cajera:</strong> ${currentUser.name}</p>
+                                            <p><strong>📊 Transacciones:</strong> ${transactions.length}</p>
+                                            <p><strong>🕐 Turno:</strong> ${getNombreTurno(tipoTurno)}</p>
+                                            <p><strong>👥 Clientes:</strong> ${clientesAtendidos}</p>
+                                            <p><strong>💳 Método:</strong> ${getNombreMetodoPago(metodoPago)}</p>
+                                            <p><strong>⚠️ Incidencias:</strong> ${getNombreIncidencia(incidencias)}</p>
+                                        </div>
+                                        <p style="margin-top: 15px; color: #27ae60;">
+                                            <strong>✅ El cuadre detallado está disponible para consulta en dirección.</strong>
+                                        </p>
+                                    `,
+                                    confirmButtonColor: '#27ae60',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                
+                                console.log('✅ Cuadre del día enviado:', cuadreData);
+                            } else {
+                                throw new Error('Error al guardar el reporte');
+                            }
+                        } catch (error) {
+                            console.error('❌ Error al enviar cuadre:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error al Enviar Cuadre',
+                                text: 'Hubo un problema al guardar el cuadre en el sistema. Intente nuevamente.',
+                                confirmButtonColor: '#e74c3c'
+                            });
+                        }
+                    } else {
+                        console.error('❌ systemDataManager no disponible');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Sistema No Disponible',
+                            text: 'El sistema de datos no está disponible en este momento.',
+                            confirmButtonColor: '#e74c3c'
+                        });
+                    }
+                }
+            });
+        }
+        
+        // CORRECCIÓN: Funciones auxiliares para las especificaciones
+        function getHoraInicioTurno(tipoTurno) {
+            const turnos = {
+                'mañana': '06:00',
+                'tarde': '14:00',
+                'noche': '22:00',
+                'completo': '06:00'
+            };
+            return turnos[tipoTurno] || '06:00';
+        }
+        
+        function getHoraFinTurno(tipoTurno) {
+            const turnos = {
+                'mañana': '14:00',
+                'tarde': '22:00',
+                'noche': '06:00',
+                'completo': '22:00'
+            };
+            return turnos[tipoTurno] || '22:00';
+        }
+        
+        function getNombreTurno(tipoTurno) {
+            const turnos = {
+                'mañana': '🌅 Mañana (6:00 - 14:00)',
+                'tarde': '🌇 Tarde (14:00 - 22:00)',
+                'noche': '🌙 Noche (22:00 - 6:00)',
+                'completo': '📅 Completo (6:00 - 22:00)'
+            };
+            return turnos[tipoTurno] || tipoTurno;
+        }
+        
+        function getNombreMetodoPago(metodo) {
+            const metodos = {
+                'efectivo': '💵 Efectivo',
+                'tarjeta': '💳 Tarjeta',
+                'mixto': '🔄 Mixto',
+                'transferencia': '📱 Transferencia'
+            };
+            return metodos[metodo] || metodo;
+        }
+        
+        function getNombreIncidencia(incidencia) {
+            const incidencias = {
+                'sin_incidencias': '✅ Sin incidencias',
+                'menor': '⚠️ Incidencias menores',
+                'mayor': '🚨 Incidencias mayores',
+                'sistema': '🔧 Problemas con el sistema'
+            };
+            return incidencias[incidencia] || incidencia;
+        }
+
+        // Cerrar caja
+        function closeRegister() {
+            if (transactions.length === 0) {
+                if (!confirm('No hay transacciones registradas. ¿Estás seguro de que deseas cerrar la caja sin movimientos?')) {
+                    return;
+                }
+            }
+            
+            Swal.fire({
+                title: '⚠️ Confirmar Cierre de Caja',
+                html: `
+                    <div style="text-align: left;">
+                        <p>¿Estás seguro de que deseas cerrar la caja?</p>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <p><strong>📊 Resumen del Turno:</strong></p>
+                            <p>💰 Ventas: $${transactions.filter(t => t.type === 'sale').reduce((sum, t) => sum + t.amount, 0).toFixed(2)}</p>
+                            <p>💸 Gastos: $${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0).toFixed(2)}</p>
+                            <p>📋 Transacciones: ${transactions.length}</p>
+                        </div>
+                        <p style="color: #e74c3c; font-size: 14px;">
+                            <strong>⚠️ Esta acción finalizará tu turno y enviará el cuadre a dirección.</strong>
+                        </p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#27ae60',
+                cancelButtonColor: '#e74c3c',
+                confirmButtonText: '✅ Sí, Cerrar y Enviar',
+                cancelButtonText: '❌ Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log('🔒 Cerrando caja y enviando cuadre...');
+                    
+                    // Enviar cuadre automáticamente
+                    enviarCuadreDelDia();
+                    
+                    // Limpiar transacciones después de enviar
+                    setTimeout(() => {
+                        transactions = [];
+                        renderTransactions();
+                        updateSummary();
+                        
+                        // Actualizar estado de la caja
+                        const statusElement = document.getElementById('registerStatus');
+                        statusElement.className = 'status-indicator status-closed';
+                        statusElement.innerHTML = '<i class="fas fa-circle"></i> CAJA CERRADA';
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: '✅ Caja Cerrada Exitosamente',
+                            text: 'El cuadre del día ha sido enviado a dirección y tu turno ha finalizado.',
+                            confirmButtonColor: '#27ae60'
+                        });
+                    }, 2000);
+                }
+            });
+        }
+
+        // Cerrar sesión
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInitialData();
+            setInterval(updateTime, 60000); // Actualizar cada minuto
+            
+            // Verificar autenticación
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'index.html';
+            }
+        });
+        
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideTransactionForm();
+            }
+        });
+    </script>
+
+    <!-- Conexión con núcleo SGECore -->
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/core/dataStore.js"></script>
+    <script src="js/core/authSystem.js"></script>
+    <script src="js/core/systemCore.js"></script>
+    <script src="js/systemDataManager.js"></script>
+    <script src="js/systemUsers.js"></script>
+    <script src="js/modules/cafeteriaModule.js"></script>
+</body>
+</html>

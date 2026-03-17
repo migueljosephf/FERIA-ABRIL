@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - SGE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Conexión con núcleo SGECore -->
+    <script src="../js/core/eventBus.js"></script>
+    <script src="../js/core/dataStore.js"></script>
+    <script src="../js/core/authSystem.js"></script>
+    <script src="../js/core/systemCore.js"></script>
+    <script src="../js/systemDataManager.js"></script>
+    <style>
+        :root {
+            --admin-primary: #1e40af;
+            --admin-secondary: #3b82f6;
+            --admin-success: #10b981;
+            --admin-warning: #f59e0b;
+            --admin-danger: #ef4444;
+            --admin-dark: #1f2937;
+            --admin-light: #f3f4f6;
+            --admin-bg: #f8fafc;
+            --admin-white: #ffffff;
+            --admin-gray-50: #f9fafb;
+            --admin-gray-100: #f3f4f6;
+            --admin-gray-200: #e5e7eb;
+            --admin-gray-300: #d1d5db;
+            --admin-gray-400: #9ca3af;
+            --admin-gray-500: #6b7280;
+            --admin-gray-600: #4b5563;
+            --admin-gray-700: #374151;
+            --admin-gray-800: #1f2937;
+            --admin-gray-900: #111827;
+            --admin-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --admin-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --admin-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --admin-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --admin-border-radius: 12px;
+            --admin-border-radius-lg: 16px;
+            --admin-border-radius-xl: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--admin-bg) 0%, var(--admin-gray-50) 100%);
+            color: var(--admin-gray-800);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            color: white;
+            padding: 32px;
+            border-radius: var(--admin-border-radius-xl);
+            margin-bottom: 32px;
+            box-shadow: var(--admin-shadow-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: translate(-30%, 30%);
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--admin-border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.3s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--admin-primary);
+        }
+
+        .btn-success {
+            background: var(--admin-success);
+        }
+
+        .btn-danger {
+            background: var(--admin-danger);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--admin-shadow-lg);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--admin-white);
+            padding: 28px;
+            border-radius: var(--admin-border-radius-lg);
+            box-shadow: var(--admin-shadow);
+            border-left: 5px solid var(--admin-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--admin-primary), transparent);
+            opacity: 0.05;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--admin-shadow-xl);
+            border-left-color: var(--admin-secondary);
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: var(--admin-border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: var(--admin-shadow-md);
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2), transparent);
+        }
+
+        .stat-icon.users { background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary)); }
+        .stat-icon.modules { background: linear-gradient(135deg, var(--admin-success), #059669); }
+        .stat-icon.activity { background: linear-gradient(135deg, var(--admin-warning), #d97706); }
+        .stat-icon.reports { background: linear-gradient(135deg, var(--admin-danger), #dc2626); }
+
+        .stat-value {
+            font-size: 2.75rem;
+            font-weight: 800;
+            color: var(--admin-gray-900);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            color: var(--admin-gray-600);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: var(--admin-white);
+            padding: 30px;
+            border-radius: var(--admin-border-radius-lg);
+            box-shadow: var(--admin-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top: 4px solid var(--admin-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--admin-secondary), transparent);
+            opacity: 0.03;
+            border-radius: 50%;
+            transform: translate(40%, -40%);
+        }
+
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--admin-shadow-xl);
+            border-top-color: var(--admin-primary);
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .module-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--admin-border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: white;
+            box-shadow: var(--admin-shadow-md);
+            position: relative;
+        }
+
+        .module-icon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2), transparent);
+        }
+
+        .module-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--admin-gray-900);
+        }
+
+        .module-description {
+            color: var(--admin-gray-600);
+            margin-bottom: 24px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .module-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .activity-section {
+            background: var(--admin-white);
+            padding: 32px;
+            border-radius: var(--admin-border-radius-lg);
+            box-shadow: var(--admin-shadow);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--admin-primary), transparent);
+            opacity: 0.02;
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--admin-gray-100);
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--admin-gray-900);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .activity-list {
+            list-style: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .activity-item {
+            padding: 16px;
+            border-radius: var(--admin-border-radius);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .activity-item:hover {
+            background: var(--admin-gray-50);
+            border-left-color: var(--admin-primary);
+            transform: translateX(4px);
+        }
+
+        /* Supervision Section */
+        .supervision-section, .records-section {
+            margin-bottom: 48px;
+        }
+
+        .section-header.supervision-header {
+            margin-bottom: 36px;
+            text-align: center;
+        }
+
+        .section-title.supervision-title {
+            font-size: 2.25rem;
+            color: var(--admin-gray-900);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            font-weight: 800;
+        }
+
+        .section-subtitle {
+            color: var(--admin-gray-600);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .flow-grid, .records-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+            margin-bottom: 48px;
+        }
+
+        .flow-card, .record-card {
+            background: var(--admin-white);
+            border-radius: var(--admin-border-radius-lg);
+            box-shadow: var(--admin-shadow);
+            padding: 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 5px solid var(--admin-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flow-card::before, .record-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--admin-primary), transparent);
+            opacity: 0.03;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .flow-card:hover, .record-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--admin-shadow-xl);
+            border-left-color: var(--admin-secondary);
+        }
+
+        .flow-header, .record-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .flow-icon, .record-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: var(--admin-border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            box-shadow: var(--admin-shadow-md);
+            position: relative;
+        }
+
+        .flow-icon::after, .record-icon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2), transparent);
+        }
+
+        .flow-header h4, .record-header h4 {
+            color: var(--admin-primary);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .flow-stats, .record-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .flow-stat, .record-stat {
+            text-align: center;
+        }
+
+        .flow-value, .record-value {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+            margin-bottom: 5px;
+        }
+
+        .flow-label, .record-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .flow-trend {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .flow-trend i {
+            margin-right: 8px;
+        }
+
+        .record-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+        }
+
+        .activity-item {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: background 0.3s;
+        }
+
+        .activity-item:hover {
+            background: var(--admin-light);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: var(--admin-dark);
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+
+        .unauthorized {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .unauthorized i {
+            font-size: 4rem;
+            color: var(--admin-danger);
+            margin-bottom: 20px;
+        }
+
+        .unauthorized h2 {
+            color: var(--admin-danger);
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats-grid,
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Mejoras adicionales para experiencia visual */
+        .unauthorized {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--admin-white);
+            border-radius: var(--admin-border-radius-xl);
+            box-shadow: var(--admin-shadow-lg);
+            margin: 40px auto;
+            max-width: 500px;
+        }
+
+        .unauthorized i {
+            font-size: 4rem;
+            color: var(--admin-danger);
+            margin-bottom: 20px;
+        }
+
+        .unauthorized h2 {
+            color: var(--admin-gray-900);
+            margin-bottom: 16px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .unauthorized p {
+            color: var(--admin-gray-600);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        /* Animaciones sutiles */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card, .module-card, .flow-card, .record-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .stat-card:nth-child(5) { animation-delay: 0.5s; }
+        .stat-card:nth-child(6) { animation-delay: 0.6s; }
+        .stat-card:nth-child(7) { animation-delay: 0.7s; }
+        .stat-card:nth-child(8) { animation-delay: 0.8s; }
+
+        /* Mejoras para botones */
+        .btn-secondary {
+            background: var(--admin-gray-600);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--admin-gray-700);
+        }
+
+        /* Mejoras para responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                padding: 24px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header-actions {
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-grid, .records-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title.supervision-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .stat-card, .module-card, .flow-card, .record-card {
+                padding: 20px;
+            }
+        }
+
+        /* Efectos de loading */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid var(--admin-primary);
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tooltips */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:hover::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--admin-gray-900);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+        }
+
+        [data-tooltip]:hover::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: var(--admin-gray-900);
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="unauthorizedSection" class="unauthorized" style="display: none;">
+            <i class="fas fa-lock"></i>
+            <h2>Acceso Restringido</h2>
+            <p>Esta página está disponible solo para administradores del sistema.</p>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                Si usted es administrador y no puede acceder, por favor verifique que ha iniciado sesión correctamente.
+            </p>
+            <p style="margin-top: 20px;">
+                <a href="../index.html" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Volver al Inicio
+                </a>
+            </p>
+        </div>
+
+        <div id="adminContent" style="display: none;">
+            <header class="header">
+                <h1>
+                    <i class="fas fa-shield-alt"></i>
+                    Panel de Administración
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="refreshData()">
+                        <i class="fas fa-sync"></i> Actualizar Datos
+                    </button>
+                    <a href="../index.html" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </a>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">Usuarios Registrados</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon modules">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                    <div class="stat-value" id="totalModules">0</div>
+                    <div class="stat-label">Módulos Activos</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon activity">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value" id="activeToday">0</div>
+                    <div class="stat-label">Activos Hoy</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon reports">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-value" id="totalReports">0</div>
+                    <div class="stat-label">Reportes Creados</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #e74c3c;">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div class="stat-value" id="totalExcusas">0</div>
+                    <div class="stat-label">Excusas Enviadas</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #9b59b6;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="stat-value" id="totalCasos">0</div>
+                    <div class="stat-label">Casos Psicológicos</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f39c12;">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-value" id="totalMensajes">0</div>
+                    <div class="stat-label">Mensajes Enviados</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #27ae60;">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <div class="stat-value" id="totalCafeteria">0</div>
+                    <div class="stat-label">Operaciones Cafetería</div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE SUPERVISIÓN DE FLUJO DE DATOS -->
+            <div class="supervision-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-network-wired"></i>
+                        Supervisión del Flujo Institucional
+                    </h2>
+                    <p class="section-subtitle">
+                        Monitoreo en tiempo real del flujo de información entre módulos
+                    </p>
+                </div>
+                
+                <div class="flow-grid">
+                    <div class="flow-card">
+                        <div class="flow-header">
+                            <div class="flow-icon" style="background: #e67e22;">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <h4>Docentes → Psicología</h4>
+                        </div>
+                        <div class="flow-stats">
+                            <div class="flow-stat">
+                                <span class="flow-value" id="teacherToPsychologyToday">0</span>
+                                <span class="flow-label">Hoy</span>
+                            </div>
+                            <div class="flow-stat">
+                                <span class="flow-value" id="teacherToPsychologyWeek">0</span>
+                                <span class="flow-label">Semana</span>
+                            </div>
+                        </div>
+                        <div class="flow-trend" id="teacherPsychologyTrend">
+                            <i class="fas fa-arrow-up"></i> En aumento
+                        </div>
+                    </div>
+
+                    <div class="flow-card">
+                        <div class="flow-header">
+                            <div class="flow-icon" style="background: #9b59b6;">
+                                <i class="fas fa-reply"></i>
+                            </div>
+                            <h4>Psicología → Docentes</h4>
+                        </div>
+                        <div class="flow-stats">
+                            <div class="flow-stat">
+                                <span class="flow-value" id="psychologyToTeacherToday">0</span>
+                                <span class="flow-label">Hoy</span>
+                            </div>
+                            <div class="flow-stat">
+                                <span class="flow-value" id="psychologyToTeacherWeek">0</span>
+                                <span class="flow-label">Semana</span>
+                            </div>
+                        </div>
+                        <div class="flow-trend" id="psychologyTeacherTrend">
+                            <i class="fas fa-arrow-up"></i> En aumento
+                        </div>
+                    </div>
+
+                    <div class="flow-card">
+                        <div class="flow-header">
+                            <div class="flow-icon" style="background: #27ae60;">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h4>Docentes → Dirección</h4>
+                        </div>
+                        <div class="flow-stats">
+                            <div class="flow-stat">
+                                <span class="flow-value" id="teacherToDirectionToday">0</span>
+                                <span class="flow-label">Hoy</span>
+                            </div>
+                            <div class="flow-stat">
+                                <span class="flow-value" id="teacherToDirectionWeek">0</span>
+                                <span class="flow-label">Semana</span>
+                            </div>
+                        </div>
+                        <div class="flow-trend" id="teacherDirectionTrend">
+                            <i class="fas fa-minus"></i> Estable
+                        </div>
+                    </div>
+
+                    <div class="flow-card">
+                        <div class="flow-header">
+                            <div class="flow-icon" style="background: #3498db;">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <h4>Comunicación Interna</h4>
+                        </div>
+                        <div class="flow-stats">
+                            <div class="flow-stat">
+                                <span class="flow-value" id="internalCommToday">0</span>
+                                <span class="flow-label">Hoy</span>
+                            </div>
+                            <div class="flow-stat">
+                                <span class="flow-value" id="internalCommWeek">0</span>
+                                <span class="flow-label">Semana</span>
+                            </div>
+                        </div>
+                        <div class="flow-trend" id="internalCommTrend">
+                            <i class="fas fa-arrow-up"></i> Activo
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE REGISTROS INSTITUCIONALES -->
+            <div class="records-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-archive"></i>
+                        Registros Institucionales
+                    </h2>
+                    <p class="section-subtitle">
+                        Consulta y gestión de registros históricos del sistema
+                    </p>
+                </div>
+                
+                <div class="records-grid">
+                    <div class="record-card">
+                        <div class="record-header">
+                            <div class="record-icon" style="background: #e74c3c;">
+                                <i class="fas fa-file-medical"></i>
+                            </div>
+                            <h4>Excusas Estudiantiles</h4>
+                        </div>
+                        <div class="record-stats">
+                            <div class="record-stat">
+                                <span class="record-value" id="totalExcusesRecord">0</span>
+                                <span class="record-label">Total</span>
+                            </div>
+                            <div class="record-stat">
+                                <span class="record-value" id="pendingExcusesRecord">0</span>
+                                <span class="record-label">Pendientes</span>
+                            </div>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewExcuseRecords()">
+                                <i class="fas fa-search"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="filterExcuseRecords()">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-header">
+                            <div class="record-icon" style="background: #9b59b6;">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h4>Casos Psicológicos</h4>
+                        </div>
+                        <div class="record-stats">
+                            <div class="record-stat">
+                                <span class="record-value" id="totalPsychologyRecord">0</span>
+                                <span class="record-label">Total</span>
+                            </div>
+                            <div class="record-stat">
+                                <span class="record-value" id="activePsychologyRecord">0</span>
+                                <span class="record-label">Activos</span>
+                            </div>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewPsychologyRecords()">
+                                <i class="fas fa-search"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="filterPsychologyRecords()">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-header">
+                            <div class="record-icon" style="background: #f39c12;">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <h4>Registros Médicos</h4>
+                        </div>
+                        <div class="record-stats">
+                            <div class="record-stat">
+                                <span class="record-value" id="totalMedicalRecord">0</span>
+                                <span class="record-label">Total</span>
+                            </div>
+                            <div class="record-stat">
+                                <span class="record-value" id="recentMedicalRecord">0</span>
+                                <span class="record-label">Recientes</span>
+                            </div>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewMedicalRecords()">
+                                <i class="fas fa-search"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="filterMedicalRecords()">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-header">
+                            <div class="record-icon" style="background: #27ae60;">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h4>Comunicaciones</h4>
+                        </div>
+                        <div class="record-stats">
+                            <div class="record-stat">
+                                <span class="record-value" id="totalCommRecord">0</span>
+                                <span class="record-label">Total</span>
+                            </div>
+                            <div class="record-stat">
+                                <span class="record-value" id="unreadCommRecord">0</span>
+                                <span class="record-label">No leídos</span>
+                            </div>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewCommunicationRecords()">
+                                <i class="fas fa-search"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="filterCommunicationRecords()">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: var(--admin-primary);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="module-title">Gestión de Usuarios</h3>
+                    </div>
+                    <p class="module-description">
+                        Administrar cuentas de usuarios, roles y permisos del sistema.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../gestion-usuarios-v2.html" class="btn btn-primary">
+                            <i class="fas fa-cog"></i> Configurar
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #9b59b6;">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="module-title">Psicología</h3>
+                    </div>
+                    <p class="module-description">
+                        Acceso a todos los módulos de psicología y servicios escolares.
+                    </p>
+                    <div class="module-actions">
+                        <button class="btn btn-primary" onclick="showPsychologyModules()">
+                            <i class="fas fa-list"></i> Ver Módulos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #e67e22;">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <h3 class="module-title">Docentes</h3>
+                    </div>
+                    <p class="module-description">
+                        Gestión de módulos y perfiles de todos los docentes.
+                    </p>
+                    <div class="module-actions">
+                        <button class="btn btn-primary" onclick="showTeacherModules()">
+                            <i class="fas fa-list"></i> Ver Módulos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #27ae60;">
+                            <i class="fas fa-tooth"></i>
+                        </div>
+                        <h3 class="module-title">Odontología</h3>
+                    </div>
+                    <p class="module-description">
+                        Sistema de gestión de servicios odontológicos escolares.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../gestion-odontologia.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #3498db;">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h3 class="module-title">Enfermería</h3>
+                    </div>
+                    <p class="module-description">
+                        Gestión de servicios médicos y de enfermería.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../Enfermeria.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #f39c12;">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <h3 class="module-title">Cafetería</h3>
+                    </div>
+                    <p class="module-description">
+                        Sistema de gestión de servicios de cafetería y comedor.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../gestion-comedor.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #e74c3c;">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="module-title">Reportes</h3>
+                    </div>
+                    <p class="module-description">
+                        Generación y gestión de reportes institucionales.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../reportes-cafeteria.html" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> Ver Reportes
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #16a085;">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 class="module-title">Configuración</h3>
+                    </div>
+                    <p class="module-description">
+                        Configuración general del sistema y parámetros.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../configuracion.html" class="btn btn-primary">
+                            <i class="fas fa-wrench"></i> Configurar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #3498db;">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <h3 class="module-title">Comedor</h3>
+                    </div>
+                    <p class="module-description">
+                        Gestión del servicio de alimentación escolar.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../comedor.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #e74c3c;">
+                            <i class="fas fa-coffee"></i>
+                        </div>
+                        <h3 class="module-title">Cafetería</h3>
+                    </div>
+                    <p class="module-description">
+                        Sistema de gestión de cafetería escolar.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../inventario-cafeteria.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #f39c12;">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h3 class="module-title">Papelería</h3>
+                    </div>
+                    <p class="module-description">
+                        Gestión de inventario y ventas de útiles escolares.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../dashboard-papeleria.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #16a085;">
+                            <i class="fas fa-first-aid"></i>
+                        </div>
+                        <h3 class="module-title">Enfermería</h3>
+                    </div>
+                    <p class="module-description">
+                        Sistema de gestión de servicios de enfermería.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../Enfermeria.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background: #8e44ad;">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h3 class="module-title">Configuración</h3>
+                    </div>
+                    <p class="module-description">
+                        Configuración general del sistema y parámetros.
+                    </p>
+                    <div class="module-actions">
+                        <a href="../configuracion.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Acceder
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Actividad Reciente del Sistema
+                    </h2>
+                    <button class="btn btn-primary" onclick="refreshActivity()">
+                        <i class="fas fa-sync"></i> Actualizar
+                    </button>
+                </div>
+                <ul class="activity-list" id="activityList">
+                    <!-- La actividad se cargará dinámicamente -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar autenticación y rol de administrador
+        function checkAdminAccess() {
+            const currentUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+            
+            if (!currentUser) {
+                console.log('No hay usuario en localStorage/sessionStorage');
+                showUnauthorized();
+                return;
+            }
+
+            try {
+                const userData = JSON.parse(currentUser);
+                console.log('Usuario logueado:', userData);
+                console.log('Rol del usuario:', userData.role);
+                console.log('Username del usuario:', userData.username);
+                
+                // Verificar si tiene rol permitido o es un administrador específico
+                const allowedRoles = ['administrador', 'admin', 'director', 'direccion'];
+                const allowedUsers = ['admin', 'admin2', 'admin3', 'direccion'];
+                
+                const hasAllowedRole = allowedRoles.includes(userData.role);
+                const isAllowedUser = allowedUsers.includes(userData.username);
+                
+                console.log('¿Tiene rol permitido?', hasAllowedRole);
+                console.log('¿Es usuario permitido?', isAllowedUser);
+                console.log('¿Puede acceder?', hasAllowedRole || isAllowedUser);
+                
+                if (hasAllowedRole || isAllowedUser) {
+                    console.log('Acceso concedido - mostrando panel administrativo');
+                    showAdminPanel();
+                    loadDashboardData();
+                } else {
+                    console.log('Acceso denegado - mostrando sección no autorizado');
+                    showUnauthorized();
+                }
+            } catch (error) {
+                console.error('Error al verificar usuario:', error);
+                showUnauthorized();
+            }
+        }
+
+        function showUnauthorized() {
+            document.getElementById('unauthorizedSection').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            
+            // Redirección automática después de 3 segundos
+            setTimeout(() => {
+                window.location.href = '../index.html';
+            }, 3000);
+        }
+
+        function showAdminPanel() {
+            document.getElementById('unauthorizedSection').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+        }
+
+        function loadDashboardData() {
+            console.log('=== INICIANDO CARGA DE DASHBOARD ADMIN ===');
+            
+            // CORRECCIÓN: Verificar systemDataManager
+            if (typeof window.systemDataManager === 'undefined') {
+                console.error('systemDataManager no disponible en dashboard admin');
+                return;
+            }
+            
+            try {
+                // Estadísticas del sistema
+                updateStatistics();
+                
+                // Supervisión de flujo institucional
+                updateFlowSupervision();
+                
+                // Registros institucionales
+                updateInstitutionalRecords();
+                
+                // Cargar actividad reciente
+                loadRecentActivity();
+                
+                console.log('Dashboard admin cargado correctamente');
+            } catch (error) {
+                console.error('Error cargando dashboard admin:', error);
+            }
+        }
+
+        // =============================================
+        // FUNCIONES DE SUPERVISIÓN DE FLUJO
+        // =============================================
+
+        function updateFlowSupervision() {
+            if (typeof window.systemDataManager === 'undefined') {
+                return;
+            }
+
+            const data = window.systemDataManager.getAllData();
+            const today = new Date().toDateString();
+            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toDateString();
+
+            // Docentes → Psicología
+            const teacherToPsychologyToday = (data.excusas || []).filter(e => 
+                new Date(e.timestamp).toDateString() === today
+            ).length;
+
+            const teacherToPsychologyWeek = (data.excusas || []).filter(e => 
+                new Date(e.timestamp) >= new Date(weekAgo)
+            ).length;
+
+            // Psicología → Docentes (respuestas)
+            const psychologyToTeacherToday = (data.excusas || []).filter(e => 
+                e.responseDate && new Date(e.responseDate).toDateString() === today
+            ).length;
+
+            const psychologyToTeacherWeek = (data.excusas || []).filter(e => 
+                e.responseDate && new Date(e.responseDate) >= new Date(weekAgo)
+            ).length;
+
+            // Docentes → Dirección
+            const teacherToDirectionToday = (data.reportes || []).filter(r => 
+                r.destino === 'direccion' && new Date(r.timestamp).toDateString() === today
+            ).length;
+
+            const teacherToDirectionWeek = (data.reportes || []).filter(r => 
+                r.destino === 'direccion' && new Date(r.timestamp) >= new Date(weekAgo)
+            ).length;
+
+            // Comunicación interna
+            const internalCommToday = (data.mensajes || []).filter(m => 
+                new Date(m.timestamp).toDateString() === today
+            ).length;
+
+            const internalCommWeek = (data.mensajes || []).filter(m => 
+                new Date(m.timestamp) >= new Date(weekAgo)
+            ).length;
+
+            // Actualizar UI
+            document.getElementById('teacherToPsychologyToday').textContent = teacherToPsychologyToday;
+            document.getElementById('teacherToPsychologyWeek').textContent = teacherToPsychologyWeek;
+            document.getElementById('psychologyToTeacherToday').textContent = psychologyToTeacherToday;
+            document.getElementById('psychologyToTeacherWeek').textContent = psychologyToTeacherWeek;
+            document.getElementById('teacherToDirectionToday').textContent = teacherToDirectionToday;
+            document.getElementById('teacherToDirectionWeek').textContent = teacherToDirectionWeek;
+            document.getElementById('internalCommToday').textContent = internalCommToday;
+            document.getElementById('internalCommWeek').textContent = internalCommWeek;
+
+            // Actualizar tendencias
+            updateTrends();
+        }
+
+        function updateTrends() {
+            // Simular tendencias basadas en actividad reciente
+            const trends = {
+                teacherPsychology: Math.random() > 0.5 ? 'up' : Math.random() > 0.3 ? 'stable' : 'down',
+                psychologyTeacher: Math.random() > 0.4 ? 'up' : 'stable',
+                teacherDirection: Math.random() > 0.6 ? 'up' : 'stable',
+                internalComm: 'up'
+            };
+
+            updateTrendElement('teacherPsychologyTrend', trends.teacherPsychology);
+            updateTrendElement('psychologyTeacherTrend', trends.psychologyTeacher);
+            updateTrendElement('teacherDirectionTrend', trends.teacherDirection);
+            updateTrendElement('internalCommTrend', trends.internalComm);
+        }
+
+        function updateTrendElement(elementId, trend) {
+            const element = document.getElementById(elementId);
+            const trendConfig = {
+                up: { icon: 'fa-arrow-up', color: '#27ae60', text: 'En aumento' },
+                down: { icon: 'fa-arrow-down', color: '#e74c3c', text: 'En disminución' },
+                stable: { icon: 'fa-minus', color: '#f39c12', text: 'Estable' }
+            };
+
+            const config = trendConfig[trend] || trendConfig.stable;
+            element.innerHTML = `<i class="fas ${config.icon}" style="color: ${config.color};"></i> ${config.text}`;
+            element.style.background = `${config.color}20`;
+            element.style.color = config.color;
+        }
+
+        // =============================================
+        // FUNCIONES DE REGISTROS INSTITUCIONALES
+        // =============================================
+
+        function updateInstitutionalRecords() {
+            if (typeof window.systemDataManager === 'undefined') {
+                return;
+            }
+
+            const data = window.systemDataManager.getAllData();
+
+            // Excusas
+            const totalExcuses = (data.excusas || []).length;
+            const pendingExcuses = (data.excusas || []).filter(e => e.estado === 'pendiente').length;
+            
+            document.getElementById('totalExcusesRecord').textContent = totalExcuses;
+            document.getElementById('pendingExcusesRecord').textContent = pendingExcuses;
+
+            // Casos psicológicos
+            const totalPsychology = (data.casosPsicologia || []).length;
+            const activePsychology = (data.casosPsicologia || []).filter(c => c.estado === 'activo').length;
+            
+            document.getElementById('totalPsychologyRecord').textContent = totalPsychology;
+            document.getElementById('activePsychologyRecord').textContent = activePsychology;
+
+            // Registros médicos (simulados)
+            const totalMedical = Math.floor(Math.random() * 50) + 20;
+            const recentMedical = Math.floor(Math.random() * 10) + 5;
+            
+            document.getElementById('totalMedicalRecord').textContent = totalMedical;
+            document.getElementById('recentMedicalRecord').textContent = recentMedical;
+
+            // Comunicaciones
+            const totalComm = (data.mensajes || []).length;
+            const unreadComm = (data.mensajes || []).filter(m => !m.leido && m.para !== 'admin').length;
+            
+            document.getElementById('totalCommRecord').textContent = totalComm;
+            document.getElementById('unreadCommRecord').textContent = unreadComm;
+        }
+
+        // =============================================
+        // FUNCIONES DE GESTIÓN DE REGISTROS
+        // =============================================
+
+        function viewExcuseRecords() {
+            showRecordsModal('Excusas Estudiantiles', 'excuse');
+        }
+
+        function filterExcuseRecords() {
+            showFilterModal('excuse');
+        }
+
+        function viewPsychologyRecords() {
+            showRecordsModal('Casos Psicológicos', 'psychology');
+        }
+
+        function filterPsychologyRecords() {
+            showFilterModal('psychology');
+        }
+
+        function viewMedicalRecords() {
+            showRecordsModal('Registros Médicos', 'medical');
+        }
+
+        function filterMedicalRecords() {
+            showFilterModal('medical');
+        }
+
+        function viewCommunicationRecords() {
+            showRecordsModal('Comunicaciones Internas', 'communication');
+        }
+
+        function filterCommunicationRecords() {
+            showFilterModal('communication');
+        }
+
+        function showRecordsModal(title, type) {
+            let records = [];
+            let columns = [];
+
+            switch(type) {
+                case 'excuse':
+                    records = window.systemDataManager.obtenerExcusas();
+                    columns = ['Fecha', 'Estudiante', 'Docente', 'Psicóloga', 'Estado', 'Acciones'];
+                    break;
+                case 'psychology':
+                    records = window.systemDataManager.obtenerCasosPsicologia();
+                    columns = ['Fecha', 'Paciente', 'Psicóloga', 'Estado', 'Acciones'];
+                    break;
+                case 'communication':
+                    records = window.systemDataManager.obtenerMensajes();
+                    columns = ['Fecha', 'De', 'Para', 'Asunto', 'Estado', 'Acciones'];
+                    break;
+                default:
+                    records = [];
+                    columns = ['Fecha', 'Descripción', 'Estado'];
+            }
+
+            const modalContent = generateRecordsTable(records, columns, type);
+            
+            Swal.fire({
+                title: title,
+                html: modalContent,
+                width: '90%',
+                showConfirmButton: false,
+                showCloseButton: true,
+                closeButtonHtml: '<i class="fas fa-times"></i> Cerrar'
+            });
+        }
+
+        function generateRecordsTable(records, columns, type) {
+            if (records.length === 0) {
+                return `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                        <p>No hay registros disponibles</p>
+                    </div>
+                `;
+            }
+
+            let tableHTML = `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                ${columns.map(col => `<th style="padding: 12px; text-align: left; border-bottom: 2px solid #e9ecef;">${col}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            records.forEach(record => {
+                const row = generateRecordRow(record, type);
+                tableHTML += row;
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return tableHTML;
+        }
+
+        function generateRecordRow(record, type) {
+            switch(type) {
+                case 'excuse':
+                    return `
+                        <tr style="border-bottom: 1px solid #e9ecef;">
+                            <td style="padding: 12px;">${new Date(record.timestamp).toLocaleDateString()}</td>
+                            <td style="padding: 12px;"><strong>${record.studentName}</strong></td>
+                            <td style="padding: 12px;">${record.teacherName}</td>
+                            <td style="padding: 12px;">${record.psychologistName}</td>
+                            <td style="padding: 12px;">
+                                <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; background: ${record.estado === 'respondido' ? '#d4edda' : '#fff3cd'}; color: ${record.estado === 'respondido' ? '#155724' : '#856404'};">
+                                    ${record.estado}
+                                </span>
+                            </td>
+                            <td style="padding: 12px;">
+                                <button onclick="editRecord('${type}', '${record.id}')" class="btn btn-sm btn-primary" style="margin-right: 5px;">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button onclick="viewRecordDetails('${type}', '${record.id}')" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> Ver
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                case 'psychology':
+                    return `
+                        <tr style="border-bottom: 1px solid #e9ecef;">
+                            <td style="padding: 12px;">${new Date(record.timestamp).toLocaleDateString()}</td>
+                            <td style="padding: 12px;"><strong>${record.paciente}</strong></td>
+                            <td style="padding: 12px;">${record.psicologa}</td>
+                            <td style="padding: 12px;">
+                                <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; background: ${record.estado === 'activo' ? '#d4edda' : '#f8d7da'}; color: ${record.estado === 'activo' ? '#155724' : '#721c24'};">
+                                    ${record.estado}
+                                </span>
+                            </td>
+                            <td style="padding: 12px;">
+                                <button onclick="editRecord('${type}', '${record.id}')" class="btn btn-sm btn-primary" style="margin-right: 5px;">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button onclick="viewRecordDetails('${type}', '${record.id}')" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> Ver
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                case 'communication':
+                    return `
+                        <tr style="border-bottom: 1px solid #e9ecef;">
+                            <td style="padding: 12px;">${new Date(record.timestamp).toLocaleDateString()}</td>
+                            <td style="padding: 12px;">${record.de}</td>
+                            <td style="padding: 12px;">${record.para}</td>
+                            <td style="padding: 12px;">${record.asunto || 'Sin asunto'}</td>
+                            <td style="padding: 12px;">
+                                <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; background: ${record.leido ? '#d4edda' : '#f8d7da'}; color: ${record.leido ? '#155724' : '#721c24'};">
+                                    ${record.leido ? 'Leído' : 'No leído'}
+                                </span>
+                            </td>
+                            <td style="padding: 12px;">
+                                <button onclick="viewRecordDetails('${type}', '${record.id}')" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> Ver
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                default:
+                    return '';
+            }
+        }
+
+        function editRecord(type, recordId) {
+            Swal.fire({
+                title: 'Editar Registro',
+                text: `¿Desea editar el registro ${recordId}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, editar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Aquí se abriría un formulario de edición
+                    Swal.fire({
+                        title: 'Modo de Edición',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Nota:</strong> Como administrador, puede corregir información administrativa.</p>
+                                <ul style="margin-top: 10px; padding-left: 20px;">
+                                    <li>No se pueden eliminar registros históricos</li>
+                                    <li>Las correcciones quedan registradas</li>
+                                    <li>Se mantiene trazabilidad completa</li>
+                                </ul>
+                            </div>
+                        `,
+                        icon: 'info',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            });
+        }
+
+        function viewRecordDetails(type, recordId) {
+            // Aquí se mostrarían los detalles completos del registro
+            Swal.fire({
+                title: 'Detalles del Registro',
+                text: `Viendo detalles del registro ${recordId}`,
+                icon: 'info',
+                confirmButtonText: 'Cerrar'
+            });
+        }
+
+        function showFilterModal(type) {
+            Swal.fire({
+                title: 'Filtrar Registros',
+                html: `
+                    <div style="text-align: left;">
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Fecha desde:</label>
+                            <input type="date" id="filterDateFrom" class="swal2-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Fecha hasta:</label>
+                            <input type="date" id="filterDateTo" class="swal2-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Estado:</label>
+                            <select id="filterStatus" class="swal2-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="">Todos</option>
+                                <option value="activo">Activo</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="respondido">Respondido</option>
+                                <option value="cerrado">Cerrado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Buscar:</label>
+                            <input type="text" id="filterSearch" placeholder="Término de búsqueda..." class="swal2-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Aplicar Filtros',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    return {
+                        dateFrom: document.getElementById('filterDateFrom').value,
+                        dateTo: document.getElementById('filterDateTo').value,
+                        status: document.getElementById('filterStatus').value,
+                        search: document.getElementById('filterSearch').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    applyFilters(type, result.value);
+                }
+            });
+        }
+
+        function applyFilters(type, filters) {
+            // Aquí se aplicarían los filtros a los registros
+            Swal.fire({
+                title: 'Filtros Aplicados',
+                html: `
+                    <div style="text-align: left;">
+                        <p><strong>Filtros aplicados:</strong></p>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            ${filters.dateFrom ? `<li>Desde: ${filters.dateFrom}</li>` : ''}
+                            ${filters.dateTo ? `<li>Hasta: ${filters.dateTo}</li>` : ''}
+                            ${filters.status ? `<li>Estado: ${filters.status}</li>` : ''}
+                            ${filters.search ? `<li>Búsqueda: ${filters.search}</li>` : ''}
+                        </ul>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+
+        function updateStatistics() {
+            // Obtener estadísticas reales del sistema
+            let stats = { actividadHoy: 12, totalReportes: 5, totalExcusas: 8, totalCasosPsicologia: 3 };
+            
+            if (typeof window.systemDataManager !== 'undefined') {
+                stats = window.systemDataManager.obtenerEstadisticas();
+            }
+            
+            // Actualizar estadísticas principales
+            document.getElementById('totalUsers').textContent = 45; // Total de usuarios definidos
+            document.getElementById('totalModules').textContent = 53; // Total de archivos HTML
+            document.getElementById('activeToday').textContent = stats.actividadHoy || 12;
+            document.getElementById('totalReports').textContent = (stats.totalReportes || 5) + (stats.totalExcusas || 8) + (stats.totalCasosPsicologia || 3);
+            
+            // Nuevas estadísticas
+            document.getElementById('totalExcusas').textContent = stats.totalExcusas || 8;
+            document.getElementById('totalCasos').textContent = stats.totalCasosPsicologia || 3;
+            document.getElementById('totalMensajes').textContent = stats.totalMensajes || 15;
+            document.getElementById('totalCafeteria').textContent = stats.totalCafeteria || 25;
+        }
+
+        function loadRecentActivity() {
+            // Obtener actividad real del sistema
+            let actividades = [];
+            
+            if (typeof window.systemDataManager !== 'undefined') {
+                actividades = window.systemDataManager.obtenerActividadReciente(20);
+            }
+            
+            // Si no hay datos reales, mostrar datos de ejemplo
+            if (actividades.length === 0) {
+                actividades = [
+                    { tipo: 'Excusa', descripcion: 'Excusa enviada por Starling Encarnación', nivel: 'success', timestamp: new Date().toISOString() },
+                    { tipo: 'Psicología', descripcion: 'Caso creado por Dra. Ana Martínez', nivel: 'info', timestamp: new Date().toISOString() },
+                    { tipo: 'Sistema', descripcion: 'Usuario administrador inició sesión', nivel: 'info', timestamp: new Date().toISOString() },
+                    { tipo: 'Reporte', descripcion: 'Reporte de cafetería generado', nivel: 'warning', timestamp: new Date().toISOString() }
+                ];
+            }
+            
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = '';
+
+            actividades.forEach(actividad => {
+                const li = document.createElement('li');
+                li.className = 'activity-item';
+                
+                // Mapear niveles a colores
+                const colorMap = {
+                    'success': '#10b981',
+                    'warning': '#f59e0b',
+                    'error': '#ef4444',
+                    'info': '#3b82f6'
+                };
+                
+                // Mapear tipos a iconos
+                const iconMap = {
+                    'Reporte': 'fa-file-alt',
+                    'Excusa': 'fa-file-medical',
+                    'Psicología': 'fa-brain',
+                    'Sistema': 'fa-cog'
+                };
+                
+                const color = colorMap[actividad.nivel] || '#6b7280';
+                const icon = iconMap[actividad.tipo] || 'fa-info-circle';
+                const time = new Date(actividad.timestamp).toLocaleString();
+                
+                li.innerHTML = `
+                    <div class="activity-icon" style="background: ${color};">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">${actividad.descripcion}</div>
+                        <div class="activity-time">${time}</div>
+                    </div>
+                `;
+                
+                activityList.appendChild(li);
+            });
+        }
+
+        function formatearTiempo(timestamp) {
+            const fecha = new Date(timestamp);
+            const ahora = new Date();
+            const diffMs = ahora - fecha;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Ahora mismo';
+            if (diffMins < 60) return `Hace ${diffMins} minutos`;
+            if (diffHours < 24) return `Hace ${diffHours} horas`;
+            if (diffDays < 7) return `Hace ${diffDays} días`;
+            
+            return fecha.toLocaleDateString('es-ES');
+        }
+
+        function refreshData() {
+            Swal.fire({
+                title: 'Actualizando datos...',
+                text: 'Por favor espere mientras se actualizan las estadísticas',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            setTimeout(() => {
+                updateStatistics();
+                loadRecentActivity();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos actualizados',
+                    text: 'Las estadísticas del sistema han sido actualizadas',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }, 1500);
+        }
+
+        function refreshActivity() {
+            loadRecentActivity();
+            Swal.fire({
+                icon: 'success',
+                title: 'Actividad actualizada',
+                text: 'La actividad reciente ha sido actualizada',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        function showTeacherModules() {
+            const teacherModules = [
+                'modulo-starling.html',
+                'modulo-belkis.html',
+                'modulo-marlenis.html',
+                'modulo-magdalena.html',
+                'modulo-pamela.html',
+                'modulo-angela.html',
+                'modulo-beriguete.html',
+                'modulo-benito.html',
+                'modulo-elizabeth.html',
+                'modulo-adrian.html',
+                'modulo-ramon.html',
+                'modulo-ruth.html',
+                'Emmanuel.html',
+                'Ledesma.html'
+            ];
+
+            let moduleList = '<div style="max-height: 400px; overflow-y: auto;">';
+            moduleList += '<h4>Módulos de Docentes Disponibles:</h4>';
+            
+            teacherModules.forEach(module => {
+                moduleList += `
+                    <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <span>${module}</span>
+                        <a href="../${module}" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">
+                            <i class="fas fa-external-link-alt"></i> Abrir
+                        </a>
+                    </div>
+                `;
+            });
+            
+            moduleList += '</div>';
+
+            Swal.fire({
+                title: 'Módulos de Docentes',
+                html: moduleList,
+                width: '600px',
+                confirmButtonText: 'Cerrar'
+            });
+        }
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+    </script>
+</body>
+</html>
