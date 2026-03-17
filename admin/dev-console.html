@@ -374,7 +374,13 @@
                     <i class="fas fa-broom"></i> Limpiar Cache
                 </button>
                 <button class="tool-btn" onclick="repairSystem()">
-                    <i class="fas fa-wrench"></i> Reparar Flujo de Datos
+                    <i class="fas fa-wrench"></i> Reparar Sistema
+                </button>
+                <button class="tool-btn" onclick="backupSystem()">
+                    <i class="fas fa-save"></i> Crear Backup
+                </button>
+                <button class="tool-btn" onclick="restoreSystem()">
+                    <i class="fas fa-history"></i> Restaurar Backup
                 </button>
                 <button class="tool-btn" onclick="viewDatabase()">
                     <i class="fas fa-eye"></i> Ver Base de Datos
@@ -424,20 +430,44 @@
             }
         }
 
-        // Obtener estado de módulos
-        function getModulesStatus() {
-            return JSON.parse(localStorage.getItem('systemModules') || '{}');
+        // ========================================
+        // SISTEMA CENTRAL DE GESTIÓN DE MÓDULOS
+        // ========================================
+        
+        // Obtener estado actual de módulos desde localStorage
+        function getModules() {
+            try {
+                return JSON.parse(localStorage.getItem('systemModules') || '{}');
+            } catch (error) {
+                console.error('Error al obtener módulos:', error);
+                addLog(`Error al obtener módulos: ${error.message}`, 'error');
+                return {};
+            }
         }
 
-        // Guardar estado de módulos
+        // Obtener estado de módulos (compatibilidad)
+        function getModulesStatus() {
+            return getModules();
+        }
+
+        // Guardar estado de módulos en localStorage
         function saveModulesStatus(modules) {
-            localStorage.setItem('systemModules', JSON.stringify(modules));
+            try {
+                localStorage.setItem('systemModules', JSON.stringify(modules));
+                addLog('Estado de módulos actualizado', 'system');
+                return true;
+            } catch (error) {
+                console.error('Error al guardar módulos:', error);
+                addLog(`Error al guardar módulos: ${error.message}`, 'error');
+                return false;
+            }
         }
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             initializeSystem();
             initializeModules();
+            setupErrorDetection(); // Inicializar detección de errores
             updateStats();
             renderModules();
             loadActivityLogs();
@@ -451,6 +481,14 @@
             
             // Simular actividad del sistema
             setInterval(simulateActivity, 8000);
+            
+            // Ejecutar reparación automática si es necesario
+            setTimeout(() => {
+                const modules = getModules();
+                if (Object.keys(modules).length === 0) {
+                    repairSystem();
+                }
+            }, 1000);
         });
 
         function initializeSystem() {
@@ -505,37 +543,89 @@
             document.getElementById('storageUsed').textContent = storageUsed + ' MB';
         }
 
+        // ========================================
+        // SISTEMA DE MONITOREO DE ALMACENAMIENTO MEJORADO
+        // ========================================
+        
         function updateStorageStats() {
-            let totalSize = 0;
-            let keyCount = 0;
-            
-            for (let key in localStorage) {
-                if (localStorage.hasOwnProperty(key)) {
-                    totalSize += localStorage[key].length + key.length;
-                    keyCount++;
+            try {
+                let totalSize = 0;
+                let keyCount = 0;
+                const storageDetails = {};
+                
+                // Calcular tamaño exacto de localStorage
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        const value = localStorage[key];
+                        const keySize = key.length * 2; // Unicode characters
+                        const valueSize = value.length * 2;
+                        const itemSize = keySize + valueSize;
+                        
+                        totalSize += itemSize;
+                        keyCount++;
+                        
+                        storageDetails[key] = {
+                            size: itemSize,
+                            sizeKB: (itemSize / 1024).toFixed(2),
+                            type: key.includes('backup') ? 'backup' : 
+                                   key.includes('log') ? 'log' : 
+                                   key.includes('user') ? 'user' : 'system'
+                        };
+                    }
                 }
-            }
-            
-            const sizeKB = (totalSize / 1024).toFixed(2);
-            const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
-            
-            document.getElementById('localStorageSize').textContent = 
-                sizeMB > 1 ? sizeMB + ' MB' : sizeKB + ' KB';
-            
-            // Calcular porcentaje (asumiendo 5MB máximo)
-            const maxStorage = 5 * 1024 * 1024; // 5MB
-            const percentage = Math.min((totalSize / maxStorage) * 100, 100);
-            const progressBar = document.getElementById('storageProgress');
-            progressBar.style.width = percentage + '%';
-            progressBar.textContent = percentage.toFixed(1) + '%';
-            
-            // Cambiar color según porcentaje
-            if (percentage > 80) {
-                progressBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-            } else if (percentage > 60) {
-                progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
-            } else {
-                progressBar.style.background = 'linear-gradient(90deg, #3b82f6, #2563eb)';
+                
+                // Convertir a unidades legibles
+                const sizeKB = (totalSize / 1024).toFixed(2);
+                const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+                
+                // Actualizar display
+                document.getElementById('localStorageSize').textContent = 
+                    sizeMB > 1 ? `${sizeMB} MB` : `${sizeKB} KB`;
+                
+                // Calcular porcentaje y límite dinámico
+                const maxStorage = 5 * 1024 * 1024; // 5MB típico
+                const percentage = Math.min((totalSize / maxStorage) * 100, 100);
+                const progressBar = document.getElementById('storageProgress');
+                
+                if (progressBar) {
+                    progressBar.style.width = percentage + '%';
+                    progressBar.textContent = percentage.toFixed(1) + '%';
+                    
+                    // Cambiar color según porcentaje
+                    if (percentage > 80) {
+                        progressBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+                        progressBar.style.color = '#ffffff';
+                    } else if (percentage > 60) {
+                        progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+                        progressBar.style.color = '#ffffff';
+                    } else {
+                        progressBar.style.background = 'linear-gradient(90deg, #3b82f6, #2563eb)';
+                        progressBar.style.color = '#ffffff';
+                    }
+                }
+                
+                // Guardar estadísticas detalladas
+                const storageStats = {
+                    totalSize: totalSize,
+                    totalSizeKB: parseFloat(sizeKB),
+                    totalSizeMB: parseFloat(sizeMB),
+                    keyCount: keyCount,
+                    percentage: percentage,
+                    maxStorage: maxStorage,
+                    details: storageDetails,
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                localStorage.setItem('storageStats', JSON.stringify(storageStats));
+                
+                // Advertir si está cerca del límite
+                if (percentage > 90) {
+                    addLog(`Advertencia: Almacenamiento al ${percentage.toFixed(1)}% de su capacidad`, 'warning');
+                }
+                
+            } catch (error) {
+                console.error('Error al actualizar estadísticas de almacenamiento:', error);
+                addLog(`Error en monitoreo de almacenamiento: ${error.message}`, 'error');
             }
         }
 
@@ -592,33 +682,59 @@
             }
         }
 
+        // ========================================
+        // SISTEMA DE LOGS MEJORADO
+        // ========================================
+        
         function addLog(message, type = 'info') {
-            const now = new Date();
-            const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
-                              now.getMinutes().toString().padStart(2, '0') + ':' + 
-                              now.getSeconds().toString().padStart(2, '0');
-            
-            const logEntry = {
-                time: timeString,
-                message: message,
-                type: type,
-                timestamp: Date.now()
-            };
-            
-            activityLogs.unshift(logEntry);
-            if (activityLogs.length > 50) {
-                activityLogs.pop();
+            try {
+                const now = new Date();
+                const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                                  now.getMinutes().toString().padStart(2, '0') + ':' + 
+                                  now.getSeconds().toString().padStart(2, '0');
+                
+                const logEntry = {
+                    time: timeString,
+                    message: message,
+                    type: type,
+                    timestamp: Date.now(),
+                    date: now.toISOString()
+                };
+                
+                // Agregar a logs en memoria
+                activityLogs.unshift(logEntry);
+                if (activityLogs.length > 50) {
+                    activityLogs.pop();
+                }
+                
+                // Guardar en localStorage systemLogs
+                const systemLogs = JSON.parse(localStorage.getItem('systemLogs') || '[]');
+                systemLogs.unshift(logEntry);
+                if (systemLogs.length > 200) {
+                    systemLogs.pop();
+                }
+                localStorage.setItem('systemLogs', JSON.stringify(systemLogs));
+                
+                // Actualizar vista si está disponible
+                renderLogs();
+                
+            } catch (error) {
+                console.error('Error al agregar log:', error);
+                // En caso de error, intentar guardar directamente
+                try {
+                    const fallbackLog = {
+                        time: new Date().toTimeString().split(' ')[0],
+                        message: message,
+                        type: type,
+                        timestamp: Date.now()
+                    };
+                    const logs = JSON.parse(localStorage.getItem('systemLogs') || '[]');
+                    logs.unshift(fallbackLog);
+                    localStorage.setItem('systemLogs', JSON.stringify(logs.slice(0, 200)));
+                } catch (fallbackError) {
+                    console.error('Error crítico al guardar log:', fallbackError);
+                }
             }
-            
-            // Guardar en localStorage systemLogs
-            const systemLogs = JSON.parse(localStorage.getItem('systemLogs') || '[]');
-            systemLogs.unshift(logEntry);
-            if (systemLogs.length > 200) {
-                systemLogs.pop();
-            }
-            localStorage.setItem('systemLogs', JSON.stringify(systemLogs));
-            
-            renderLogs();
         }
 
         function renderLogs() {
@@ -793,24 +909,53 @@ function updateDatabaseViewer() {
             Swal.fire('Éxito', 'Datos exportados correctamente', 'success');
         }
 
-        // Funciones de control de módulos
+        // ========================================
+        // FUNCIONES DE CONTROL DE MÓDULOS MEJORADAS
+        // ========================================
+        
+        // Reiniciar módulo específico
         function restartModule(moduleName) {
             addLog(`Reiniciando módulo: ${moduleName}`, 'system');
             
-            // Simular reinicio del módulo
-            setTimeout(() => {
-                addLog(`Módulo ${moduleName} reiniciado exitosamente`, 'system');
-                renderModules();
-                updateStats();
+            try {
+                const modules = getModules();
+                
+                // Simular reinicio del módulo
+                Swal.fire({
+                    title: 'Reiniciando Módulo',
+                    html: `Reiniciando <strong>${moduleName}</strong>...<br><small>Esto puede tomar unos segundos.</small>`,
+                    icon: 'info',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                }).then(() => {
+                    // El módulo se reinicia pero mantiene su estado anterior
+                    addLog(`Módulo ${moduleName} reiniciado exitosamente`, 'system');
+                    
+                    Swal.fire({
+                        title: 'Módulo Reiniciado',
+                        text: `El módulo ${moduleName} ha sido reiniciado correctamente.`,
+                        icon: 'success',
+                        timer: 1500
+                    });
+                    
+                    // Actualizar vista
+                    renderModules();
+                    updateStats();
+                });
+                
+            } catch (error) {
+                console.error('Error al reiniciar módulo:', error);
+                addLog(`Error al reiniciar ${moduleName}: ${error.message}`, 'error');
                 
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Módulo Reiniciado',
-                    text: `El módulo ${moduleName} ha sido reiniciado correctamente`,
-                    timer: 2000,
-                    showConfirmButton: false
+                    title: 'Error',
+                    text: `No se pudo reiniciar el módulo ${moduleName}`,
+                    icon: 'error'
                 });
-            }, 1500);
+            }
         }
 
         function toggleModule(moduleName) {
@@ -826,40 +971,74 @@ function updateDatabaseViewer() {
             }
         }
 
+        // Desactivar módulo
         function disableModule(moduleName) {
-            const modules = getModulesStatus();
-            modules[moduleName] = false;
-            saveModulesStatus(modules);
-            
-            addLog(`Módulo desactivado: ${moduleName}`, 'system');
-            renderModules();
-            updateStats();
-            
-            Swal.fire({
-                icon: 'warning',
-                title: 'Módulo Desactivado',
-                text: `El módulo ${moduleName} ha sido desactivado`,
-                timer: 2000,
-                showConfirmButton: false
-            });
+            try {
+                const modules = getModules();
+                modules[moduleName] = false;
+                
+                if (saveModulesStatus(modules)) {
+                    addLog(`Módulo ${moduleName} desactivado`, 'system');
+                    
+                    Swal.fire({
+                        title: 'Módulo Desactivado',
+                        text: `El módulo ${moduleName} ha sido desactivado. El acceso será bloqueado.`,
+                        icon: 'warning',
+                        timer: 1500
+                    });
+                    
+                    // Actualizar vista
+                    renderModules();
+                    updateStats();
+                } else {
+                    throw new Error('No se pudo guardar el estado del módulo');
+                }
+                
+            } catch (error) {
+                console.error('Error al desactivar módulo:', error);
+                addLog(`Error al desactivar ${moduleName}: ${error.message}`, 'error');
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: `No se pudo desactivar el módulo ${moduleName}`,
+                    icon: 'error'
+                });
+            }
         }
 
+        // Activar módulo
         function enableModule(moduleName) {
-            const modules = getModulesStatus();
-            modules[moduleName] = true;
-            saveModulesStatus(modules);
-            
-            addLog(`Módulo activado: ${moduleName}`, 'system');
-            renderModules();
-            updateStats();
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Módulo Activado',
-                text: `El módulo ${moduleName} ha sido activado`,
-                timer: 2000,
-                showConfirmButton: false
-            });
+            try {
+                const modules = getModules();
+                modules[moduleName] = true;
+                
+                if (saveModulesStatus(modules)) {
+                    addLog(`Módulo ${moduleName} activado`, 'system');
+                    
+                    Swal.fire({
+                        title: 'Módulo Activado',
+                        text: `El módulo ${moduleName} ha sido activado.`,
+                        icon: 'success',
+                        timer: 1500
+                    });
+                    
+                    // Actualizar vista
+                    renderModules();
+                    updateStats();
+                } else {
+                    throw new Error('No se pudo guardar el estado del módulo');
+                }
+                
+            } catch (error) {
+                console.error('Error al activar módulo:', error);
+                addLog(`Error al activar ${moduleName}: ${error.message}`, 'error');
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: `No se pudo activar el módulo ${moduleName}`,
+                    icon: 'error'
+                });
+            }
         }
 
         // Reinicio global del sistema
@@ -900,6 +1079,268 @@ function updateDatabaseViewer() {
                     }, 2000);
                 }
             });
+        }
+
+        // ========================================
+        // SISTEMA DE BACKUP Y RESTAURACIÓN
+        // ========================================
+        
+        // Crear backup completo del sistema
+        function backupSystem() {
+            try {
+                addLog('Creando backup del sistema', 'system');
+                
+                const backup = {
+                    timestamp: new Date().toISOString(),
+                    version: '1.0',
+                    data: {}
+                };
+                
+                // Guardar todos los datos de localStorage
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        backup.data[key] = localStorage.getItem(key);
+                    }
+                }
+                
+                // Guardar backup en localStorage
+                localStorage.setItem('systemBackup', JSON.stringify(backup));
+                
+                addLog('Backup creado exitosamente', 'system');
+                
+                Swal.fire({
+                    title: 'Backup Creado',
+                    text: 'El backup del sistema ha sido creado exitosamente',
+                    icon: 'success',
+                    timer: 2000
+                });
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Error al crear backup:', error);
+                addLog(`Error al crear backup: ${error.message}`, 'error');
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo crear el backup del sistema',
+                    icon: 'error'
+                });
+                
+                return false;
+            }
+        }
+        
+        // Restaurar sistema desde backup
+        function restoreSystem() {
+            try {
+                const backupData = localStorage.getItem('systemBackup');
+                
+                if (!backupData) {
+                    Swal.fire({
+                        title: 'Sin Backup',
+                        text: 'No se encontró ningún backup para restaurar',
+                        icon: 'warning'
+                    });
+                    return false;
+                }
+                
+                Swal.fire({
+                    title: 'Restaurar Sistema',
+                    text: '¿Está seguro de que desea restaurar el sistema desde el backup? Esto reemplazará todos los datos actuales.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Restaurar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const backup = JSON.parse(backupData);
+                            
+                            addLog('Iniciando restauración del sistema', 'system');
+                            
+                            // Limpiar localStorage actual
+                            localStorage.clear();
+                            
+                            // Restaurar datos del backup
+                            for (let key in backup.data) {
+                                localStorage.setItem(key, backup.data[key]);
+                            }
+                            
+                            addLog('Sistema restaurado exitosamente', 'system');
+                            
+                            Swal.fire({
+                                title: 'Sistema Restaurado',
+                                text: `Sistema restaurado desde backup de ${new Date(backup.timestamp).toLocaleString()}`,
+                                icon: 'success',
+                                timer: 2000
+                            }).then(() => {
+                                location.reload();
+                            });
+                            
+                        } catch (error) {
+                            console.error('Error al restaurar:', error);
+                            addLog(`Error al restaurar: ${error.message}`, 'error');
+                            
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'No se pudo restaurar el backup',
+                                icon: 'error'
+                            });
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error al leer backup:', error);
+                addLog(`Error al leer backup: ${error.message}`, 'error');
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo leer el archivo de backup',
+                    icon: 'error'
+                });
+            }
+        }
+
+        // ========================================
+        // SISTEMA DE RECUPERACIÓN AUTOMÁTICA
+        // ========================================
+        
+        // Reparar sistema automáticamente
+        function repairSystem() {
+            try {
+                addLog('Iniciando reparación automática del sistema', 'system');
+                
+                let repaired = 0;
+                const criticalKeys = {
+                    'systemModules': {
+                        default: JSON.stringify({
+                            teachers: true,
+                            psychology: true,
+                            tesoreria: true,
+                            porteria: true,
+                            secretaria: true,
+                            orientacion: true,
+                            empresas: true,
+                            comedor: true,
+                            cafeteria: true,
+                            biblioteca: true
+                        }),
+                        description: 'Configuración de módulos'
+                    },
+                    'systemLogs': {
+                        default: JSON.stringify([]),
+                        description: 'Registro de eventos del sistema'
+                    },
+                    'usuarios': {
+                        default: JSON.stringify([]),
+                        description: 'Base de datos de usuarios'
+                    },
+                    'fileStats': {
+                        default: JSON.stringify({
+                            total: 0,
+                            uploaded: 0,
+                            moved: 0,
+                            deleted: 0
+                        }),
+                        description: 'Estadísticas de archivos'
+                    }
+                };
+                
+                // Verificar y reparar claves críticas
+                for (let key in criticalKeys) {
+                    if (!localStorage.getItem(key)) {
+                        localStorage.setItem(key, criticalKeys[key].default);
+                        addLog(`Clave reparada: ${criticalKeys[key].description}`, 'maintenance');
+                        repaired++;
+                    }
+                }
+                
+                // Verificar integridad de datos existentes
+                for (let key in criticalKeys) {
+                    try {
+                        const value = localStorage.getItem(key);
+                        if (value) {
+                            JSON.parse(value); // Verificar que sea JSON válido
+                        }
+                    } catch (error) {
+                        localStorage.setItem(key, criticalKeys[key].default);
+                        addLog(`Clave corrupta reparada: ${criticalKeys[key].description}`, 'maintenance');
+                        repaired++;
+                    }
+                }
+                
+                addLog(`Reparación completada: ${repaired} elementos restaurados`, 'system');
+                
+                Swal.fire({
+                    title: 'Sistema Reparado',
+                    html: `Se han reparado <strong>${repaired}</strong> elementos del sistema.<br><small>El sistema ha sido verificado y optimizado.</small>`,
+                    icon: 'success',
+                    timer: 3000
+                });
+                
+                // Actualizar vista
+                updateStats();
+                renderModules();
+                loadActivityLogs();
+                
+                return repaired;
+                
+            } catch (error) {
+                console.error('Error en reparación:', error);
+                addLog(`Error en reparación: ${error.message}`, 'error');
+                
+                Swal.fire({
+                    title: 'Error de Reparación',
+                    text: 'No se pudo completar la reparación automática',
+                    icon: 'error'
+                });
+                
+                return 0;
+            }
+        }
+
+        // ========================================
+        // SISTEMA DE DETECCIÓN GLOBAL DE ERRORES
+        // ========================================
+        
+        // Configurar detector global de errores
+        function setupErrorDetection() {
+            // Capturar errores JavaScript
+            window.addEventListener('error', function(event) {
+                const errorMessage = `Error: ${event.message} en ${event.filename}:${event.lineno}`;
+                console.error('Error detectado:', event);
+                
+                errorCount++;
+                addLog(errorMessage, 'error');
+                updateStats();
+                
+                // Opcional: Mostrar notificación de error crítico
+                if (event.message.includes('Critical') || event.message.includes('Fatal')) {
+                    Swal.fire({
+                        title: 'Error Crítico Detectado',
+                        text: 'Se ha detectado un error crítico en el sistema. Revise el Developer Console para más detalles.',
+                        icon: 'error',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 5000
+                    });
+                }
+            });
+            
+            // Capturar promesas rechazadas no manejadas
+            window.addEventListener('unhandledrejection', function(event) {
+                const errorMessage = `Promise rechazada: ${event.reason}`;
+                console.error('Promise rechazada:', event);
+                
+                errorCount++;
+                addLog(errorMessage, 'error');
+                updateStats();
+            });
+            
+            addLog('Sistema de detección de errores activado', 'system');
         }
 
         function runDiagnostics() {
