@@ -1467,37 +1467,8 @@
                 </button>
             </div>
             
-            <ul class="sidebar-menu">
-                <!-- Módulo Principal -->
-                <li><a href="index.html" class="sidebar-link active" data-module="inicio"><i class="fas fa-home"></i> Inicio</a></li>
-
-                <!-- Separador para Servicios Generales -->
-                <li class="sidebar-divider">Servicios Generales</li>
-                <li><a href="informacion-general.html" class="sidebar-link" data-module="informacion"><i class="fas fa-info-circle"></i> Información General</a></li>
-                <li><a href="#" class="sidebar-link" data-module="entrada-salida"><i class="fas fa-door-open"></i> Entrada y Salida</a></li>
-                <li><a href="modulo-psicologia.html" class="sidebar-link" data-module="psicologia"><i class="fas fa-brain"></i> Psicología</a></li>
-                <li><a href="gestion-odontologia.html" class="sidebar-link" data-module="odontologia"><i class="fas fa-tooth"></i> Odontología</a></li>
-                <li><a href="#" class="sidebar-link" data-module="contacto"><i class="fas fa-address-book"></i> Contacto</a></li>
-
-                <!-- Separador para Servicios Especiales -->
-                <li class="sidebar-divider">Servicios Especiales</li>
-                <li><a href="inventario-cafeteria.html" class="sidebar-link" data-module="inventario-cafeteria"><i class="fas fa-utensils"></i> Cafetería</a></li>
-                <li><a href="dashboard-papeleria.html" class="sidebar-link" data-module="papeleria"><i class="fas fa-store"></i> Papelería</a></li>
-
-                <!-- Separador para Gestión Operativa -->
-                <li class="sidebar-divider">Gestión Operativa</li>
-                <li><a href="#" class="sidebar-link" data-module="finanzas"><i class="fas fa-money-bill-wave"></i> Gestión Financiera</a></li>
-                <li><a href="#" class="sidebar-link" data-module="inventario"><i class="fas fa-boxes"></i> Control de Inventario</a></li>
-                <li><a href="comedor.html" class="sidebar-link" data-module="comedor"><i class="fas fa-utensils"></i> Servicio de Comedor</a></li>
-                <li><a href="#" class="sidebar-link" data-module="biblioteca"><i class="fas fa-book"></i> Biblioteca</a></li>
-
-                <!-- Separador para Administración -->
-                <li class="sidebar-divider">Administración</li>
-                <li id="adminPanelLink" style="display: none;"><a href="admin/dashboard.html" class="sidebar-link" data-module="admin-panel"><i class="fas fa-shield-alt"></i> Panel de Administración</a></li>
-                <li><a href="gestion-usuarios.html" class="sidebar-link" data-module="gestion-usuarios"><i class="fas fa-users"></i> Gestión de Usuarios</a></li>
-                <li><a href="#" class="sidebar-link" data-module="gestion-academica"><i class="fas fa-graduation-cap"></i> Gestión Académica</a></li>
-                <li><a href="#" class="sidebar-link" data-module="reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                <li><a href="configuracion.html" class="sidebar-link" data-module="configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+            <ul class="sidebar-menu" id="dynamicSidebarMenu">
+                <!-- El menú se generará dinámicamente basado en systemModules -->
             </ul>
             
             <div class="sidebar-footer">
@@ -2420,7 +2391,7 @@
                         allowOutsideClick: false
                     }).then(() => {
                         // Recargar la página para mostrar el index como invitado
-                        window.location.href = 'index.html';
+                        safeNavigate('index.html');
                     });
                     
                     // Mostrar la app de todas formas (con usuario invitado)
@@ -2435,10 +2406,17 @@
                 },
     
                 setupSidebar() {
+                    // Validación segura de elementos DOM
                     const sidebar = document.getElementById('sidebar');
                     const overlay = document.getElementById('sidebarOverlay');
                     const hamburgerBtn = document.getElementById('hamburgerBtn');
                     const closeSidebar = document.getElementById('closeSidebar');
+                    
+                    if (!sidebar || !overlay || !hamburgerBtn || !closeSidebar) {
+                        console.warn('⚠️ Elementos del sidebar no encontrados');
+                        return false;
+                    }
+                    
                     const sidebarLinks = document.querySelectorAll('.sidebar-link');
     
                     hamburgerBtn.addEventListener('click', () => {
@@ -2464,32 +2442,23 @@
                                     return;
                                 }
                                 
-                                const userData = JSON.parse(localStorage.getItem('currentUser'));
-                                if (href && !authSystem.canAccess(userData.role, href)) {
-                                    Swal.fire({
-                                        title: 'Acceso denegado',
-                                        text: `Tu rol (${userData.role}) no tiene acceso a este módulo.`,
-                                        icon: 'error',
-                                        confirmButtonText: 'Entendido'
-                                    });
-                                    this.closeSidebar();
-                                    return;
-                                }
-                                
-                                // ========== NUEVO CÓDIGO AÑADIDO ==========
-                                // Verificar si la página existe antes de navegar
-                                if (href && href !== '#' && href !== 'index.html') {
-                                    if (!authSystem.checkPageExists(href)) {
-                                        e.preventDefault();
+                                // Validación segura de usuario
+                                try {
+                                    const userData = JSON.parse(localStorage.getItem('currentUser'));
+                                    if (href && !authSystem.canAccess(userData.role, href)) {
                                         Swal.fire({
-                                            title: 'Página no encontrada',
-                                            html: `La página <strong>${href}</strong> no está disponible.`,
-                                            icon: 'warning',
+                                            title: 'Acceso denegado',
+                                            text: `Tu rol (${userData.role}) no tiene acceso a este módulo.`,
+                                            icon: 'error',
                                             confirmButtonText: 'Entendido'
                                         });
                                         this.closeSidebar();
                                         return;
                                     }
+                                } catch (error) {
+                                    console.warn('⚠️ Error validando usuario:', error);
+                                    this.closeSidebar();
+                                    return;
                                 }
                             }
                             
@@ -2503,34 +2472,44 @@
                             this.closeSidebar();
                         }
                     });
-                },
-    
-                requiresAuth(module) {
-                    const publicModules = ['inicio', 'informacion'];
-                    return !publicModules.includes(module);
+                    
+                    return true;
                 },
     
                 closeSidebar() {
                     const sidebar = document.getElementById('sidebar');
                     const overlay = document.getElementById('sidebarOverlay');
-                    sidebar.classList.remove('active');
-                    overlay.classList.remove('active');
-                    document.body.style.overflow = '';
+                    
+                    if (sidebar && overlay) {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    } else {
+                        console.warn('⚠️ Elementos del sidebar no encontrados al cerrar');
+                    }
                 },
     
                 navigateToModule(module, clickedLink, href) {
-                    document.querySelectorAll('.sidebar-link').forEach(link => {
+                    // Validación segura de elementos
+                    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+                    const currentModuleElement = document.getElementById('currentModule');
+                    
+                    if (!clickedLink) {
+                        console.warn('⚠️ enlace clickeado no encontrado');
+                        return;
+                    }
+                    
+                    sidebarLinks.forEach(link => {
                         link.classList.remove('active');
                     });
                     clickedLink.classList.add('active');
     
-                    const currentModuleElement = document.getElementById('currentModule');
                     if (currentModuleElement) {
                         currentModuleElement.textContent = clickedLink.textContent.trim();
                     }
     
                     if (href && href !== '#') {
-                        window.location.href = href;
+                        safeNavigate(href);
                     } else {
                         this.loadModule(module);
                     }
@@ -2539,7 +2518,240 @@
                 loadModule(module) {
                     if (module === 'inicio') {
                         this.loadHomeModule();
+                    } else {
+                        // Módulos dinámicos basados en systemModules
+                        const moduleInfo = this.getModuleInfo(module);
+                        if (moduleInfo) {
+                            this.showModuleContent(moduleInfo);
+                        } else {
+                            Swal.fire({
+                                title: 'Módulo no encontrado',
+                                text: `El módulo "${module}" no está disponible o no está activo.`,
+                                icon: 'warning',
+                                confirmButtonText: 'Entendido'
+                            });
+                        }
                     }
+                },
+
+                getModuleInfo(module) {
+                    // Configuración de módulos con rutas correctas
+                    const moduleConfig = {
+                        'inicio': {
+                            name: 'Inicio',
+                            icon: 'fas fa-home',
+                            href: 'index.html',
+                            public: true
+                        },
+                        'informacion': {
+                            name: 'Información General',
+                            icon: 'fas fa-info-circle',
+                            href: 'informacion-general.html',
+                            public: true
+                        },
+                        'porteria': {
+                            name: 'Portería',
+                            icon: 'fas fa-door-open',
+                            href: 'modules/porteria-dashboard.html'
+                        },
+                        'tesoreria': {
+                            name: 'Tesorería',
+                            icon: 'fas fa-money-bill-wave',
+                            href: 'modules/tesoreria-dashboard.html'
+                        },
+                        'teachers': {
+                            name: 'Profesores',
+                            icon: 'fas fa-chalkboard-teacher',
+                            href: 'docente-dashboard.html'
+                        },
+                        'psychology': {
+                            name: 'Psicología',
+                            icon: 'fas fa-brain',
+                            href: 'modules/psicologia.html'
+                        },
+                        'secretaria': {
+                            name: 'Secretaría',
+                            icon: 'fas fa-file-alt',
+                            href: 'modules/secretaria-dashboard.html'
+                        },
+                        'orientacion': {
+                            name: 'Orientación Vocacional',
+                            icon: 'fas fa-compass',
+                            href: 'modules/orientacion-vocacional.html'
+                        },
+                        'empresas': {
+                            name: 'Vinculación Empresas',
+                            icon: 'fas fa-handshake',
+                            href: 'modules/vinculacion-empresas.html'
+                        },
+                        'comedor': {
+                            name: 'Servicio de Comedor',
+                            icon: 'fas fa-utensils',
+                            href: 'comedor.html'
+                        },
+                        'cafeteria': {
+                            name: 'Cafetería',
+                            icon: 'fas fa-coffee',
+                            href: 'inventario-cafeteria.html'
+                        },
+                        'papeleria': {
+                            name: 'Papelería',
+                            icon: 'fas fa-store',
+                            href: 'dashboard-papeleria.html'
+                        },
+                        'odontologia': {
+                            name: 'Odontología',
+                            icon: 'fas fa-tooth',
+                            href: 'gestion-odontologia.html'
+                        },
+                        'biblioteca': {
+                            name: 'Biblioteca',
+                            icon: 'fas fa-book',
+                            href: '#'
+                        }
+                    };
+                    
+                    return moduleConfig[module] || null;
+                },
+
+                generateDynamicMenu() {
+                    const menuContainer = document.getElementById('dynamicSidebarMenu');
+                    if (!menuContainer) return;
+                    
+                    let menuHTML = '';
+                    
+                    // Módulo Principal (siempre visible)
+                    menuHTML += `
+                        <li><a href="index.html" class="sidebar-link active" data-module="inicio">
+                            <i class="fas fa-home"></i> Inicio
+                        </a></li>
+                    `;
+                    
+                    // Servicios Generales
+                    const serviciosGenerales = ['informacion', 'porteria', 'psychology', 'odontologia'];
+                    const activeServicios = serviciosGenerales.filter(mod => isModuleActive(mod));
+                    
+                    if (activeServicios.length > 0) {
+                        menuHTML += '<li class="sidebar-divider">Servicios Generales</li>';
+                        activeServicios.forEach(module => {
+                            const info = this.getModuleInfo(module);
+                            if (info) {
+                                menuHTML += `
+                                    <li><a href="${info.href}" class="sidebar-link" data-module="${module}">
+                                        <i class="${info.icon}"></i> ${info.name}
+                                    </a></li>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    // Servicios Especiales
+                    const serviciosEspeciales = ['cafeteria', 'papeleria'];
+                    const activeEspeciales = serviciosEspeciales.filter(mod => isModuleActive(mod));
+                    
+                    if (activeEspeciales.length > 0) {
+                        menuHTML += '<li class="sidebar-divider">Servicios Especiales</li>';
+                        activeEspeciales.forEach(module => {
+                            const info = this.getModuleInfo(module);
+                            if (info) {
+                                menuHTML += `
+                                    <li><a href="${info.href}" class="sidebar-link" data-module="${module}">
+                                        <i class="${info.icon}"></i> ${info.name}
+                                    </a></li>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    // Gestión Operativa
+                    const gestionOperativa = ['comedor', 'biblioteca'];
+                    const activeGestion = gestionOperativa.filter(mod => isModuleActive(mod));
+                    
+                    if (activeGestion.length > 0) {
+                        menuHTML += '<li class="sidebar-divider">Gestión Operativa</li>';
+                        activeGestion.forEach(module => {
+                            const info = this.getModuleInfo(module);
+                            if (info) {
+                                menuHTML += `
+                                    <li><a href="${info.href}" class="sidebar-link" data-module="${module}">
+                                        <i class="${info.icon}"></i> ${info.name}
+                                    </a></li>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    // Módulos de Personal
+                    const personalModules = ['teachers', 'secretaria', 'orientacion', 'empresas', 'tesoreria'];
+                    const activePersonal = personalModules.filter(mod => isModuleActive(mod));
+                    
+                    if (activePersonal.length > 0) {
+                        menuHTML += '<li class="sidebar-divider">Módulos de Personal</li>';
+                        activePersonal.forEach(module => {
+                            const info = this.getModuleInfo(module);
+                            if (info) {
+                                menuHTML += `
+                                    <li><a href="${info.href}" class="sidebar-link" data-module="${module}">
+                                        <i class="${info.icon}"></i> ${info.name}
+                                    </a></li>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    // Administración (siempre visible)
+                    menuHTML += `
+                        <li class="sidebar-divider">Administración</li>
+                        <li><a href="gestion-usuarios.html" class="sidebar-link" data-module="gestion-usuarios">
+                            <i class="fas fa-users"></i> Gestión de Usuarios
+                        </a></li>
+                        <li><a href="configuracion.html" class="sidebar-link" data-module="configuracion">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a></li>
+                    `;
+                    
+                    menuContainer.innerHTML = menuHTML;
+                    
+                    // Agregar event listeners a los nuevos enlaces
+                    this.attachMenuListeners();
+                    
+                    console.log('✅ Menú dinámico generado con', activeServicios.length + activeEspeciales.length + activeGestion.length + activePersonal.length, 'módulos activos');
+                },
+
+                attachMenuListeners() {
+                    const menuLinks = document.querySelectorAll('.sidebar-link');
+                    menuLinks.forEach(link => {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const href = link.getAttribute('href');
+                            const module = link.getAttribute('data-module');
+                            
+                            if (this.requiresAuth(module)) {
+                                if (!authSystem.checkSession()) {
+                                    this.requestedPage = { href: href, module: module };
+                                    this.showLoginModal();
+                                    return;
+                                }
+                                
+                                const userData = JSON.parse(localStorage.getItem('currentUser'));
+                                if (!authSystem.canAccess(userData.role, href)) {
+                                    Swal.fire({
+                                        title: 'Acceso denegado',
+                                        text: `Tu rol (${userData.role}) no tiene acceso a este módulo.`,
+                                        icon: 'error',
+                                        confirmButtonText: 'Entendido'
+                                    });
+                                    return;
+                                }
+                            }
+                            
+                            if (href && href !== '#') {
+                                safeNavigate(href);
+                            } else {
+                                this.loadModule(module);
+                            }
+                        });
+                    });
                 },
     
                 loadHomeModule() {
@@ -2763,7 +2975,7 @@
                             }
                             
                             if (href) {
-                                window.location.href = href;
+                                safeNavigate(href);
                             }
                         });
                     });
@@ -2788,10 +3000,10 @@
                             if (loadingSystem.usersWithLoadingScreen.includes(userData.username)) {
                                 loadingSystem.showLoadingScreen(userData.username);
                                 setTimeout(() => {
-                                    window.location.href = userData.assignedPage;
+                                    safeNavigate(userData.assignedPage);
                                 }, 2500);
                             } else {
-                                window.location.href = userData.assignedPage;
+                                safeNavigate(userData.assignedPage);
                             }
                         } else {
                             Swal.fire({
@@ -2821,10 +3033,10 @@
                             if (loadingSystem.usersWithLoadingScreen.includes(userData.username)) {
                                 loadingSystem.showLoadingScreen(userData.username);
                                 setTimeout(() => {
-                                    window.location.href = userData.assignedPage;
+                                    safeNavigate(userData.assignedPage);
                                 }, 2500);
                             } else {
-                                window.location.href = userData.assignedPage;
+                                safeNavigate(userData.assignedPage);
                             }
                         } else {
                             Swal.fire({
@@ -2937,6 +3149,16 @@
                     const slides = document.querySelectorAll('.banner-slide');
                     const indicators = document.querySelectorAll('.banner-indicator');
                     
+                    if (slides.length === 0 || indicators.length === 0) {
+                        console.warn('⚠️ No hay slides o indicadores de banner');
+                        return;
+                    }
+                    
+                    // Validar índice actual
+                    if (this.bannerCurrentSlide >= slides.length) {
+                        this.bannerCurrentSlide = 0;
+                    }
+                    
                     slides[this.bannerCurrentSlide].classList.remove('active');
                     indicators[this.bannerCurrentSlide].classList.remove('active');
                     
@@ -2950,6 +3172,16 @@
                     const slides = document.querySelectorAll('.banner-slide');
                     const indicators = document.querySelectorAll('.banner-indicator');
                     
+                    if (slides.length === 0 || indicators.length === 0) {
+                        console.warn('⚠️ No hay slides o indicadores de banner');
+                        return;
+                    }
+                    
+                    // Validar índice actual
+                    if (this.bannerCurrentSlide >= slides.length) {
+                        this.bannerCurrentSlide = 0;
+                    }
+                    
                     slides[this.bannerCurrentSlide].classList.remove('active');
                     indicators[this.bannerCurrentSlide].classList.remove('active');
                     
@@ -2962,6 +3194,22 @@
                 goToBannerSlide(index) {
                     const slides = document.querySelectorAll('.banner-slide');
                     const indicators = document.querySelectorAll('.banner-indicator');
+                    
+                    if (slides.length === 0 || indicators.length === 0) {
+                        console.warn('⚠️ No hay slides o indicadores de banner');
+                        return;
+                    }
+                    
+                    // Validar índice solicitado
+                    if (index < 0 || index >= slides.length) {
+                        console.warn('⚠️ Índice de banner inválido:', index);
+                        return;
+                    }
+                    
+                    // Validar índice actual
+                    if (this.bannerCurrentSlide >= slides.length) {
+                        this.bannerCurrentSlide = 0;
+                    }
                     
                     slides[this.bannerCurrentSlide].classList.remove('active');
                     indicators[this.bannerCurrentSlide].classList.remove('active');
@@ -2993,10 +3241,10 @@
                             if (loadingSystem.usersWithLoadingScreen.includes(userData.username)) {
                                 loadingSystem.showLoadingScreen(userData.username);
                                 setTimeout(() => {
-                                    window.location.href = userData.assignedPage;
+                                    safeNavigate(userData.assignedPage);
                                 }, 2500);
                             } else {
-                                window.location.href = userData.assignedPage;
+                                safeNavigate(userData.assignedPage);
                             }
                         } else if (authSystem.checkSession()) {
                             Swal.fire({
@@ -3015,6 +3263,11 @@
                     const loginModal = document.getElementById('loginModal');
                     const closeLogin = document.getElementById('closeLogin');
                     const openLoginBtn = document.getElementById('openLogin');
+                    
+                    if (!loginModal || !closeLogin || !openLoginBtn) {
+                        console.warn('⚠️ Elementos de autenticación no encontrados');
+                        return false;
+                    }
     
                     openLoginBtn.addEventListener('click', () => {
                         this.showLoginModal();
@@ -3029,8 +3282,8 @@
                             this.hideLoginModal();
                         }
                     });
-    
-                    this.setupAuthForms();
+                    
+                    return true;
                 },
     
                 showLoginModal() {
@@ -3056,6 +3309,11 @@
                     const authTabs = document.querySelectorAll('.auth-tab');
                     const loginForm = document.getElementById('loginForm');
                     const registerForm = document.getElementById('registerForm');
+                    
+                    if (!authTabs.length || !loginForm || !registerForm) {
+                        console.warn('⚠️ Elementos de formularios de autenticación no encontrados');
+                        return false;
+                    }
     
                     authTabs.forEach(tab => {
                         tab.addEventListener('click', function() {
@@ -3063,95 +3321,71 @@
                             authTabs.forEach(t => t.classList.remove('active'));
                             this.classList.add('active');
                             document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
-                            document.getElementById(`${targetTab}Form`).classList.add('active');
+                            const targetForm = document.getElementById(`${targetTab}Form`);
+                            if (targetForm) {
+                                targetForm.classList.add('active');
+                            }
                         });
                     });
     
                     loginForm.addEventListener('submit', (e) => {
                         e.preventDefault();
-                        const username = document.getElementById('username').value.trim();
-                        const password = document.getElementById('password').value;
+                        const username = document.getElementById('username');
+                        const password = document.getElementById('password');
                         const loginMessage = document.getElementById('loginMessage');
+                        
+                        if (!username || !password || !loginMessage) {
+                            console.warn('⚠️ Elementos del formulario de login no encontrados');
+                            return;
+                        }
+                        
+                        const usernameValue = username.value.trim();
+                        const passwordValue = password.value;
     
-                        if (!username || !password) {
+                        if (!usernameValue || !passwordValue) {
                             this.showAuthMessage(loginMessage, 'Por favor ingrese usuario y contraseña', 'error');
                             return;
                         }
     
-                        const result = authSystem.login(username, password);
+                        const result = authSystem.login(usernameValue, passwordValue);
                         if (result.success) {
                             this.showAuthMessage(loginMessage, result.message, 'success');
                             
-                            // ========== NUEVO CÓDIGO AÑADIDO ==========
-                            // Verificar si el usuario tiene página asignada y si existe
-                            const userData = result.user;
-                            if (userData && userData.assignedPage) {
-                                if (!authSystem.checkPageExists(userData.assignedPage)) {
-                                    // La página no existe - mostrar error y cerrar sesión
+                            // Validación segura de datos de usuario
+                            try {
+                                const userData = result.user;
+                                if (userData && userData.assignedPage) {
+                                    if (!authSystem.checkPageExists(userData.assignedPage)) {
+                                        setTimeout(() => {
+                                            this.hideLoginModal();
+                                            this.updateUserInfo();
+                                            this.handleMissingPage(userData.assignedPage, userData);
+                                        }, 1000);
+                                        return;
+                                    }
+                                }
+                                
+                                if (loadingSystem.usersWithLoadingScreen.includes(usernameValue)) {
+                                    loadingSystem.showLoadingScreen(usernameValue);
                                     setTimeout(() => {
                                         this.hideLoginModal();
                                         this.updateUserInfo();
-                                        this.handleMissingPage(userData.assignedPage, userData);
+                                        if (userData && userData.assignedPage) {
+                                            safeNavigate(userData.assignedPage);
+                                        }
+                                    }, 2500);
+                                } else {
+                                    setTimeout(() => {
+                                        this.hideLoginModal();
+                                        this.updateUserInfo();
+                                        if (userData && userData.assignedPage) {
+                                            safeNavigate(userData.assignedPage);
+                                        }
                                     }, 1000);
-                                    return;
                                 }
-                            }
-                            
-                            // Mostrar pantalla de carga para usuarios específicos
-                            if (loadingSystem.usersWithLoadingScreen.includes(username)) {
-                                loadingSystem.showLoadingScreen(username);
-                                
-                                setTimeout(() => {
-                                    this.hideLoginModal();
-                                    this.updateUserInfo();
-                                    
-                                    // ========== NUEVO CÓDIGO AÑADIDO ==========
-                                    // Si el usuario tiene página asignada, redirigir automáticamente
-                                    if (userData && userData.assignedPage) {
-                                        window.location.href = userData.assignedPage;
-                                    }
-                                    // Si no, solo si el usuario hizo clic en un enlace específico
-                                    else if (this.requestedPage && this.requestedPage.href) {
-                                        const userData = JSON.parse(localStorage.getItem('currentUser'));
-                                        if (authSystem.canAccess(userData.role, this.requestedPage.href)) {
-                                            window.location.href = this.requestedPage.href;
-                                        } else {
-                                            Swal.fire({
-                                                title: 'Acceso denegado',
-                                                text: 'Tu rol no tiene acceso a la página solicitada',
-                                                icon: 'error',
-                                                confirmButtonText: 'Entendido'
-                                            });
-                                        }
-                                        this.requestedPage = null;
-                                    }
-                                }, 2500);
-                            } else {
-                                setTimeout(() => {
-                                    this.hideLoginModal();
-                                    this.updateUserInfo();
-                                    
-                                    // ========== NUEVO CÓDIGO AÑADIDO ==========
-                                    // Si el usuario tiene página asignada, redirigir automáticamente
-                                    if (userData && userData.assignedPage) {
-                                        window.location.href = userData.assignedPage;
-                                    }
-                                    // Si no, solo si el usuario hizo clic en un enlace específico
-                                    else if (this.requestedPage && this.requestedPage.href) {
-                                        const userData = JSON.parse(localStorage.getItem('currentUser'));
-                                        if (authSystem.canAccess(userData.role, this.requestedPage.href)) {
-                                            window.location.href = this.requestedPage.href;
-                                        } else {
-                                            Swal.fire({
-                                                title: 'Acceso denegado',
-                                                text: 'Tu rol no tiene acceso a la página solicitada',
-                                                icon: 'error',
-                                                confirmButtonText: 'Entendido'
-                                            });
-                                        }
-                                        this.requestedPage = null;
-                                    }
-                                }, 1000);
+                            } catch (error) {
+                                console.warn('⚠️ Error procesando login:', error);
+                                this.showAuthMessage(loginMessage, 'Error al procesar login', 'error');
                             }
                         } else {
                             this.showAuthMessage(loginMessage, result.message, 'error');
@@ -3160,25 +3394,37 @@
     
                     registerForm.addEventListener('submit', (e) => {
                         e.preventDefault();
+                        const regUsername = document.getElementById('regUsername');
+                        const regPassword = document.getElementById('regPassword');
+                        const regConfirmPassword = document.getElementById('regConfirmPassword');
+                        const regFullName = document.getElementById('regFullName');
+                        const registerMessage = document.getElementById('registerMessage');
+                        
+                        if (!regUsername || !regPassword || !regConfirmPassword || !regFullName || !registerMessage) {
+                            console.warn('⚠️ Elementos del formulario de registro no encontrados');
+                            return;
+                        }
+                        
                         const formData = {
-                            username: document.getElementById('regUsername').value.trim(),
-                            password: document.getElementById('regPassword').value,
-                            confirmPassword: document.getElementById('regConfirmPassword').value,
-                            fullName: document.getElementById('regFullName').value.trim()
+                            username: regUsername.value.trim(),
+                            password: regPassword.value,
+                            confirmPassword: regConfirmPassword.value,
+                            fullName: regFullName.value.trim()
                         };
     
                         const result = authSystem.register(formData);
-                        const registerMessage = document.getElementById('registerMessage');
                         
                         if (result.success) {
                             this.showAuthMessage(registerMessage, result.message, 'success');
                             authTabs[0].click();
-                            document.getElementById('username').value = formData.username;
-                            document.getElementById('password').value = formData.password;
+                            username.value = formData.username;
+                            password.value = formData.password;
                         } else {
                             this.showAuthMessage(registerMessage, result.message, 'error');
                         }
                     });
+                    
+                    return true;
                 },
     
                 showAuthMessage(element, text, type) {
@@ -3187,7 +3433,14 @@
                 },
     
                 setupUserControls() {
-                    document.getElementById('logoutBtn').addEventListener('click', () => {
+                    const logoutBtn = document.getElementById('logoutBtn');
+                    
+                    if (!logoutBtn) {
+                        console.warn('⚠️ Botón de logout no encontrado');
+                        return false;
+                    }
+                    
+                    logoutBtn.addEventListener('click', () => {
                         Swal.fire({
                             title: '¿Cerrar sesión?',
                             text: '¿Estás seguro de que deseas salir del sistema?',
@@ -3209,7 +3462,6 @@
                                     timer: 1500,
                                     showConfirmButton: false
                                 }).then(() => {
-                                    // Recargar la página para mostrar estado de invitado
                                     location.reload();
                                 });
                             }
@@ -3217,6 +3469,7 @@
                     });
     
                     this.updateUserInfo();
+                    return true;
                 },
     
                 setupNotifications() {
@@ -3331,37 +3584,39 @@
                     if (userData) {
                         try {
                             const user = JSON.parse(userData);
-                            loginPrompt.style.display = 'none';
-                            loggedInInfo.style.display = 'flex';
-                            userName.textContent = user.name;
-                            userRole.textContent = `(${user.role})`;
-                            sidebarUserName.textContent = user.name;
-                            sidebarUserRole.textContent = user.role;
                             
-                            // Control de acceso al panel de administración
-                            if (adminPanelLink) {
-                                const allowedRoles = ['administrador', 'admin', 'director'];
-                                if (allowedRoles.includes(user.role) || user.username === 'admin') {
-                                    adminPanelLink.style.display = 'block';
-                                } else {
-                                    adminPanelLink.style.display = 'none';
-                                }
-                            }
+                            // Validar elementos DOM antes de usarlos
+                            if (loginPrompt) loginPrompt.style.display = 'none';
+                            if (loggedInInfo) loggedInInfo.style.display = 'flex';
+                            if (userName) userName.textContent = user.name || 'Usuario';
+                            if (userRole) userRole.textContent = `(${user.role || 'invitado'})`;
+                            if (sidebarUserName) sidebarUserName.textContent = user.name || 'Usuario';
+                            if (sidebarUserRole) sidebarUserRole.textContent = user.role || 'invitado';
                             
-                        } catch (error) {
-                            this.resetToGuest();
-                            if (adminPanelLink) {
+                            if (adminPanelLink && user.role === 'administrador') {
+                                adminPanelLink.style.display = 'block';
+                            } else if (adminPanelLink) {
                                 adminPanelLink.style.display = 'none';
                             }
+                        } catch (error) {
+                            console.warn('⚠️ Error parseando datos de usuario:', error);
+                            // Limpiar datos corruptos
+                            localStorage.removeItem('currentUser');
+                            if (loginPrompt) loginPrompt.style.display = 'block';
+                            if (loggedInInfo) loggedInInfo.style.display = 'none';
                         }
                     } else {
-                        this.resetToGuest();
-                        if (adminPanelLink) {
-                            adminPanelLink.style.display = 'none';
-                        }
+                        // Usuario no logueado
+                        if (loginPrompt) loginPrompt.style.display = 'block';
+                        if (loggedInInfo) loggedInInfo.style.display = 'none';
+                        if (userName) userName.textContent = 'Invitado';
+                        if (userRole) userRole.textContent = '(No autenticado)';
+                        if (sidebarUserName) sidebarUserName.textContent = 'Invitado';
+                        if (sidebarUserRole) sidebarUserRole.textContent = 'No autenticado';
+                        if (adminPanelLink) adminPanelLink.style.display = 'none';
                     }
                 },
-    
+
                 resetToGuest() {
                     const loginPrompt = document.getElementById('loginPrompt');
                     const loggedInInfo = document.getElementById('loggedInInfo');
@@ -3369,13 +3624,38 @@
                     const sidebarUserRole = document.getElementById('sidebarUserRole');
                     const adminPanelLink = document.getElementById('adminPanelLink');
                     
-                    loginPrompt.style.display = 'block';
-                    loggedInInfo.style.display = 'none';
-                    sidebarUserName.textContent = 'Invitado';
-                    sidebarUserRole.textContent = 'No autenticado';
-                    
-                    if (adminPanelLink) {
-                        adminPanelLink.style.display = 'none';
+                    if (loginPrompt) loginPrompt.style.display = 'block';
+                    if (loggedInInfo) loggedInInfo.style.display = 'none';
+                    if (sidebarUserName) sidebarUserName.textContent = 'Invitado';
+                    if (sidebarUserRole) sidebarUserRole.textContent = 'No autenticado';
+                    if (adminPanelLink) adminPanelLink.style.display = 'none';
+                },
+
+                init() {
+                    // Inicialización segura del sistema
+                    try {
+                        this.loadHomeModule();
+                        this.setupAuth();
+                        this.setupAuthForms();
+                        this.setupUserControls();
+                        this.setupNotifications();
+                        
+                        // Mostrar aplicación principal
+                        const mainApp = document.getElementById('mainApp');
+                        if (mainApp) {
+                            mainApp.classList.add('loaded');
+                        }
+                        
+                        // Generar menú dinámico
+                        setTimeout(() => {
+                            if (typeof this.generateDynamicMenu === 'function') {
+                                this.generateDynamicMenu();
+                            }
+                        }, 500);
+                        
+                        console.log('✅ Sistema SGE inicializado correctamente');
+                    } catch (error) {
+                        console.error('❌ Error inicializando sistema:', error);
                     }
                 }
             };
@@ -3396,5 +3676,8 @@
             window.authSystem = authSystem;
             window.loadingSystem = loadingSystem;
         </script>
-</body>
+        
+        <!-- Sistema de Inicialización Automática y Portabilidad -->
+        <script src="js/system-init.js"></script>
+    </body>
 </html>
