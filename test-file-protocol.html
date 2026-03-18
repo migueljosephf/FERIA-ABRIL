@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Compatibilidad file://</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de Compatibilidad file://</h1>
+        <p>Esta página verifica que el sistema funciona correctamente al abrir index.html directamente.</p>
+        
+        <button onclick="testSimpleSystemModules()">🔧 Test Simple SystemModules</button>
+        <button onclick="testSystemInit()">✅ Probar Inicialización</button>
+        <button onclick="testNavigation()">🧭 Probar Navegación</button>
+        <button onclick="testLocalStorage()">💾 Probar localStorage</button>
+        <button onclick="testSpecificRoutes()">🔍 Probar Rutas Específicas</button>
+        <button onclick="testSystemModules()">🔧 Probar SystemModules</button>
+        <button onclick="openMainSystem()">🚀 Abrir Sistema Principal</button>
+        
+        <div id="testResults"></div>
+    </div>
+
+    <!-- Cargar el sistema de inicialización -->
+    <script src="js/system-init.js"></script>
+    
+    <script>
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(div);
+        }
+
+        function testSystemInit() {
+            addResult('Iniciando prueba de inicialización...', 'info');
+            
+            try {
+                // Verificar que las funciones globales existan
+                if (typeof safeParse === 'function') {
+                    addResult('✅ safeParse() está disponible', 'success');
+                } else {
+                    addResult('❌ safeParse() no está disponible', 'error');
+                }
+                
+                if (typeof safeNavigate === 'function') {
+                    addResult('✅ safeNavigate() está disponible', 'success');
+                } else {
+                    addResult('❌ safeNavigate() no está disponible', 'error');
+                }
+                
+                if (typeof initSystem === 'function') {
+                    addResult('✅ initSystem() está disponible', 'success');
+                } else {
+                    addResult('❌ initSystem() no está disponible', 'error');
+                }
+                
+                // Verificar claves críticas
+                const modules = safeParse('systemModules', {});
+                if (Object.keys(modules).length > 0) {
+                    addResult(`✅ systemModules inicializado con ${Object.keys(modules).length} módulos`, 'success');
+                } else {
+                    addResult('❌ systemModules no está inicializado', 'error');
+                }
+                
+                const logs = safeParse('systemLogs', []);
+                if (Array.isArray(logs)) {
+                    addResult(`✅ systemLogs funciona con ${logs.length} entradas`, 'success');
+                } else {
+                    addResult('❌ systemLogs no funciona correctamente', 'error');
+                }
+                
+                // Esperar un poco a que los recursos se carguen antes de verificar
+                setTimeout(() => {
+                    // Verificar entorno
+                    const env = checkEnvironment();
+                    if (env.isFileProtocol) {
+                        addResult('⚠️ Ejecutándose desde file:// (esperado)', 'info');
+                        addResult(`📊 Recursos verificados: ${env.checkedResources}`, 'info');
+                        if (env.hasIssues) {
+                            addResult(`⚠️ Se detectaron ${env.problematicResources} posibles problemas de rutas`, 'info');
+                        } else {
+                            addResult('✅ No se detectaron problemas de rutas', 'success');
+                        }
+                    } else {
+                        addResult('ℹ️ Ejecutándose desde servidor HTTP', 'info');
+                    }
+                    
+                    addResult('🎯 Prueba de inicialización completada', 'success');
+                }, 1500); // Esperar 1.5 segundos para que los recursos se carguen
+                
+            } catch (error) {
+                addResult(`❌ Error en prueba: ${error.message}`, 'error');
+            }
+        }
+
+        function testNavigation() {
+            addResult('Iniciando prueba de navegación...', 'info');
+            
+            try {
+                // Probar normalización de rutas
+                const testPath = 'modules/test.html';
+                const normalized = normalizePath(testPath);
+                addResult(`✅ Ruta normalizada: "${normalized}"`, 'success');
+                
+                // Verificar que safeNavigate exista
+                if (typeof safeNavigate === 'function') {
+                    addResult('✅ safeNavigate() lista para usar', 'success');
+                } else {
+                    addResult('❌ safeNavigate() no disponible', 'error');
+                }
+                
+                addResult('🎯 Prueba de navegación completada', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Error en navegación: ${error.message}`, 'error');
+            }
+        }
+
+        function testLocalStorage() {
+            addResult('Iniciando prueba de localStorage...', 'info');
+            
+            try {
+                // Probar safeParse y safeSave
+                const testData = { test: true, timestamp: Date.now() };
+                const saved = safeSave('testKey', testData);
+                
+                if (saved) {
+                    addResult('✅ safeSave() funciona correctamente', 'success');
+                } else {
+                    addResult('❌ safeSave() falló', 'error');
+                }
+                
+                const loaded = safeParse('testKey');
+                if (loaded && loaded.test === true) {
+                    addResult('✅ safeParse() funciona correctamente', 'success');
+                } else {
+                    addResult('❌ safeParse() falló', 'error');
+                }
+                
+                // Limpiar datos de prueba
+                localStorage.removeItem('testKey');
+                
+                addResult('🎯 Prueba de localStorage completada', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Error en localStorage: ${error.message}`, 'error');
+            }
+        }
+
+        function testSpecificRoutes() {
+            addResult('Iniciando prueba de rutas específicas...', 'info');
+            
+            try {
+                // Rutas críticas del sistema
+                const criticalRoutes = [
+                    'index.html',
+                    'admin/dashboard.html',
+                    'docente-dashboard.html',
+                    'modules/porteria-dashboard.html',
+                    'modules/secretaria-dashboard.html',
+                    'modules/tesoreria-dashboard.html',
+                    'modules/orientacion-vocacional.html',
+                    'modules/vinculacion-empresas.html',
+                    'comedor.html',
+                    'configuracion.html'
+                ];
+                
+                addResult(`📊 Verificando ${criticalRoutes.length} rutas críticas...`, 'info');
+                
+                criticalRoutes.forEach((route, index) => {
+                    const normalized = normalizePath(route);
+                    const currentPath = window.location.pathname;
+                    const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                    const fullPath = currentDir + normalized;
+                    
+                    addResult(`${index + 1}. 📂 ${route}`, 'info');
+                    addResult(`   → Normalizada: ${normalized}`, 'info');
+                    addResult(`   → Completa: ${fullPath}`, 'info');
+                    
+                    // Verificar si parece existir (básico)
+                    if (route.includes('modules/') || route.includes('admin/')) {
+                        addResult(`   ✅ Ruta de módulo/administración`, 'success');
+                    } else if (route === 'index.html') {
+                        addResult(`   ✅ Página principal`, 'success');
+                    } else {
+                        addResult(`   ℹ️ Ruta estándar`, 'info');
+                    }
+                });
+                
+                // Probar normalización de rutas
+                const testPaths = [
+                    'modules/test.html',
+                    '/modules/test.html',
+                    'admin/dashboard.html',
+                    '../index.html'
+                ];
+                
+                addResult('🔧 Probando normalización de rutas...', 'info');
+                testPaths.forEach(path => {
+                    const normalized = normalizePath(path);
+                    addResult(`"${path}" → "${normalized}"`, 'info');
+                });
+                
+                addResult('🎯 Prueba de rutas específicas completada', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Error en prueba de rutas: ${error.message}`, 'error');
+            }
+        }
+
+        function testSimpleSystemModules() {
+            addResult('🔧 Probando inicialización SIMPLE de systemModules...', 'info');
+            
+            try {
+                // Simular computadora nueva - eliminar systemModules
+                addResult('🧹 Eliminando systemModules (simulando PC nueva)...', 'info');
+                localStorage.removeItem('systemModules');
+                
+                // Verificar que se eliminó
+                const checkBefore = localStorage.getItem('systemModules');
+                if (!checkBefore) {
+                    addResult('✅ systemModules eliminado correctamente', 'success');
+                } else {
+                    addResult('❌ No se pudo eliminar systemModules', 'error');
+                    return;
+                }
+                
+                // Ejecutar la lógica EXACTA como está en system-init.js
+                addResult('🔄 Ejecutando lógica de inicialización...', 'info');
+                
+                if(!localStorage.getItem("systemModules")){
+                    localStorage.setItem("systemModules", JSON.stringify({
+                        porteria: true,
+                        tesoreria: true,
+                        teachers: true,
+                        psychology: true,
+                        secretaria: true,
+                        orientacion: true,
+                        empresas: true,
+                        comedor: true,
+                        cafeteria: true,
+                        biblioteca: true
+                    }));
+                    addResult('✅ systemModules creado automáticamente', 'success');
+                } else {
+                    addResult('ℹ️ systemModules ya existe', 'info');
+                }
+                
+                // Verificar resultado
+                const checkAfter = localStorage.getItem('systemModules');
+                if (checkAfter) {
+                    addResult('✅ systemModules existe después de inicialización', 'success');
+                    
+                    try {
+                        const modules = JSON.parse(checkAfter);
+                        addResult(`📊 Total módulos: ${Object.keys(modules).length}`, 'info');
+                        
+                        // Verificar módulos críticos
+                        const criticalModules = ['porteria', 'tesoreria', 'teachers', 'psychology', 'secretaria', 'orientacion', 'empresas'];
+                        let allActive = true;
+                        
+                        criticalModules.forEach(module => {
+                            if (modules[module] === true) {
+                                addResult(`   ✅ ${module}: true`, 'success');
+                            } else {
+                                addResult(`   ❌ ${module}: ${modules[module]}`, 'error');
+                                allActive = false;
+                            }
+                        });
+                        
+                        if (allActive) {
+                            addResult('🎉 TODOS los módulos críticos están activos', 'success');
+                        } else {
+                            addResult('⚠️ Algunos módulos no están activos', 'error');
+                        }
+                        
+                    } catch (parseError) {
+                        addResult(`❌ Error al parsear systemModules: ${parseError.message}`, 'error');
+                    }
+                } else {
+                    addResult('❌ systemModules NO existe después de inicialización', 'error');
+                }
+                
+                addResult('🎯 Prueba simple completada', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Error en prueba simple: ${error.message}`, 'error');
+            }
+        }
+
+        function testSystemModules() {
+            addResult('Iniciando prueba específica de systemModules...', 'info');
+            
+            try {
+                // Limpiar systemModules para simular nueva computadora
+                addResult('🧹 Limpiando systemModules para simular nueva instalación...', 'info');
+                localStorage.removeItem('systemModules');
+                
+                // Esperar un momento y verificar
+                setTimeout(() => {
+                    const check1 = localStorage.getItem('systemModules');
+                    if (!check1) {
+                        addResult('✅ systemModules eliminado correctamente (simulación OK)', 'success');
+                    } else {
+                        addResult('❌ No se pudo eliminar systemModules', 'error');
+                        return;
+                    }
+                    
+                    // Forzar inicialización manual
+                    addResult('🔄 Forzando inicialización manual de systemModules...', 'info');
+                    
+                    // Crear systemModules con la estructura esperada
+                    const defaultModules = {
+                        teachers: true,
+                        psychology: true,
+                        tesoreria: true,
+                        porteria: true,
+                        secretaria: true,
+                        orientacion: true,
+                        empresas: true,
+                        comedor: true,
+                        cafeteria: true,
+                        biblioteca: true
+                    };
+                    
+                    localStorage.setItem('systemModules', JSON.stringify(defaultModules));
+                    
+                    // Verificar que se creó correctamente
+                    const check2 = localStorage.getItem('systemModules');
+                    if (check2) {
+                        addResult('✅ systemModules creado manualmente', 'success');
+                        
+                        try {
+                            const modules = JSON.parse(check2);
+                            const moduleCount = Object.keys(modules).length;
+                            const activeCount = Object.values(modules).filter(v => v === true).length;
+                            
+                            addResult(`📊 Total módulos: ${moduleCount}`, 'info');
+                            addResult(`📊 Módulos activos: ${activeCount}`, 'success');
+                            
+                            // Listar todos los módulos
+                            Object.entries(modules).forEach(([name, active]) => {
+                                const status = active ? '✅' : '❌';
+                                addResult(`   ${status} ${name}`, active ? 'success' : 'error');
+                            });
+                            
+                            // Probar función isModuleActive
+                            if (typeof isModuleActive === 'function') {
+                                addResult('🔍 Probando función isModuleActive()...', 'info');
+                                
+                                ['porteria', 'tesoreria', 'teachers', 'psychology', 'secretaria', 'orientacion', 'empresas'].forEach(module => {
+                                    const isActive = isModuleActive(module);
+                                    const status = isActive ? '✅' : '❌';
+                                    addResult(`   ${status} isModuleActive('${module}'): ${isActive}`, isActive ? 'success' : 'error');
+                                });
+                            } else {
+                                addResult('❌ Función isModuleActive() no disponible', 'error');
+                            }
+                            
+                        } catch (parseError) {
+                            addResult(`❌ Error al parsear systemModules: ${parseError.message}`, 'error');
+                        }
+                    } else {
+                        addResult('❌ No se pudo crear systemModules', 'error');
+                    }
+                    
+                    addResult('🎯 Prueba de systemModules completada', 'success');
+                    
+                }, 100);
+                
+            } catch (error) {
+                addResult(`❌ Error en prueba de systemModules: ${error.message}`, 'error');
+            }
+        }
+
+        function openMainSystem() {
+            addResult('Abriendo sistema principal...', 'info');
+            
+            // Usar safeNavigate para abrir el index.html principal
+            setTimeout(() => {
+                safeNavigate('index.html');
+            }, 1000);
+        }
+
+        // Ejecutar prueba automática al cargar
+        window.addEventListener('load', () => {
+            addResult('🚀 Página de prueba cargada', 'success');
+            addResult('ℹ️ Listo para realizar pruebas', 'info');
+        });
+    </script>
+</body>
+</html>
