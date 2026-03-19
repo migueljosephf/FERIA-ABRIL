@@ -9,6 +9,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Sistema Central de Comunicación -->
+    <script src="js/systemDataManager.js"></script>
+    <script src="js/systemBridge.js"></script>
+    <script src="js/unified-communication.js"></script>
+    <script src="js/inter-module-communication.js"></script>
     <style>
         * {
             margin: 0;
@@ -798,8 +804,23 @@
             }
 
             loadProducts() {
+                // Primero intentar cargar desde SystemDataManager
+                if (window.systemDataManager) {
+                    try {
+                        const data = window.systemDataManager.getAllData();
+                        if (data.inventarioCafeteria && data.inventarioCafeteria.length > 0) {
+                            console.log('✅ Cargando productos desde SystemDataManager');
+                            return data.inventarioCafeteria;
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Error cargando desde SystemDataManager:', error);
+                    }
+                }
+                
+                // Fallback a localStorage
                 const saved = localStorage.getItem('cafeteria_products');
                 if (saved) {
+                    console.log('⚠️ Cargando productos desde localStorage (fallback)');
                     return JSON.parse(saved);
                 }
 
@@ -885,7 +906,21 @@
             }
 
             saveProducts() {
+                // Guardar en SystemDataManager si está disponible
+                if (window.systemDataManager) {
+                    try {
+                        const data = window.systemDataManager.getAllData();
+                        data.inventarioCafeteria = this.products;
+                        window.systemDataManager.saveAllData(data);
+                        console.log('✅ Productos guardados en SystemDataManager');
+                    } catch (error) {
+                        console.warn('⚠️ Error guardando en SystemDataManager:', error);
+                    }
+                }
+                
+                // Fallback a localStorage
                 localStorage.setItem('cafeteria_products', JSON.stringify(this.products));
+                console.log('⚠️ Productos guardados en localStorage (fallback)');
             }
 
             renderProducts(filteredProducts = null) {

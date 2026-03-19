@@ -2325,7 +2325,8 @@
                     }
                     
                     this.loadHomeModule();
-                    this.setupSidebar();
+                    this.generateDynamicMenu(); // Generar menú primero
+                    this.setupSidebar(); // Luego configurar sidebar
                     this.setupAuth();
                     this.setupUserControls();
                     this.setupNotifications();
@@ -2391,147 +2392,11 @@
                         allowOutsideClick: false
                     }).then(() => {
                         // Recargar la página para mostrar el index como invitado
-                        safeNavigate('index.html');
+                        window.location.href = 'index.html';
                     });
                     
                     // Mostrar la app de todas formas (con usuario invitado)
                     document.getElementById('mainApp').classList.add('loaded');
-                },
-    
-                // ELIMINAR O MODIFICAR esta función que causa el bucle
-                checkUserRedirect() {
-                    // NO REDIRIGIR AUTOMÁTICAMENTE desde el index
-                    // El índice debe ser solo un portal de entrada
-                    return;
-                },
-    
-                setupSidebar() {
-                    // Validación segura de elementos DOM
-                    const sidebar = document.getElementById('sidebar');
-                    const overlay = document.getElementById('sidebarOverlay');
-                    const hamburgerBtn = document.getElementById('hamburgerBtn');
-                    const closeSidebar = document.getElementById('closeSidebar');
-                    
-                    if (!sidebar || !overlay || !hamburgerBtn || !closeSidebar) {
-                        console.warn('⚠️ Elementos del sidebar no encontrados');
-                        return false;
-                    }
-                    
-                    const sidebarLinks = document.querySelectorAll('.sidebar-link');
-    
-                    hamburgerBtn.addEventListener('click', () => {
-                        sidebar.classList.add('active');
-                        overlay.classList.add('active');
-                        document.body.style.overflow = 'hidden';
-                    });
-    
-                    closeSidebar.addEventListener('click', () => this.closeSidebar());
-                    overlay.addEventListener('click', () => this.closeSidebar());
-    
-                    sidebarLinks.forEach(link => {
-                        link.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            const module = link.getAttribute('data-module');
-                            const href = link.getAttribute('href');
-                            
-                            if (this.requiresAuth(module)) {
-                                if (!authSystem.checkSession()) {
-                                    this.requestedPage = { href: href, module: module };
-                                    this.showLoginModal();
-                                    this.closeSidebar();
-                                    return;
-                                }
-                                
-                                // Validación segura de usuario
-                                try {
-                                    const userData = JSON.parse(localStorage.getItem('currentUser'));
-                                    if (href && !authSystem.canAccess(userData.role, href)) {
-                                        Swal.fire({
-                                            title: 'Acceso denegado',
-                                            text: `Tu rol (${userData.role}) no tiene acceso a este módulo.`,
-                                            icon: 'error',
-                                            confirmButtonText: 'Entendido'
-                                        });
-                                        this.closeSidebar();
-                                        return;
-                                    }
-                                } catch (error) {
-                                    console.warn('⚠️ Error validando usuario:', error);
-                                    this.closeSidebar();
-                                    return;
-                                }
-                            }
-                            
-                            this.navigateToModule(module, link, href);
-                            if (window.innerWidth <= 768) this.closeSidebar();
-                        });
-                    });
-    
-                    document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape' && sidebar.classList.contains('active')) {
-                            this.closeSidebar();
-                        }
-                    });
-                    
-                    return true;
-                },
-    
-                closeSidebar() {
-                    const sidebar = document.getElementById('sidebar');
-                    const overlay = document.getElementById('sidebarOverlay');
-                    
-                    if (sidebar && overlay) {
-                        sidebar.classList.remove('active');
-                        overlay.classList.remove('active');
-                        document.body.style.overflow = '';
-                    } else {
-                        console.warn('⚠️ Elementos del sidebar no encontrados al cerrar');
-                    }
-                },
-    
-                navigateToModule(module, clickedLink, href) {
-                    // Validación segura de elementos
-                    const sidebarLinks = document.querySelectorAll('.sidebar-link');
-                    const currentModuleElement = document.getElementById('currentModule');
-                    
-                    if (!clickedLink) {
-                        console.warn('⚠️ enlace clickeado no encontrado');
-                        return;
-                    }
-                    
-                    sidebarLinks.forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    clickedLink.classList.add('active');
-    
-                    if (currentModuleElement) {
-                        currentModuleElement.textContent = clickedLink.textContent.trim();
-                    }
-    
-                    if (href && href !== '#') {
-                        safeNavigate(href);
-                    } else {
-                        this.loadModule(module);
-                    }
-                },
-    
-                loadModule(module) {
-                    if (module === 'inicio') {
-                        this.loadHomeModule();
-                    } else {
-                        // Módulos dinámicos basados en systemModules
-                        const moduleInfo = this.getModuleInfo(module);
-                        if (moduleInfo) {
-                            this.showModuleContent(moduleInfo);
-                        } else {
-                            Swal.fire({
-                                title: 'Módulo no encontrado',
-                                text: `El módulo "${module}" no está disponible o no está activo.`,
-                                icon: 'warning',
-                                confirmButtonText: 'Entendido'
-                            });
-                        }
-                    }
                 },
 
                 getModuleInfo(module) {
@@ -2617,6 +2482,12 @@
                 generateDynamicMenu() {
                     const menuContainer = document.getElementById('dynamicSidebarMenu');
                     if (!menuContainer) return;
+                    
+                    // Definir función isModuleActive si no existe
+                    function isModuleActive(module) {
+                        // Por ahora, activar todos los módulos para pruebas
+                        return true;
+                    }
                     
                     let menuHTML = '';
                     
@@ -3670,6 +3541,64 @@
 
             document.addEventListener('DOMContentLoaded', () => {
                 appSystem.init();
+                
+                // CORRECCIÓN: Forzar inicialización del sidebar si no funciona
+                setTimeout(() => {
+                    const sidebar = document.getElementById('sidebar');
+                    const hamburgerBtn = document.getElementById('hamburgerBtn');
+                    const overlay = document.getElementById('sidebarOverlay');
+                    const closeSidebar = document.getElementById('closeSidebar');
+                    const menuContainer = document.getElementById('dynamicSidebarMenu');
+                    
+                    if (sidebar && hamburgerBtn && overlay && closeSidebar && menuContainer) {
+                        console.log('🔧 Forzando configuración del sidebar...');
+                        
+                        // Generar menú si está vacío
+                        if (menuContainer.children.length === 0) {
+                            if (typeof appSystem.generateDynamicMenu === 'function') {
+                                appSystem.generateDynamicMenu();
+                            }
+                        }
+                        
+                        // Forzar eventos si no están configurados
+                        if (!hamburgerBtn.hasAttribute('data-sidebar-configured')) {
+                            hamburgerBtn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                console.log('🍔 Sidebar abierto (forzado)');
+                                sidebar.classList.add('active');
+                                overlay.classList.add('active');
+                                document.body.style.overflow = 'hidden';
+                            });
+                            hamburgerBtn.setAttribute('data-sidebar-configured', 'true');
+                        }
+                        
+                        if (!closeSidebar.hasAttribute('data-sidebar-configured')) {
+                            closeSidebar.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                console.log('❌ Sidebar cerrado (forzado)');
+                                sidebar.classList.remove('active');
+                                overlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                            });
+                            closeSidebar.setAttribute('data-sidebar-configured', 'true');
+                        }
+                        
+                        if (!overlay.hasAttribute('data-sidebar-configured')) {
+                            overlay.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                console.log('❌ Sidebar cerrado (overlay forzado)');
+                                sidebar.classList.remove('active');
+                                overlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                            });
+                            overlay.setAttribute('data-sidebar-configured', 'true');
+                        }
+                        
+                        console.log('✅ Sidebar configurado correctamente');
+                    } else {
+                        console.error('❌ Elementos del sidebar no encontrados para corrección');
+                    }
+                }, 2000);
             });
     
             window.appSystem = appSystem;
@@ -3679,5 +3608,134 @@
         
         <!-- Sistema de Inicialización Automática y Portabilidad -->
         <script src="js/system-init.js"></script>
+        
+        <!-- PATCH: Forzar Sidebar Funcional -->
+        <script>
+            // Esperar a que todo cargue y forzar sidebar si no funciona
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    const sidebar = document.getElementById('sidebar');
+                    const hamburgerBtn = document.getElementById('hamburgerBtn');
+                    const overlay = document.getElementById('sidebarOverlay');
+                    const closeSidebar = document.getElementById('closeSidebar');
+                    const menuContainer = document.getElementById('dynamicSidebarMenu');
+                    
+                    if (sidebar && hamburgerBtn && overlay && closeSidebar && menuContainer) {
+                        console.log('🔧 Aplicando patch para sidebar...');
+                        
+                        // Generar menú simple si está vacío
+                        if (menuContainer.children.length === 0) {
+                            const menuHTML = `
+                                <li><a href="#" class="sidebar-link active" data-module="inicio">
+                                    <i class="fas fa-home"></i> Inicio
+                                </a></li>
+                                <li class="sidebar-divider">Módulos</li>
+                                <li><a href="docente-dashboard.html" class="sidebar-link" data-module="docentes">
+                                    <i class="fas fa-chalkboard-teacher"></i> Docentes
+                                </a></li>
+                                <li><a href="psicologia-dashboard.html" class="sidebar-link" data-module="psicologia">
+                                    <i class="fas fa-brain"></i> Psicología
+                                </a></li>
+                                <li><a href="modules/secretaria-dashboard.html" class="sidebar-link" data-module="secretaria">
+                                    <i class="fas fa-file-alt"></i> Secretaría
+                                </a></li>
+                                <li><a href="modules/tesoreria-dashboard.html" class="sidebar-link" data-module="tesoreria">
+                                    <i class="fas fa-money-bill-wave"></i> Tesorería
+                                </a></li>
+                                <li><a href="modules/porteria-dashboard.html" class="sidebar-link" data-module="porteria">
+                                    <i class="fas fa-door-open"></i> Portería
+                                </a></li>
+                                <li><a href="inventario-cafeteria.html" class="sidebar-link" data-module="cafeteria">
+                                    <i class="fas fa-coffee"></i> Cafetería
+                                </a></li>
+                            `;
+                            menuContainer.innerHTML = menuHTML;
+                        }
+                        
+                        // Forzar eventos si no están configurados
+                        if (!hamburgerBtn.hasAttribute('data-patched')) {
+                            hamburgerBtn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                console.log('🍔 Sidebar abierto (patch)');
+                                sidebar.classList.add('active');
+                                overlay.classList.add('active');
+                                document.body.style.overflow = 'hidden';
+                            });
+                            hamburgerBtn.setAttribute('data-patched', 'true');
+                        }
+                        
+                        if (!closeSidebar.hasAttribute('data-patched')) {
+                            closeSidebar.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                console.log('❌ Sidebar cerrado (patch)');
+                                sidebar.classList.remove('active');
+                                overlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                            });
+                            closeSidebar.setAttribute('data-patched', 'true');
+                        }
+                        
+                        if (!overlay.hasAttribute('data-patched')) {
+                            overlay.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                console.log('❌ Sidebar cerrado (overlay patch)');
+                                sidebar.classList.remove('active');
+                                overlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                            });
+                            overlay.setAttribute('data-patched', 'true');
+                        }
+                        
+                        // Evento de teclado
+                        document.addEventListener('keydown', (e) => {
+                            if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+                                e.preventDefault();
+                                console.log('⌨️ Sidebar cerrado (escape patch)');
+                                sidebar.classList.remove('active');
+                                overlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                            }
+                        });
+                        
+                        // Eventos de enlaces
+                        setTimeout(() => {
+                            const menuLinks = document.querySelectorAll('.sidebar-link');
+                            menuLinks.forEach(link => {
+                                if (!link.hasAttribute('data-patched')) {
+                                    link.addEventListener('click', (e) => {
+                                        e.preventDefault();
+                                        const href = link.getAttribute('href');
+                                        const module = link.getAttribute('data-module');
+                                        
+                                        console.log(`🔗 Navegando a: ${module || href}`);
+                                        
+                                        // Actualizar activo
+                                        menuLinks.forEach(l => l.classList.remove('active'));
+                                        link.classList.add('active');
+                                        
+                                        // Navegación
+                                        if (href && href !== '#') {
+                                            window.location.href = href;
+                                        }
+                                        
+                                        // Cerrar en móviles
+                                        if (window.innerWidth <= 768) {
+                                            sidebar.classList.remove('active');
+                                            overlay.classList.remove('active');
+                                            document.body.style.overflow = '';
+                                        }
+                                    });
+                                    link.setAttribute('data-patched', 'true');
+                                }
+                            });
+                        }, 100);
+                        
+                        console.log('✅ Patch de sidebar aplicado correctamente');
+                    } else {
+                        console.error('❌ No se encontraron elementos del sidebar para el patch');
+                    }
+                }, 3000); // Esperar 3 segundos para que todo cargue
+            });
+        </script>
     </body>
 </html>

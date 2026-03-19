@@ -1444,6 +1444,8 @@
     <script src="js/core/systemCore.js"></script>
     <script src="js/systemDataManager.js"></script>
     <script src="js/systemUsers.js"></script>
+    <script src="js/unified-communication.js"></script>
+    <script src="js/inter-module-communication.js"></script>
 
     <script>
         // Dashboard Mejorado de Psicología
@@ -1528,7 +1530,27 @@
 
             loadRealData() {
                 try {
-                    if (typeof window.systemDataManager !== 'undefined') {
+                    if (window.unifiedComm && window.unifiedComm.initialized) {
+                        // Usar sistema unificado
+                        console.log(' Cargando datos desde sistema unificado');
+                        
+                        // Cargar mensajes recibidos
+                        this.data.messages = window.unifiedComm.obtenerMensajes(this.currentUser.username, 'recibidos');
+                        
+                        // Cargar mensajes enviados
+                        this.data.sentMessages = window.unifiedComm.obtenerMensajes(this.currentUser.username, 'enviados');
+                        
+                        // Cargar archivos recibidos
+                        this.data.files = window.unifiedComm.obtenerArchivos(this.currentUser.username, 'recibidos');
+                        
+                        // Cargar excusas asignadas a esta psicóloga
+                        this.data.cases = window.unifiedComm.obtenerExcusas(this.currentUser.username, 'pendientes');
+                        
+                        console.log(' Datos cargados desde sistema unificado');
+                        
+                    } else if (typeof window.systemDataManager !== 'undefined') {
+                        // Fallback a SystemDataManager
+                        console.log(' Usando fallback a SystemDataManager');
                         const data = window.systemDataManager.getAllData();
                         
                         // Cargar mensajes recibidos
@@ -1555,52 +1577,20 @@
                         
                         // Cargar casos psicológicos
                         this.data.cases = data.casosPsicologicos || [];
-                        
-                        // Cargar archivos enviados a dirección
-                        this.data.directionFiles = data.archivosDireccion || [];
-                        
-                        // Cargar archivos enviados a profesores
-                        this.data.teacherFiles = data.archivosProfesores || [];
-                        
-                        // Cargar profesores conectados
-                        const teacherSet = new Set();
-                        [...this.data.messages, ...this.data.sentMessages].forEach(msg => {
-                            if (msg.de.startsWith('prof_')) teacherSet.add(msg.de);
-                            if (msg.para.startsWith('prof_')) teacherSet.add(msg.para);
-                        });
-                        
-                        // También agregar profesores de archivos enviados
-                        this.data.teacherFiles.forEach(file => {
-                            if (file.recipient.startsWith('prof_')) teacherSet.add(file.recipient);
-                        });
-                        
-                        this.data.teachers = Array.from(teacherSet).map(teacher => ({
-                            username: teacher,
-                            name: this.getTeacherDisplayName(teacher),
-                            messagesCount: [...this.data.messages, ...this.data.sentMessages].filter(m => 
-                                m.de === teacher || m.para === teacher
-                            ).length,
-                            filesCount: this.data.teacherFiles.filter(f => f.recipient === teacher).length
-                        }));
-                        
-                        // Cargar comunicación con dirección
-                        this.data.directionMessages = (data.mensajes || []).filter(msg => 
-                            (msg.de === 'psi_dashboard' && msg.para === 'direccion') ||
-                            (msg.de === 'direccion' && msg.para === 'psi_dashboard')
-                        );
-                        
-                        console.log('Datos cargados:', {
-                            mensajes: this.data.messages.length,
-                            enviados: this.data.sentMessages.length,
-                            archivos: this.data.files.length,
-                            casos: this.data.cases.length,
-                            docentes: this.data.teachers.length,
-                            archivosDireccion: this.data.directionFiles.length,
-                            archivosProfesores: this.data.teacherFiles.length
-                        });
+                    } else {
+                        console.warn('⚠️ Ningún sistema de datos disponible');
+                        this.data.messages = [];
+                        this.data.sentMessages = [];
+                        this.data.files = [];
+                        this.data.cases = [];
                     }
+                        
                 } catch (error) {
-                    console.error('Error cargando datos:', error);
+                    console.error('❌ Error cargando datos:', error);
+                    this.data.messages = [];
+                    this.data.sentMessages = [];
+                    this.data.files = [];
+                    this.data.cases = [];
                 }
             }
 
@@ -1943,45 +1933,50 @@
             }
 
             sendNewMessage() {
+                if (!window.unifiedComm) {
+                    console.warn('⚠️ Sistema de comunicación no disponible');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Sistema de comunicación no disponible',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
                 const recipient = document.getElementById('messageRecipient').value;
                 const subject = document.getElementById('messageSubject').value;
                 const content = document.getElementById('messageContent').value;
                 
-                const messageData = {
-                    id: Date.now().toString(),
-                    de: 'psi_dashboard',
+                // Adaptar datos al formato unificado
+                const unifiedMessage = {
+                    de: this.currentUser.username,
                     para: recipient,
                     asunto: subject,
                     contenido: content,
-                    remitenteNombre: 'Departamento de Psicología',
-                    timestamp: new Date().toISOString(),
-                    leido: false
+                    tipo: 'mensaje'
                 };
                 
-                try {
-                    if (typeof window.systemDataManager !== 'undefined') {
-                        const data = window.systemDataManager.getAllData();
-                        if (!data.mensajes) data.mensajes = [];
-                        data.mensajes.push(messageData);
-                        window.systemDataManager.saveAllData(data);
-                        
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Mensaje Enviado',
-                            text: 'El mensaje ha sido enviado a ' + this.getRecipientName(recipient),
-                            confirmButtonText: 'Aceptar'
-                        });
-                        
-                        closeModal('newMessageModal');
-                        document.getElementById('newMessageForm').reset();
-                        this.loadRealData();
-                        this.updateUI();
-                    }
-                } catch (error) {
+                // Usar sistema unificado
+                const result = window.unifiedComm.guardarMensaje(unifiedMessage);
+                
+                if (result) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Mensaje Enviado',
+                        text: 'El mensaje ha sido enviado a ' + this.getRecipientName(recipient),
+                        confirmButtonText: 'Aceptar'
+                    });
+                    
+                    closeModal('newMessageModal');
+                    document.getElementById('newMessageForm').reset();
+                    this.loadRealData();
+                    this.updateUI();
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'No se pudo enviar el mensaje: ' + error.message,
+                        text: 'No se pudo enviar el mensaje',
                         confirmButtonText: 'Aceptar'
                     });
                 }
@@ -3129,9 +3124,30 @@
             });
         }
 
-        // Inicialización
+        // Inicialización con sistema unificado
         document.addEventListener('DOMContentLoaded', () => {
-            dashboard = new EnhancedPsychologyDashboard();
+            // Esperar a que el sistema unificado esté listo
+            const initializeDashboard = () => {
+                if (window.unifiedComm && window.unifiedComm.initialized) {
+                    dashboard = new EnhancedPsychologyDashboard();
+                    
+                    // Configurar listeners para actualización automática
+                    window.addEventListener('sge-psicologia-data-refresh', (e) => {
+                        const { mensajes, archivos, excusas } = e.detail;
+                        dashboard.data.messages = mensajes;
+                        dashboard.data.files = archivos;
+                        dashboard.data.cases = excusas;
+                        dashboard.updateUI();
+                    });
+                    
+                    console.log('✅ Dashboard de psicología inicializado con sistema unificado');
+                } else {
+                    // Reintentar en 100ms
+                    setTimeout(initializeDashboard, 100);
+                }
+            };
+            
+            initializeDashboard();
         });
     </script>
 </body>

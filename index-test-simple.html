@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index Test - SGE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #233849 0%, #343236 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn span {
+            width: 25px;
+            height: 3px;
+            background: #2c3e50;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn:hover span {
+            background: #3498db;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background: #2c3e50;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .close-sidebar:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover {
+            background: #34495e;
+            color: white;
+            border-left-color: #3498db;
+        }
+
+        .sidebar-link.active {
+            background: #34495e;
+            color: white;
+            border-left-color: #e74c3c;
+        }
+
+        .sidebar-divider {
+            padding: 10px 20px;
+            color: #95a5a6;
+            font-size: 0.8rem;
+            background: rgba(52, 73, 94, 0.7);
+            margin: 10px 0;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #4a6278;
+            margin-top: auto;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .user-info-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: #3498db;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-container h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .content-container p {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+
+        .debug-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .debug-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .debug-item:last-child {
+            border-bottom: none;
+        }
+
+        .debug-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .debug-value {
+            color: #7f8c8d;
+        }
+
+        .debug-value.success {
+            color: #27ae60;
+        }
+
+        .debug-value.error {
+            color: #e74c3c;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .test-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-btn.primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .test-btn.primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <!-- Botón Hamburguesa -->
+            <button class="hamburger-btn" id="hamburgerBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                SGE
+            </div>
+            <div class="site-name">
+                <span class="system-name">Index Test Simplificado</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Menú Lateral -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Menú Principal</span>
+            </div>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <ul class="sidebar-menu" id="dynamicSidebarMenu">
+            <!-- El menú se generará dinámicamente -->
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="user-info-sidebar">
+                <i class="fas fa-user-circle"></i>
+                <div>
+                    <strong>Usuario Test</strong>
+                    <span>Modo Debug</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-container">
+            <h1><i class="fas fa-tools"></i> Index Test - Sidebar Simplificado</h1>
+            <p>Esta es una versión simplificada para probar el sidebar sin interferencias</p>
+            
+            <div class="test-buttons">
+                <button class="test-btn primary" onclick="debugSidebar()">
+                    <i class="fas fa-bug"></i> Debug Sidebar
+                </button>
+                <button class="test-btn primary" onclick="testElements()">
+                    <i class="fas fa-search"></i> Verificar Elementos
+                </button>
+                <button class="test-btn primary" onclick="testEvents()">
+                    <i class="fas fa-bolt"></i> Probar Eventos
+                </button>
+            </div>
+            
+            <div class="debug-panel" id="debugPanel">
+                <h3>Panel de Debug</h3>
+                <div class="debug-item">
+                    <span class="debug-label">Estado:</span>
+                    <span class="debug-value" id="debugStatus">Esperando...</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Elementos DOM:</span>
+                    <span class="debug-value" id="debugElements">No verificados</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Eventos:</span>
+                    <span class="debug-value" id="debugEvents">No configurados</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Menú:</span>
+                    <span class="debug-value" id="debugMenu">No generado</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Última acción:</span>
+                    <span class="debug-value" id="debugLastAction">Ninguna</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Variables globales
+        let debugInfo = {
+            initialized: false,
+            elementsFound: false,
+            eventsConfigured: false,
+            menuGenerated: false
+        };
+
+        // Función para actualizar debug
+        function updateDebug(field, value, type = '') {
+            const element = document.getElementById(field);
+            if (element) {
+                element.textContent = value;
+                element.className = 'debug-value ' + type;
+            }
+        }
+
+        // Función para log
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`[${timestamp}] ${message}`);
+            updateDebug('debugLastAction', `${timestamp} - ${message}`, type);
+        }
+
+        // Verificar elementos DOM
+        function verifyElements() {
+            const elements = {
+                sidebar: document.getElementById('sidebar'),
+                overlay: document.getElementById('sidebarOverlay'),
+                hamburgerBtn: document.getElementById('hamburgerBtn'),
+                closeSidebar: document.getElementById('closeSidebar'),
+                menuContainer: document.getElementById('dynamicSidebarMenu')
+            };
+
+            const missing = Object.keys(elements).filter(key => !elements[key]);
+            
+            if (missing.length === 0) {
+                updateDebug('debugElements', 'Todos encontrados', 'success');
+                debugInfo.elementsFound = true;
+                log('✅ Todos los elementos DOM encontrados', 'success');
+                return true;
+            } else {
+                updateDebug('debugElements', `Faltan: ${missing.join(', ')}`, 'error');
+                log(`❌ Elementos faltantes: ${missing.join(', ')}`, 'error');
+                return false;
+            }
+        }
+
+        // Generar menú simple
+        function generateMenu() {
+            const menuContainer = document.getElementById('dynamicSidebarMenu');
+            if (!menuContainer) {
+                log('❌ Contenedor de menú no encontrado', 'error');
+                return false;
+            }
+
+            const menuHTML = `
+                <li><a href="#" class="sidebar-link active" data-module="inicio">
+                    <i class="fas fa-home"></i> Inicio
+                </a></li>
+                <li class="sidebar-divider">Módulos</li>
+                <li><a href="#" class="sidebar-link" data-module="docentes">
+                    <i class="fas fa-chalkboard-teacher"></i> Docentes
+                </a></li>
+                <li><a href="#" class="sidebar-link" data-module="psicologia">
+                    <i class="fas fa-brain"></i> Psicología
+                </a></li>
+                <li><a href="#" class="sidebar-link" data-module="secretaria">
+                    <i class="fas fa-file-alt"></i> Secretaría
+                </a></li>
+                <li><a href="#" class="sidebar-link" data-module="tesoreria">
+                    <i class="fas fa-money-bill-wave"></i> Tesorería
+                </a></li>
+                <li class="sidebar-divider">Servicios</li>
+                <li><a href="#" class="sidebar-link" data-module="cafeteria">
+                    <i class="fas fa-coffee"></i> Cafetería
+                </a></li>
+                <li><a href="#" class="sidebar-link" data-module="porteria">
+                    <i class="fas fa-door-open"></i> Portería
+                </a></li>
+            `;
+
+            menuContainer.innerHTML = menuHTML;
+            debugInfo.menuGenerated = true;
+            updateDebug('debugMenu', 'Generado', 'success');
+            log('✅ Menú generado correctamente', 'success');
+            return true;
+        }
+
+        // Configurar eventos del sidebar
+        function setupEvents() {
+            if (!verifyElements()) {
+                return false;
+            }
+
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const closeSidebar = document.getElementById('closeSidebar');
+
+            // Evento hamburguesa
+            hamburgerBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                log('🍔 Click en hamburguesa');
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                updateDebug('debugStatus', 'Sidebar abierto', 'success');
+            });
+
+            // Evento cerrar
+            closeSidebar.addEventListener('click', (e) => {
+                e.preventDefault();
+                log('❌ Click en cerrar');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                updateDebug('debugStatus', 'Sidebar cerrado', '');
+            });
+
+            // Evento overlay
+            overlay.addEventListener('click', (e) => {
+                e.preventDefault();
+                log('❌ Click en overlay');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                updateDebug('debugStatus', 'Sidebar cerrado', '');
+            });
+
+            // Evento teclado
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+                    e.preventDefault();
+                    log('⌨️ Tecla Escape presionada');
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    updateDebug('debugStatus', 'Sidebar cerrado', '');
+                }
+            });
+
+            // Eventos de enlaces (después de generar menú)
+            setTimeout(() => {
+                const menuLinks = document.querySelectorAll('.sidebar-link');
+                log(`🔗 Configurando ${menuLinks.length} enlaces del menú`);
+                
+                menuLinks.forEach((link, index) => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const module = link.getAttribute('data-module');
+                        log(`🔗 Click en enlace: ${module}`);
+                        
+                        // Actualizar activo
+                        menuLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        
+                        // Cerrar en móviles
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                            document.body.style.overflow = '';
+                        }
+                        
+                        log(`📄 Navegando a: ${module}`);
+                    });
+                });
+            }, 100);
+
+            debugInfo.eventsConfigured = true;
+            updateDebug('debugEvents', 'Configurados', 'success');
+            log('✅ Eventos configurados correctamente', 'success');
+            return true;
+        }
+
+        // Funciones de prueba
+        function debugSidebar() {
+            log('🔍 Iniciando debug completo del sidebar');
+            
+            if (verifyElements()) {
+                if (generateMenu()) {
+                    if (setupEvents()) {
+                        debugInfo.initialized = true;
+                        updateDebug('debugStatus', 'Sistema listo', 'success');
+                        log('🎯 Sidebar completamente configurado', 'success');
+                    }
+                }
+            }
+        }
+
+        function testElements() {
+            verifyElements();
+        }
+
+        function testEvents() {
+            setupEvents();
+        }
+
+        // Inicialización automática
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 DOM cargado, iniciando sistema');
+            
+            // Pequeña espera para asegurar que todo esté listo
+            setTimeout(() => {
+                debugSidebar();
+            }, 100);
+        });
+
+        // Log de cambios de tamaño
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar && overlay) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    log('📱 Cambio a desktop - sidebar cerrado');
+                }
+            }
+        });
+
+        // Log inicial
+        log('📄 Script de sidebar cargado');
+    </script>
+</body>
+</html>

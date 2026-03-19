@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sidebar - SGE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #233849 0%, #343236 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn span {
+            width: 25px;
+            height: 3px;
+            background: #2c3e50;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn:hover span {
+            background: #3498db;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background: #2c3e50;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .close-sidebar:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover {
+            background: #34495e;
+            color: white;
+            border-left-color: #3498db;
+        }
+
+        .sidebar-link.active {
+            background: #34495e;
+            color: white;
+            border-left-color: #e74c3c;
+        }
+
+        .sidebar-divider {
+            padding: 10px 20px;
+            color: #95a5a6;
+            font-size: 0.8rem;
+            background: rgba(52, 73, 94, 0.7);
+            margin: 10px 0;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #4a6278;
+            margin-top: auto;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .user-info-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: #3498db;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-container h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .test-container p {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .test-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-btn.primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .test-btn.primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .test-btn.success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .test-btn.success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .test-btn.warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .test-btn.warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .status-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-value {
+            color: #7f8c8d;
+        }
+
+        .status-value.success {
+            color: #27ae60;
+        }
+
+        .status-value.error {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <!-- Botón Hamburguesa -->
+            <button class="hamburger-btn" id="hamburgerBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                SGE
+            </div>
+            <div class="site-name">
+                <span class="system-name">Test Sidebar</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Menú Lateral -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Menú Principal</span>
+            </div>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <ul class="sidebar-menu" id="dynamicSidebarMenu">
+            <!-- El menú se generará dinámicamente -->
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="user-info-sidebar">
+                <i class="fas fa-user-circle"></i>
+                <div>
+                    <strong>Usuario de Prueba</strong>
+                    <span>Modo Test</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="test-container">
+            <h1><i class="fas fa-tools"></i> Test del Sistema de Sidebar</h1>
+            <p>Esta página prueba el funcionamiento del sidebar del sistema SGE</p>
+            
+            <div class="test-buttons">
+                <button class="test-btn primary" onclick="testSidebarOpen()">
+                    <i class="fas fa-bars"></i> Probar Abrir Sidebar
+                </button>
+                <button class="test-btn success" onclick="testSidebarClose()">
+                    <i class="fas fa-times"></i> Probar Cerrar Sidebar
+                </button>
+                <button class="test-btn warning" onclick="testMenuGeneration()">
+                    <i class="fas fa-list"></i> Generar Menú
+                </button>
+            </div>
+            
+            <div class="status-panel">
+                <h3>Estado del Sistema</h3>
+                <div class="status-item">
+                    <span class="status-label">Sidebar:</span>
+                    <span class="status-value" id="sidebarStatus">No verificado</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Menú:</span>
+                    <span class="status-value" id="menuStatus">No generado</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Eventos:</span>
+                    <span class="status-value" id="eventsStatus">No configurados</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Última acción:</span>
+                    <span class="status-value" id="lastAction">Ninguna</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Variables globales
+        let sidebarTest = {
+            initialized: false,
+            menuGenerated: false,
+            eventsConfigured: false
+        };
+
+        // Función para actualizar estado
+        function updateStatus(field, value, type = '') {
+            const element = document.getElementById(field);
+            if (element) {
+                element.textContent = value;
+                element.className = 'status-value ' + type;
+            }
+        }
+
+        // Función para registrar acción
+        function logAction(action) {
+            updateStatus('lastAction', action);
+            console.log(`🔧 Test Sidebar: ${action}`);
+        }
+
+        // Generar menú dinámico
+        function generateDynamicMenu() {
+            const menuContainer = document.getElementById('dynamicSidebarMenu');
+            if (!menuContainer) {
+                logAction('❌ Contenedor de menú no encontrado');
+                return false;
+            }
+
+            let menuHTML = '';
+            
+            // Módulo Principal
+            menuHTML += `
+                <li><a href="#" class="sidebar-link active" data-module="inicio">
+                    <i class="fas fa-home"></i> Inicio
+                </a></li>
+            `;
+            
+            // Servicios Generales
+            menuHTML += '<li class="sidebar-divider">Servicios Generales</li>';
+            const servicios = ['informacion', 'porteria', 'psychology', 'odontologia'];
+            servicios.forEach(module => {
+                menuHTML += `
+                    <li><a href="#" class="sidebar-link" data-module="${module}">
+                        <i class="fas fa-info-circle"></i> ${module.charAt(0).toUpperCase() + module.slice(1)}
+                    </a></li>
+                `;
+            });
+            
+            // Servicios Especiales
+            menuHTML += '<li class="sidebar-divider">Servicios Especiales</li>';
+            const especiales = ['cafeteria', 'papeleria'];
+            especiales.forEach(module => {
+                menuHTML += `
+                    <li><a href="#" class="sidebar-link" data-module="${module}">
+                        <i class="fas fa-coffee"></i> ${module.charAt(0).toUpperCase() + module.slice(1)}
+                    </a></li>
+                `;
+            });
+            
+            menuContainer.innerHTML = menuHTML;
+            
+            sidebarTest.menuGenerated = true;
+            updateStatus('menuStatus', 'Generado', 'success');
+            logAction('✅ Menú dinámico generado');
+            
+            return true;
+        }
+
+        // Configurar eventos del sidebar
+        function setupSidebarEvents() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const closeSidebar = document.getElementById('closeSidebar');
+            
+            if (!sidebar || !overlay || !hamburgerBtn || !closeSidebar) {
+                logAction('❌ Elementos del sidebar no encontrados');
+                return false;
+            }
+
+            // Evento para abrir sidebar
+            hamburgerBtn.addEventListener('click', () => {
+                logAction('🍔 Abriendo sidebar...');
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                updateStatus('sidebarStatus', 'Abierto', 'success');
+            });
+
+            // Evento para cerrar sidebar
+            closeSidebar.addEventListener('click', () => {
+                logAction('❌ Cerrando sidebar...');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                updateStatus('sidebarStatus', 'Cerrado', '');
+            });
+
+            // Evento del overlay
+            overlay.addEventListener('click', () => {
+                logAction('❌ Cerrando sidebar (overlay)...');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                updateStatus('sidebarStatus', 'Cerrado', '');
+            });
+
+            // Evento de teclado
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+                    logAction('⌨️ Cerrando sidebar (Escape)...');
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    updateStatus('sidebarStatus', 'Cerrado', '');
+                }
+            });
+
+            // Eventos de los enlaces
+            setTimeout(() => {
+                const menuLinks = document.querySelectorAll('.sidebar-link');
+                menuLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const module = link.getAttribute('data-module');
+                        logAction(`🔗 Navegando a: ${module}`);
+                        
+                        // Actualizar enlace activo
+                        menuLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        
+                        // Cerrar sidebar en móviles
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                            document.body.style.overflow = '';
+                        }
+                        
+                        // Mostrar mensaje
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Navegación',
+                            text: `Navegando al módulo: ${module}`,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    });
+                });
+                
+                logAction(`✅ Eventos configurados para ${menuLinks.length} enlaces`);
+            }, 100);
+
+            sidebarTest.eventsConfigured = true;
+            updateStatus('eventsStatus', 'Configurados', 'success');
+            logAction('✅ Eventos del sidebar configurados');
+            
+            return true;
+        }
+
+        // Funciones de test
+        function testSidebarOpen() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                updateStatus('sidebarStatus', 'Abierto (manual)', 'success');
+                logAction('✅ Sidebar abierto manualmente');
+            } else {
+                logAction('❌ No se pudo abrir sidebar');
+            }
+        }
+
+        function testSidebarClose() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                updateStatus('sidebarStatus', 'Cerrado (manual)', '');
+                logAction('✅ Sidebar cerrado manualmente');
+            } else {
+                logAction('❌ No se pudo cerrar sidebar');
+            }
+        }
+
+        function testMenuGeneration() {
+            if (generateDynamicMenu()) {
+                setTimeout(() => {
+                    setupSidebarEvents();
+                }, 100);
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            logAction('🚀 Página de test cargada');
+            
+            // Verificar elementos básicos
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const closeSidebar = document.getElementById('closeSidebar');
+            
+            if (sidebar && overlay && hamburgerBtn && closeSidebar) {
+                updateStatus('sidebarStatus', 'Elementos encontrados', 'success');
+                logAction('✅ Elementos básicos del sidebar encontrados');
+                
+                // Generar menú automáticamente
+                setTimeout(() => {
+                    generateDynamicMenu();
+                    setupSidebarEvents();
+                    sidebarTest.initialized = true;
+                    logAction('🎯 Sistema de sidebar inicializado completamente');
+                }, 500);
+            } else {
+                updateStatus('sidebarStatus', 'Elementos faltantes', 'error');
+                logAction('❌ Faltan elementos básicos del sidebar');
+            }
+        });
+
+        // Log de cambios de tamaño para responsive
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar && overlay) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
