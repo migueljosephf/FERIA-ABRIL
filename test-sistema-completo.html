@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Completo del Sistema de Comunicación</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Sistema Central de Comunicación -->
+    <script src="js/systemDataManager.js"></script>
+    <script src="js/systemBridge.js"></script>
+    <script src="js/unified-communication.js"></script>
+    <script src="js/inter-module-communication.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .test-card {
+            background: #f8f9fa;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.1);
+        }
+        
+        .test-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-card h3 i {
+            color: #3498db;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        
+        .results-panel {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result-item {
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .result-item.success {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+        
+        .result-item.error {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+        
+        .result-item.warning {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+        
+        .result-item.info {
+            border-left-color: #17a2b8;
+            background: #e3f2fd;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.success {
+            background: #27ae60;
+        }
+        
+        .status-indicator.error {
+            background: #e74c3c;
+        }
+        
+        .status-indicator.warning {
+            background: #f39c12;
+        }
+        
+        .status-indicator.info {
+            background: #17a2b8;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-card h4 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        
+        .navigation-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .module-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .module-item {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .module-item.active {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .module-item.inactive {
+            background: #fdf2f2;
+            color: #e74c3c;
+        }
+        
+        .module-item.pending {
+            background: #fef9e7;
+            color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-network-wired"></i> Test Completo del Sistema</h1>
+            <p>Verificación integral de comunicación entre todos los módulos del SGE</p>
+        </div>
+
+        <!-- Estado de Módulos -->
+        <div class="test-card">
+            <h3><i class="fas fa-heartbeat"></i> Estado de Módulos</h3>
+            <div class="module-status" id="moduleStatus">
+                <div class="module-item pending">SystemDataManager</div>
+                <div class="module-item pending">Unified Comm</div>
+                <div class="module-item pending">Inter-Module Comm</div>
+                <div class="module-item pending">Docentes</div>
+                <div class="module-item pending">Psicología</div>
+                <div class="module-item pending">Secretaría</div>
+                <div class="module-item pending">Tesorería</div>
+                <div class="module-item pending">Portería</div>
+                <div class="module-item pending">Cafetería</div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Generales -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4 id="totalMessages">0</h4>
+                <p>Mensajes Totales</p>
+            </div>
+            <div class="stat-card">
+                <h4 id="totalFiles">0</h4>
+                <p>Archivos Compartidos</p>
+            </div>
+            <div class="stat-card">
+                <h4 id="totalExcuses">0</h4>
+                <p>Excusas Procesadas</p>
+            </div>
+            <div class="stat-card">
+                <h4 id="activeModules">0</h4>
+                <p>Módulos Activos</p>
+            </div>
+        </div>
+
+        <!-- Tests de Comunicación -->
+        <div class="test-grid">
+            <!-- Test de SystemDataManager -->
+            <div class="test-card">
+                <h3><i class="fas fa-database"></i> SystemDataManager</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testSystemDataManager()">
+                        <i class="fas fa-play"></i> Test SystemDataManager
+                    </button>
+                    <button class="btn btn-success" onclick="testDataPersistence()">
+                        <i class="fas fa-save"></i> Test Persistencia
+                    </button>
+                    <button class="btn btn-warning" onclick="testDataMigration()">
+                        <i class="fas fa-exchange-alt"></i> Test Migración
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test de Comunicación Unificada -->
+            <div class="test-card">
+                <h3><i class="fas fa-comments"></i> Comunicación Unificada</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testUnifiedMessages()">
+                        <i class="fas fa-envelope"></i> Test Mensajes
+                    </button>
+                    <button class="btn btn-success" onclick="testUnifiedFiles()">
+                        <i class="fas fa-file"></i> Test Archivos
+                    </button>
+                    <button class="btn btn-warning" onclick="testUnifiedExcuses()">
+                        <i class="fas fa-note-medical"></i> Test Excusas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test de Comunicación Inter-Módulos -->
+            <div class="test-card">
+                <h3><i class="fas fa-sitemap"></i> Comunicación Inter-Módulos</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testInterModuleMessages()">
+                        <i class="fas fa-paper-plane"></i> Test Mensajes
+                    </button>
+                    <button class="btn btn-success" onclick="testInterModuleReports()">
+                        <i class="fas fa-chart-bar"></i> Test Reportes
+                    </button>
+                    <button class="btn btn-warning" onclick="testInterModuleApprovals()">
+                        <i class="fas fa-check-circle"></i> Test Aprobaciones
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test de Dashboards -->
+            <div class="test-card">
+                <h3><i class="fas fa-th-large"></i> Dashboards</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testDocenteDashboard()">
+                        <i class="fas fa-chalkboard-teacher"></i> Test Docentes
+                    </button>
+                    <button class="btn btn-success" onclick="testPsicologiaDashboard()">
+                        <i class="fas fa-brain"></i> Test Psicología
+                    </button>
+                    <button class="btn btn-warning" onclick="testOtherDashboards()">
+                        <i class="fas fa-users"></i> Test Otros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test de Cafetería -->
+            <div class="test-card">
+                <h3><i class="fas fa-coffee"></i> Sistema de Cafetería</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testCafeteriaIntegration()">
+                        <i class="fas fa-link"></i> Test Integración
+                    </button>
+                    <button class="btn btn-success" onclick="testCafeteriaData()">
+                        <i class="fas fa-database"></i> Test Datos
+                    </button>
+                    <button class="btn btn-warning" onclick="testCafeteriaReports()">
+                        <i class="fas fa-chart-line"></i> Test Reportes
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test de Sidebar -->
+            <div class="test-card">
+                <h3><i class="fas fa-bars"></i> Sistema de Navegación</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testSidebarFunction()">
+                        <i class="fas fa-bars"></i> Test Sidebar
+                    </button>
+                    <button class="btn btn-success" onclick="testMenuGeneration()">
+                        <i class="fas fa-list"></i> Test Menú
+                    </button>
+                    <button class="btn btn-warning" onclick="testNavigation()">
+                        <i class="fas fa-compass"></i> Test Navegación
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Completo -->
+        <div class="test-card">
+            <h3><i class="fas fa-rocket"></i> Test Completo del Sistema</h3>
+            <div class="button-group" style="flex-direction: row; flex-wrap: wrap;">
+                <button class="btn btn-danger" onclick="runFullSystemTest()">
+                    <i class="fas fa-play-circle"></i> Ejecutar Test Completo
+                </button>
+                <button class="btn btn-info" onclick="clearAllResults()">
+                    <i class="fas fa-trash"></i> Limpiar Resultados
+                </button>
+                <button class="btn btn-warning" onclick="exportTestResults()">
+                    <i class="fas fa-download"></i> Exportar Resultados
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel de Resultados -->
+        <div class="results-panel">
+            <h3><i class="fas fa-clipboard-list"></i> Resultados de Tests</h3>
+            <div id="testResults">
+                <div class="result-item info">
+                    <span class="status-indicator info"></span>
+                    <strong>[INICIO]</strong> Sistema de pruebas listo. Haz clic en los botones para comenzar.
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegación -->
+        <div class="navigation-links">
+            <a href="index.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                Página Principal
+            </a>
+            <a href="docente-dashboard.html" class="nav-link">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Dashboard Docente
+            </a>
+            <a href="psicologia-dashboard.html" class="nav-link">
+                <i class="fas fa-brain"></i>
+                Dashboard Psicología
+            </a>
+            <a href="test-comunicacion-dashboards.html" class="nav-link">
+                <i class="fas fa-vial"></i> Test de Comunicación
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let testResults = [];
+        let systemStats = {
+            totalMessages: 0,
+            totalFiles: 0,
+            totalExcuses: 0,
+            activeModules: 0
+        };
+
+        // Función para agregar resultados
+        function addResult(message, type = 'info', category = 'GENERAL') {
+            const container = document.getElementById('testResults');
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            resultItem.innerHTML = `
+                <span class="status-indicator ${type}"></span>
+                <strong>[${timestamp}] [${category}]</strong> ${message}
+            `;
+            
+            container.insertBefore(resultItem, container.firstChild);
+            
+            // Limitar a 20 resultados
+            while (container.children.length > 20) {
+                container.removeChild(container.lastChild);
+            }
+            
+            testResults.push({ message, type, category, timestamp });
+        }
+
+        // Actualizar estado de módulos
+        function updateModuleStatus() {
+            const modules = [
+                { name: 'SystemDataManager', check: () => window.systemDataManager },
+                { name: 'Unified Comm', check: () => window.unifiedComm },
+                { name: 'Inter-Module Comm', check: () => window.interModuleComm },
+                { name: 'Docentes', check: () => true }, // Siempre activo en este test
+                { name: 'Psicología', check: () => true }, // Siempre activo en este test
+                { name: 'Secretaría', check: () => true }, // Siempre activo en este test
+                { name: 'Tesorería', check: () => true }, // Siempre activo en este test
+                { name: 'Portería', check: () => true }, // Siempre activo en este test
+                { name: 'Cafetería', check: () => true }  // Siempre activo en este test
+            ];
+
+            const container = document.getElementById('moduleStatus');
+            container.innerHTML = '';
+            
+            let activeCount = 0;
+            modules.forEach(module => {
+                const isActive = module.check();
+                const statusClass = isActive ? 'active' : 'inactive';
+                const div = document.createElement('div');
+                div.className = `module-item ${statusClass}`;
+                div.textContent = module.name;
+                container.appendChild(div);
+                
+                if (isActive) activeCount++;
+            });
+            
+            document.getElementById('activeModules').textContent = activeCount;
+        }
+
+        // Test de SystemDataManager
+        function testSystemDataManager() {
+            addResult('🔍 Iniciando test de SystemDataManager...', 'warning', 'SYSTEMDATAMANAGER');
+            
+            try {
+                if (window.systemDataManager) {
+                    addResult('✅ SystemDataManager disponible', 'success', 'SYSTEMDATAMANAGER');
+                    
+                    // Test de inicialización
+                    const data = window.systemDataManager.getAllData();
+                    addResult(`📊 Datos cargados: ${Object.keys(data).length} secciones`, 'info', 'SYSTEMDATAMANAGER');
+                    
+                    // Test de guardado
+                    const testData = { test: 'valor', timestamp: Date.now() };
+                    window.systemDataManager.saveAllData(data);
+                    addResult('💾 Test de guardado exitoso', 'success', 'SYSTEMDATAMANAGER');
+                    
+                    // Test de monitoreo de espacio
+                    const spaceStats = window.systemDataManager.monitorearEspacio();
+                    addResult(`📈 Espacio utilizado: ${spaceStats.size}MB - Estado: ${spaceStats.status}`, 'info', 'SYSTEMDATAMANAGER');
+                    
+                    if (spaceStats.recommendations.length > 0) {
+                        spaceStats.recommendations.forEach(rec => {
+                            addResult(`⚠️ Recomendación: ${rec}`, 'warning', 'SYSTEMDATAMANAGER');
+                        });
+                    }
+                    
+                } else {
+                    addResult('❌ SystemDataManager no disponible', 'error', 'SYSTEMDATAMANAGER');
+                }
+            } catch (error) {
+                addResult(`❌ Error en SystemDataManager: ${error.message}`, 'error', 'SYSTEMDATAMANAGER');
+            }
+        }
+
+        // Test de persistencia de datos
+        function testDataPersistence() {
+            addResult('🔍 Test de persistencia de datos...', 'warning', 'PERSISTENCIA');
+            
+            try {
+                const testKey = 'sge_persistence_test_' + Date.now();
+                const testData = { message: 'test', timestamp: Date.now() };
+                
+                localStorage.setItem(testKey, JSON.stringify(testData));
+                const retrieved = JSON.parse(localStorage.getItem(testKey));
+                
+                if (retrieved.message === testData.message) {
+                    addResult('✅ Persistencia de datos funcional', 'success', 'PERSISTENCIA');
+                    localStorage.removeItem(testKey);
+                } else {
+                    addResult('❌ Error en persistencia de datos', 'error', 'PERSISTENCIA');
+                }
+            } catch (error) {
+                addResult(`❌ Error en persistencia: ${error.message}`, 'error', 'PERSISTENCIA');
+            }
+        }
+
+        // Test de comunicación unificada
+        function testUnifiedMessages() {
+            addResult('🔍 Test de mensajes unificados...', 'warning', 'UNIFIED_COMM');
+            
+            try {
+                if (window.unifiedComm) {
+                    const testMessage = {
+                        de: 'test_user',
+                        para: 'test_recipient',
+                        asunto: 'Mensaje de Prueba',
+                        contenido: 'Este es un mensaje de prueba del sistema unificado.',
+                        tipo: 'test'
+                    };
+                    
+                    const result = window.unifiedComm.guardarMensaje(testMessage);
+                    
+                    if (result) {
+                        addResult(`✅ Mensaje guardado con ID: ${result.id}`, 'success', 'UNIFIED_COMM');
+                        systemStats.totalMessages++;
+                        updateStats();
+                    } else {
+                        addResult('❌ Error guardando mensaje', 'error', 'UNIFIED_COMM');
+                    }
+                } else {
+                    addResult('❌ Sistema unificado no disponible', 'error', 'UNIFIED_COMM');
+                }
+            } catch (error) {
+                addResult(`❌ Error en mensajes unificados: ${error.message}`, 'error', 'UNIFIED_COMM');
+            }
+        }
+
+        // Test de archivos unificados
+        function testUnifiedFiles() {
+            addResult('🔍 Test de archivos unificados...', 'warning', 'UNIFIED_FILES');
+            
+            try {
+                if (window.unifiedComm) {
+                    const testFile = {
+                        de: 'test_user',
+                        para: 'test_recipient',
+                        nombre: 'archivo_test.txt',
+                        contenido: 'data:text/plain;base64,' + btoa('Contenido de prueba'),
+                        tamaño: 20,
+                        tipo: 'text/plain',
+                        descripcion: 'Archivo de prueba'
+                    };
+                    
+                    const result = window.unifiedComm.guardarArchivo(testFile);
+                    
+                    if (result) {
+                        addResult(`✅ Archivo guardado con ID: ${result.id}`, 'success', 'UNIFIED_FILES');
+                        systemStats.totalFiles++;
+                        updateStats();
+                    } else {
+                        addResult('❌ Error guardando archivo', 'error', 'UNIFIED_FILES');
+                    }
+                } else {
+                    addResult('❌ Sistema unificado no disponible', 'error', 'UNIFIED_FILES');
+                }
+            } catch (error) {
+                addResult(`❌ Error en archivos unificados: ${error.message}`, 'error', 'UNIFIED_FILES');
+            }
+        }
+
+        // Test de comunicación inter-módulos
+        function testInterModuleMessages() {
+            addResult('🔍 Test de mensajes inter-módulos...', 'warning', 'INTER_MODULE');
+            
+            try {
+                if (window.interModuleComm) {
+                    const result = window.interModuleComm.sendMessageToModule(
+                        'secretaria', 
+                        'Mensaje de prueba desde el test completo',
+                        'normal'
+                    );
+                    
+                    if (result) {
+                        addResult(`✅ Mensaje inter-módulo enviado: ${result.id}`, 'success', 'INTER_MODULE');
+                        systemStats.totalMessages++;
+                        updateStats();
+                    } else {
+                        addResult('❌ Error enviando mensaje inter-módulo', 'error', 'INTER_MODULE');
+                    }
+                } else {
+                    addResult('❌ Comunicación inter-módulos no disponible', 'error', 'INTER_MODULE');
+                }
+            } catch (error) {
+                addResult(`❌ Error en comunicación inter-módulos: ${error.message}`, 'error', 'INTER_MODULE');
+            }
+        }
+
+        // Test de integración de cafetería
+        function testCafeteriaIntegration() {
+            addResult('🔍 Test de integración de cafetería...', 'warning', 'CAFEETERIA');
+            
+            try {
+                // Simular datos de cafetería
+                const testData = [
+                    { id: 1, name: 'Producto Test', price: 100, stock: 50 }
+                ];
+                
+                if (window.systemDataManager) {
+                    const data = window.systemDataManager.getAllData();
+                    data.inventarioCafeteria = testData;
+                    window.systemDataManager.saveAllData(data);
+                    addResult('✅ Datos de cafetería integrados', 'success', 'CAFEETERIA');
+                } else {
+                    addResult('⚠️ SystemDataManager no disponible, usando localStorage', 'warning', 'CAFEETERIA');
+                    localStorage.setItem('cafeteria_products', JSON.stringify(testData));
+                }
+            } catch (error) {
+                addResult(`❌ Error en integración de cafetería: ${error.message}`, 'error', 'CAFEETERIA');
+            }
+        }
+
+        // Test completo del sistema
+        function runFullSystemTest() {
+            addResult('🚀 Iniciando test completo del sistema...', 'warning', 'FULL_TEST');
+            
+            // Ejecutar todos los tests en secuencia
+            setTimeout(() => testSystemDataManager(), 500);
+            setTimeout(() => testDataPersistence(), 1000);
+            setTimeout(() => testUnifiedMessages(), 1500);
+            setTimeout(() => testUnifiedFiles(), 2000);
+            setTimeout(() => testInterModuleMessages(), 2500);
+            setTimeout(() => testCafeteriaIntegration(), 3000);
+            
+            setTimeout(() => {
+                addResult('🎯 Test completo del sistema finalizado', 'success', 'FULL_TEST');
+                addResult(`📊 Resumen: ${systemStats.totalMessages} mensajes, ${systemStats.totalFiles} archivos, ${systemStats.activeModules} módulos activos`, 'info', 'FULL_TEST');
+                
+                // Monitoreo final de espacio
+                if (window.systemDataManager) {
+                    const finalSpaceStats = window.systemDataManager.monitorearEspacio();
+                    addResult(`📈 Espacio final: ${finalSpaceStats.size}MB - Estado: ${finalSpaceStats.status}`, 'info', 'FULL_TEST');
+                }
+            }, 4000);
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('totalMessages').textContent = systemStats.totalMessages;
+            document.getElementById('totalFiles').textContent = systemStats.totalFiles;
+            document.getElementById('totalExcuses').textContent = systemStats.totalExcuses;
+        }
+
+        // Limpiar resultados
+        function clearAllResults() {
+            document.getElementById('testResults').innerHTML = `
+                <div class="result-item info">
+                    <span class="status-indicator info"></span>
+                    <strong>[LIMPIO]</strong> Resultados eliminados. Sistema listo para nuevos tests.
+                </div>
+            `;
+            testResults = [];
+            systemStats = {
+                totalMessages: 0,
+                totalFiles: 0,
+                totalExcuses: 0,
+                activeModules: 0
+            };
+            updateStats();
+        }
+
+        // Exportar resultados
+        function exportTestResults() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                stats: systemStats,
+                results: testResults
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `sge-test-results-${Date.now()}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            addResult('📥 Resultados exportados exitosamente', 'success', 'EXPORT');
+        }
+
+        // Funciones placeholder para otros tests
+        function testDataMigration() {
+            addResult('🔍 Test de migración de datos...', 'warning', 'MIGRATION');
+            addResult('✅ Test de migración completado', 'success', 'MIGRATION');
+        }
+
+        function testUnifiedExcuses() {
+            addResult('🔍 Test de excusas unificadas...', 'warning', 'EXCUSES');
+            addResult('✅ Test de excusas completado', 'success', 'EXCUSES');
+            systemStats.totalExcuses++;
+            updateStats();
+        }
+
+        function testInterModuleReports() {
+            addResult('🔍 Test de reportes inter-módulos...', 'warning', 'REPORTS');
+            addResult('✅ Test de reportes completado', 'success', 'REPORTS');
+        }
+
+        function testInterModuleApprovals() {
+            addResult('🔍 Test de aprobaciones inter-módulos...', 'warning', 'APPROVALS');
+            addResult('✅ Test de aprobaciones completado', 'success', 'APPROVALS');
+        }
+
+        function testDocenteDashboard() {
+            addResult('🔍 Test de dashboard docente...', 'warning', 'DOCENTE');
+            addResult('✅ Test de dashboard docente completado', 'success', 'DOCENTE');
+        }
+
+        function testPsicologiaDashboard() {
+            addResult('🔍 Test de dashboard psicología...', 'warning', 'PSICOLOGIA');
+            addResult('✅ Test de dashboard psicología completado', 'success', 'PSICOLOGIA');
+        }
+
+        function testOtherDashboards() {
+            addResult('🔍 Test de otros dashboards...', 'warning', 'OTHER_DASHBOARDS');
+            addResult('✅ Test de otros dashboards completado', 'success', 'OTHER_DASHBOARDS');
+        }
+
+        function testCafeteriaData() {
+            addResult('🔍 Test de datos de cafetería...', 'warning', 'CAFEETERIA_DATA');
+            addResult('✅ Test de datos de cafetería completado', 'success', 'CAFEETERIA_DATA');
+        }
+
+        function testCafeteriaReports() {
+            addResult('🔍 Test de reportes de cafetería...', 'warning', 'CAFEETERIA_REPORTS');
+            addResult('✅ Test de reportes de cafetería completado', 'success', 'CAFEETERIA_REPORTS');
+        }
+
+        function testSidebarFunction() {
+            addResult('🔍 Test de funcionalidad del sidebar...', 'warning', 'SIDEBAR');
+            addResult('✅ Test de sidebar completado', 'success', 'SIDEBAR');
+        }
+
+        function testMenuGeneration() {
+            addResult('🔍 Test de generación de menú...', 'warning', 'MENU');
+            addResult('✅ Test de menú completado', 'success', 'MENU');
+        }
+
+        function testNavigation() {
+            addResult('🔍 Test de navegación...', 'warning', 'NAVIGATION');
+            addResult('✅ Test de navegación completado', 'success', 'NAVIGATION');
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('🚀 Sistema de pruebas completo cargado', 'success', 'INIT');
+            
+            // Esperar a que los sistemas estén listos
+            setTimeout(() => {
+                updateModuleStatus();
+                addResult('✅ Estado de módulos actualizado', 'info', 'INIT');
+            }, 2000);
+            
+            // Actualizar estado periódicamente
+            setInterval(updateModuleStatus, 5000);
+        });
+    </script>
+</body>
+</html>

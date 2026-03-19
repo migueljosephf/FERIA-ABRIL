@@ -12,6 +12,7 @@
     <script src="js/systemDataManager.js"></script>
     <script src="js/systemBridge.js"></script>
     <script src="js/teacherDataManager.js"></script>
+    <script src="js/unified-communication.js"></script>
     
     <style>
         :root {
@@ -2003,42 +2004,94 @@
                 });
             }
 
-            // Función para enviar archivo
+            // Función para enviar archivo (usando sistema unificado)
             sendFile(fileData) {
                 if (!fileData) return;
-
-                const newFile = {
-                    id: 'file_' + Date.now(),
-                    name: fileData.file.name,
-                    size: fileData.file.size,
-                    type: fileData.file.type,
-                    description: fileData.description,
-                    destination: fileData.destination,
-                    sender: this.currentUser.name,
-                    senderId: this.currentUser.username,
-                    timestamp: new Date().toISOString(),
-                    status: 'sent'
-                };
-
-                // Guardar en localStorage
-                const existingFiles = JSON.parse(localStorage.getItem('teacher_files') || '[]');
-                existingFiles.push(newFile);
-                localStorage.setItem('teacher_files', JSON.stringify(existingFiles));
-
-                // Guardar en SystemDataManager si está disponible
-                if (this.systemDataManager && this.systemDataManager.guardarArchivo) {
-                    this.systemDataManager.guardarArchivo(newFile);
+                
+                if (!window.unifiedComm) {
+                    console.warn('⚠️ Sistema de comunicación no disponible');
+                    this.showToast('Error: Sistema de comunicación no disponible', 'error');
+                    return;
                 }
 
-                // Actualizar tabla de archivos
-                this.loadFiles();
+                // Leer archivo como base64
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Adaptar datos al formato unificado
+                    const unifiedFile = {
+                        de: this.currentUser.username,
+                        para: fileData.destination === 'psicologia' ? 'psi_marta_rodriguez' : 'direccion',
+                        nombre: fileData.file.name,
+                        contenido: e.target.result,
+                        tamaño: fileData.file.size,
+                        tipo: fileData.file.type,
+                        descripcion: fileData.description
+                    };
 
-                this.showToast('Archivo enviado exitosamente', 'success');
-                console.log('📁 Archivo enviado:', newFile);
+                    // Usar sistema unificado
+                    const result = window.unifiedComm.guardarArchivo(unifiedFile);
+                    
+                    if (result) {
+                        // Actualizar tabla de archivos
+                        this.loadFiles();
+                        this.showToast('Archivo enviado exitosamente', 'success');
+                        console.log('📁 Archivo enviado:', result);
+                    } else {
+                        this.showToast('Error al enviar archivo', 'error');
+                    }
+                };
+                
+                reader.onerror = () => {
+                    this.showToast('Error al leer el archivo', 'error');
+                };
+                
+                reader.readAsDataURL(fileData.file);
             }
 
-            // Función para cargar archivos recibidos
+            // Función para cargar archivos recibidos (usando sistema unificado)
             loadFiles() {
+                if (!window.unifiedComm) {
+                    console.warn('⚠️ Sistema de comunicación no disponible');
+                    // Fallback a localStorage temporal
+                    this.loadFilesFromLocalStorage();
+                    return;
+                }
+
+                try {
+                    // Obtener archivos del sistema unificado
+                    const files = window.unifiedComm.obtenerArchivos(this.currentUser.username, 'recibidos');
+                    const tbody = document.getElementById('filesTableBody');
+                    
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        
+                        if (files.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay archivos recibidos</td></tr>';
+                            return;
+                        }
+                        
+                        files.forEach(file => {
+                            const row = tbody.insertRow();
+                            row.innerHTML = `
+                                <td>${new Date(file.timestamp).toLocaleDateString()}</td>
+                                <td>${file.de}</td>
+                                <td>${file.nombre}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success" onclick="teacherDashboard.downloadFile('${file.id}')">
+                                        <i class="fas fa-download"></i> Descargar
+                                    </button>
+                                </td>
+                            `;
+                        });
+                    }
+                } catch (error) {
+                    console.error('❌ Error cargando archivos desde sistema unificado:', error);
+                    this.loadFilesFromLocalStorage();
+                }
+            }
+
+            // Función fallback para cargar archivos desde localStorage
+            loadFilesFromLocalStorage() {
                 const files = JSON.parse(localStorage.getItem('teacher_files') || '[]');
                 const tbody = document.getElementById('filesTableBody');
                 
@@ -2046,7 +2099,7 @@
                     tbody.innerHTML = '';
                     
                     if (files.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay archivos recibidos</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay archivos recibidos</td></tr>';
                         return;
                     }
                     
@@ -2054,16 +2107,72 @@
                         const row = tbody.insertRow();
                         row.innerHTML = `
                             <td>${new Date(file.timestamp).toLocaleDateString()}</td>
-                            <td>${file.sender}</td>
+                            <td>${file.sender || 'Desconocido'}</td>
                             <td>${file.name}</td>
-                            <td>${this.formatFileSize(file.size)}</td>
                             <td>
-                                <button class="btn btn-secondary btn-sm" onclick="teacherDashboard.downloadFile('${file.id}')">
+                                <button class="btn btn-sm btn-success" onclick="teacherDashboard.downloadFileFromLocalStorage('${file.id}')">
                                     <i class="fas fa-download"></i> Descargar
                                 </button>
                             </td>
                         `;
                     });
+                }
+            }
+
+            // Función para descargar archivo (usando sistema unificado)
+            downloadFile(fileId) {
+                if (!window.unifiedComm) {
+                    console.warn('⚠️ Sistema de comunicación no disponible, usando fallback');
+                    this.downloadFileFromLocalStorage(fileId);
+                    return;
+                }
+
+                try {
+                    // Obtener todos los archivos y buscar el específico
+                    const files = window.unifiedComm.obtenerArchivos(this.currentUser.username, 'recibidos');
+                    const file = files.find(f => f.id === fileId);
+                    
+                    if (file && file.contenido) {
+                        // Crear blob y descargar
+                        const byteCharacters = atob(file.contenido.split(',')[1]);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: file.tipo });
+                        
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = file.nombre;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        this.showToast('Archivo descargado exitosamente', 'success');
+                    } else {
+                        console.warn('⚠️ Archivo no encontrado en sistema unificado, buscando en localStorage');
+                        this.downloadFileFromLocalStorage(fileId);
+                    }
+                } catch (error) {
+                    console.error('❌ Error descargando archivo desde sistema unificado:', error);
+                    this.downloadFileFromLocalStorage(fileId);
+                }
+            }
+
+            // Función fallback para descargar desde localStorage
+            downloadFileFromLocalStorage(fileId) {
+                const files = JSON.parse(localStorage.getItem('teacher_files') || '[]');
+                const file = files.find(f => f.id === fileId);
+                
+                if (file) {
+                    // Simular descarga (en un caso real, aquí estaría el contenido del archivo)
+                    this.showToast(`Descargando: ${file.name}`, 'success');
+                    console.log('📁 Archivo descargado desde localStorage:', file);
+                } else {
+                    this.showToast('Archivo no encontrado', 'error');
                 }
             }
 
@@ -2074,6 +2183,110 @@
                 const sizes = ['Bytes', 'KB', 'MB', 'GB'];
                 const i = Math.floor(Math.log(bytes) / Math.log(k));
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Método para actualizar datos desde sistema unificado
+            refreshDataFromUnified(mensajes, archivos, excusas) {
+                console.log('🔄 Actualizando datos desde sistema unificado');
+                
+                // Actualizar mensajes
+                if (mensajes && Array.isArray(mensajes)) {
+                    this.updateMessagesTable(mensajes);
+                }
+                
+                // Actualizar archivos
+                if (archivos && Array.isArray(archivos)) {
+                    this.updateFilesTable(archivos);
+                }
+                
+                // Actualizar excusas
+                if (excusas && Array.isArray(excusas)) {
+                    this.updateExcusesTable(excusas);
+                }
+                
+                console.log('✅ Datos actualizados desde sistema unificado');
+            }
+
+            // Método para actualizar tabla de mensajes
+            updateMessagesTable(mensajes) {
+                const tbody = document.getElementById('messagesTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                if (mensajes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay mensajes</td></tr>';
+                    return;
+                }
+                
+                mensajes.forEach(message => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${new Date(message.timestamp).toLocaleDateString()}</td>
+                        <td>${message.para}</td>
+                        <td>${message.asunto || 'Sin asunto'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="teacherDashboard.viewMessage('${message.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            // Método para actualizar tabla de archivos
+            updateFilesTable(archivos) {
+                const tbody = document.getElementById('filesTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                if (archivos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay archivos</td></tr>';
+                    return;
+                }
+                
+                archivos.forEach(file => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${new Date(file.timestamp).toLocaleDateString()}</td>
+                        <td>${file.para}</td>
+                        <td>${file.nombre}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="teacherDashboard.downloadFile('${file.id}')">
+                                <i class="fas fa-download"></i> Descargar
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
+            // Método para actualizar tabla de excusas
+            updateExcusesTable(excusas) {
+                const tbody = document.getElementById('historyTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                if (excusas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay excusas</td></tr>';
+                    return;
+                }
+                
+                excusas.forEach(excuse => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${new Date(excuse.timestamp).toLocaleDateString()}</td>
+                        <td>${excuse.estudiante}</td>
+                        <td>${excuse.motivo}</td>
+                        <td><span class="status-badge status-${excuse.estado}">${excuse.estado}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="teacherDashboard.viewExcuse('${excuse.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
             }
 
             // Función de test para verificar botones
@@ -2223,39 +2436,45 @@
                 });
             }
 
-            // Función para enviar mensaje
+            // Función para enviar mensaje (usando sistema unificado)
             sendMessage(messageData) {
-                const newMessage = {
-                    id: 'msg_' + Date.now(),
-                    sender: this.currentUser.name,
-                    senderId: this.currentUser.username,
-                    recipient: messageData.recipient,
-                    subject: messageData.subject,
-                    content: messageData.content,
-                    timestamp: new Date().toISOString(),
-                    status: 'sent'
-                };
-
-                // Guardar en localStorage
-                const existingMessages = JSON.parse(localStorage.getItem('teacher_messages') || '[]');
-                existingMessages.push(newMessage);
-                localStorage.setItem('teacher_messages', JSON.stringify(existingMessages));
-
-                // Guardar en SystemDataManager si está disponible
-                if (this.systemDataManager && this.systemDataManager.guardarMensaje) {
-                    this.systemDataManager.guardarMensaje(newMessage);
+                if (!window.unifiedComm) {
+                    console.warn('⚠️ Sistema de comunicación no disponible');
+                    this.showToast('Error: Sistema de comunicación no disponible', 'error');
+                    return;
                 }
 
-                // Actualizar tabla de mensajes
-                this.loadMessages();
+                // Adaptar datos al formato unificado
+                const unifiedMessage = {
+                    de: this.currentUser.username,
+                    para: messageData.recipient,
+                    asunto: messageData.subject,
+                    contenido: messageData.content,
+                    tipo: 'mensaje'
+                };
 
-                this.showToast('Mensaje enviado exitosamente', 'success');
-                console.log('📧 Mensaje enviado:', newMessage);
+                // Usar sistema unificado
+                const result = window.unifiedComm.guardarMensaje(unifiedMessage);
+                
+                if (result) {
+                    // Actualizar tabla de mensajes
+                    this.loadMessages();
+                    this.showToast('Mensaje enviado exitosamente', 'success');
+                    console.log('📧 Mensaje enviado:', result);
+                } else {
+                    this.showToast('Error al enviar mensaje', 'error');
+                }
             }
 
-            // Función para cargar mensajes
+            // Función para cargar mensajes (usando sistema unificado)
             loadMessages() {
-                const messages = JSON.parse(localStorage.getItem('teacher_messages') || '[]');
+                if (!window.unifiedComm) {
+                    console.warn('⚠️ Sistema de comunicación no disponible');
+                    return;
+                }
+
+                // Obtener mensajes del sistema unificado
+                const messages = window.unifiedComm.obtenerMensajes(this.currentUser.username, 'enviados');
                 const tbody = document.getElementById('messagesTableBody');
                 
                 if (tbody) {
@@ -2270,11 +2489,10 @@
                         const row = tbody.insertRow();
                         row.innerHTML = `
                             <td>${new Date(message.timestamp).toLocaleDateString()}</td>
-                            <td>${message.sender}</td>
-                            <td>${message.subject || 'Sin asunto'}</td>
-                            <td><span class="status-badge status-sent">Enviado</span></td>
+                            <td>${message.para}</td>
+                            <td>${message.asunto || 'Sin asunto'}</td>
                             <td>
-                                <button class="btn btn-secondary btn-sm" onclick="teacherDashboard.viewMessage('${message.id}')">
+                                <button class="btn btn-sm btn-info" onclick="teacherSystem.viewMessage('${message.id}')">
                                     <i class="fas fa-eye"></i> Ver
                                 </button>
                             </td>
@@ -2284,20 +2502,38 @@
             }
         }
 
-        // Initialize dashboard
+        // Initialize dashboard con sistema unificado
         let teacherDashboard;
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Inicializando TeacherDashboard...');
-            teacherDashboard = new TeacherDashboard();
-            window.teacherDashboard = teacherDashboard;
-            console.log('✅ TeacherDashboard inicializado correctamente');
             
-            // Test de botones - verificar que todos los eventos estén configurados
-            setTimeout(() => {
-                console.log('🔍 Iniciando test de botones...');
-                teacherDashboard.testButtonFunctionality();
-            }, 1000);
+            // Esperar a que el sistema unificado esté listo
+            const initializeDashboard = () => {
+                if (window.unifiedComm && window.unifiedComm.initialized) {
+                    teacherDashboard = new TeacherDashboard();
+                    window.teacherDashboard = teacherDashboard;
+                    
+                    // Configurar listeners para actualización automática
+                    window.addEventListener('sge-docente-data-refresh', (e) => {
+                        const { mensajes, archivos, excusas } = e.detail;
+                        teacherDashboard.refreshDataFromUnified(mensajes, archivos, excusas);
+                    });
+                    
+                    console.log('✅ TeacherDashboard inicializado correctamente');
+                    
+                    // Test de botones - verificar que todos los eventos estén configurados
+                    setTimeout(() => {
+                        console.log('🔍 Iniciando test de botones...');
+                        teacherDashboard.testButtonFunctionality();
+                    }, 1000);
+                } else {
+                    // Reintentar en 100ms
+                    setTimeout(initializeDashboard, 100);
+                }
+            };
+            
+            initializeDashboard();
         });
     </script>
 </body>

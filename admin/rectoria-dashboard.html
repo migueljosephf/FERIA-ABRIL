@@ -13,6 +13,7 @@
     <!-- Sistema Central de Comunicación -->
     <script src="../js/systemDataManager.js"></script>
     <script src="../js/systemBridge.js"></script>
+    <script src="../js/unified-communication.js"></script>
     
     <style>
         :root {
@@ -424,6 +425,11 @@
             <li class="nav-item">
                 <a href="#" class="nav-link" data-action="showSection" data-section="agendaSection">
                     <i class="fas fa-calendar-alt"></i> Agenda
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-action="showSection" data-section="archivosRecibidosSection">
+                    <i class="fas fa-download"></i> Archivos Recibidos
                 </a>
             </li>
             <li class="nav-item">
@@ -860,6 +866,36 @@
             </div>
         </section>
 
+        <!-- Archivos Recibidos Section -->
+        <section id="archivosRecibidosSection" class="content-section hidden">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-download"></i> Archivos Recibidos de Profesores
+                </h2>
+                <button class="btn btn-rectoria" onclick="rectoriaDashboard.refreshArchivos()">
+                    <i class="fas fa-sync"></i> Actualizar
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>De</th>
+                            <th>Nombre del Archivo</th>
+                            <th>Tamaño</th>
+                            <th>Tipo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archivosRecibidosTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- Notificaciones Section -->
         <section id="notificacionesSection" class="content-section hidden">
             <div class="section-header">
@@ -901,6 +937,7 @@
                 this.documentos = [];
                 this.reuniones = [];
                 this.notificaciones = [];
+                this.archivosRecibidos = [];
                 
                 this.init();
             }
@@ -977,6 +1014,8 @@
                     this.loadDocumentos();
                 } else if (sectionId === 'agendaSection') {
                     this.loadAgenda();
+                } else if (sectionId === 'archivosRecibidosSection') {
+                    this.loadArchivosRecibidos();
                 } else if (sectionId === 'notificacionesSection') {
                     this.loadNotificaciones();
                 }
@@ -997,16 +1036,15 @@
             }
 
             loadInitialData() {
-                const storedReportes = localStorage.getItem('rectoria_reportes');
-                const storedDocumentos = localStorage.getItem('rectoria_documentos');
-                const storedReuniones = localStorage.getItem('rectoria_reuniones');
-                const storedNotificaciones = localStorage.getItem('rectoria_notificaciones');
+                // Cargar datos desde localStorage o valores por defecto
+                this.reportes = JSON.parse(localStorage.getItem('rectoria_reportes') || '[]');
+                this.documentos = JSON.parse(localStorage.getItem('rectoria_documentos') || '[]');
+                this.reuniones = JSON.parse(localStorage.getItem('rectoria_reuniones') || '[]');
+                this.notificaciones = JSON.parse(localStorage.getItem('rectoria_notificaciones') || '[]');
+                this.archivosRecibidos = JSON.parse(localStorage.getItem('rectoria_archivos_recibidos') || '[]');
                 
-                if (storedReportes) {
-                    this.reportes = JSON.parse(storedReportes);
-                }
-                
-                if (storedDocumentos) {
+                // Cargar archivos recibidos del sistema unificado
+                this.loadArchivosRecibidos();
                     this.documentos = JSON.parse(storedDocumentos);
                 }
                 
@@ -1489,6 +1527,60 @@
                 });
             }
 
+            loadArchivosRecibidos() {
+                const tbody = document.getElementById('archivosRecibidosTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                // Intentar cargar archivos desde el sistema unificado
+                let archivos = [];
+                
+                if (window.unifiedComm) {
+                    try {
+                        archivos = window.unifiedComm.obtenerArchivos(this.currentUser.username, 'recibidos');
+                    } catch (error) {
+                        console.warn('⚠️ Error cargando archivos desde sistema unificado:', error);
+                    }
+                }
+
+                // Si no hay archivos del sistema unificado, cargar datos locales
+                if (archivos.length === 0) {
+                    const archivosGuardados = localStorage.getItem('rectoria_archivos_recibidos');
+                    if (archivosGuardados) {
+                        archivos = JSON.parse(archivosGuardados);
+                    }
+                }
+
+                if (archivos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay archivos recibidos</td></tr>';
+                    return;
+                }
+
+                archivos.forEach(archivo => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${new Date(archivo.timestamp).toLocaleDateString()}</td>
+                        <td>${archivo.de}</td>
+                        <td>${archivo.nombre}</td>
+                        <td>${this.formatFileSize(archivo.tamanho)}</td>
+                        <td>
+                            <span class="status-badge status-activo">
+                                ${archivo.tipo || 'Archivo'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="rectoriaDashboard.descargarArchivo('${archivo.id}')">
+                                <i class="fas fa-download"></i> Descargar
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="rectoriaDashboard.verDetallesArchivo('${archivo.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    `;
+                });
+            }
+
             loadAgenda() {
                 const tbody = document.getElementById('agendaTableBody');
                 if (!tbody) return;
@@ -1613,6 +1705,110 @@
                         icon: 'info'
                     });
                 }
+            }
+
+            refreshArchivos() {
+                this.loadArchivosRecibidos();
+                this.showToast('Lista de archivos actualizada', 'success');
+            }
+
+            descargarArchivo(archivoId) {
+                // Intentar descargar desde el sistema unificado
+                if (window.unifiedComm) {
+                    try {
+                        const archivos = window.unifiedComm.obtenerArchivos(this.currentUser.username, 'recibidos');
+                        const archivo = archivos.find(a => a.id === archivoId);
+                        
+                        if (archivo && archivo.contenido) {
+                            // Crear blob y descargar
+                            const blob = new Blob([archivo.contenido], { type: archivo.tipo || 'application/octet-stream' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = archivo.nombre;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            
+                            this.showToast('Archivo descargado exitosamente', 'success');
+                            return;
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Error descargando desde sistema unificado:', error);
+                    }
+                }
+
+                // Fallback: buscar en localStorage
+                const archivosGuardados = localStorage.getItem('rectoria_archivos_recibidos');
+                if (archivosGuardados) {
+                    const archivos = JSON.parse(archivosGuardados);
+                    const archivo = archivos.find(a => a.id === archivoId);
+                    
+                    if (archivo && archivo.contenido) {
+                        const blob = new Blob([archivo.contenido], { type: archivo.tipo || 'application/octet-stream' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = archivo.nombre;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        this.showToast('Archivo descargado exitosamente', 'success');
+                    }
+                }
+            }
+
+            verDetallesArchivo(archivoId) {
+                // Buscar archivo en sistema unificado o localStorage
+                let archivo = null;
+                
+                if (window.unifiedComm) {
+                    try {
+                        const archivos = window.unifiedComm.obtenerArchivos(this.currentUser.username, 'recibidos');
+                        archivo = archivos.find(a => a.id === archivoId);
+                    } catch (error) {
+                        console.warn('⚠️ Error obteniendo archivo:', error);
+                    }
+                }
+
+                if (!archivo) {
+                    const archivosGuardados = localStorage.getItem('rectoria_archivos_recibidos');
+                    if (archivosGuardados) {
+                        const archivos = JSON.parse(archivosGuardados);
+                        archivo = archivos.find(a => a.id === archivoId);
+                    }
+                }
+
+                if (archivo) {
+                    Swal.fire({
+                        title: 'Detalles del Archivo',
+                        html: `
+                            <div style="text-align: left;">
+                                <p><strong>Nombre:</strong> ${archivo.nombre}</p>
+                                <p><strong>De:</strong> ${archivo.de}</p>
+                                <p><strong>Fecha:</strong> ${new Date(archivo.timestamp).toLocaleString()}</p>
+                                <p><strong>Tamaño:</strong> ${this.formatFileSize(archivo.tamanho)}</p>
+                                <p><strong>Tipo:</strong> ${archivo.tipo || 'No especificado'}</p>
+                                ${archivo.descripcion ? `<p><strong>Descripción:</strong> ${archivo.descripcion}</p>` : ''}
+                            </div>
+                        `,
+                        icon: 'info',
+                        confirmButtonText: 'Cerrar'
+                    });
+                } else {
+                    this.showToast('Archivo no encontrado', 'error');
+                }
+            }
+
+            formatFileSize(bytes) {
+                if (!bytes) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
 
             verNotificacion(id) {

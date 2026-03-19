@@ -8,6 +8,7 @@ class SystemDataManager {
     constructor() {
         this.initializeStorage();
         this.setupEventListeners();
+        this.iniciarMonitoreoEspacio();
     }
 
     /**
@@ -206,9 +207,13 @@ class SystemDataManager {
     /**
      * Guardar todos los datos del sistema
      */
-    saveAllData(data) {
+    saveAllData(data, skipActivityLog = false) {
         localStorage.setItem('sge_system_data', JSON.stringify(data));
-        this.registrarActividad('Sistema', 'Datos guardados', 'info');
+        
+        // Evitar recursión infinita
+        if (!skipActivityLog) {
+            this.registrarActividad('Sistema', 'Datos guardados', 'info', true);
+        }
     }
 
     /**
@@ -691,7 +696,7 @@ class SystemDataManager {
     /**
      * Registrar actividad en el sistema
      */
-    registrarActividad(tipo, descripcion, nivel = 'info') {
+    registrarActividad(tipo, descripcion, nivel = 'info', skipSave = false) {
         const data = this.getAllData();
         const actividad = {
             id: this.generateId(),
@@ -704,12 +709,15 @@ class SystemDataManager {
         
         data.actividadSistema.unshift(actividad); // Agregar al principio
         
-        // Mantener solo las últimas 1000 actividades
-        if (data.actividadSistema.length > 1000) {
-            data.actividadSistema = data.actividadSistema.slice(0, 1000);
+        // Reducir a las últimas 500 actividades para ahorrar espacio
+        if (data.actividadSistema.length > 500) {
+            data.actividadSistema = data.actividadSistema.slice(0, 500);
         }
         
-        this.saveAllData(data);
+        // Evitar recursión infinita
+        if (!skipSave) {
+            this.saveAllData(data, true);
+        }
         
         // Emitir evento para que otros componentes se actualicen
         if (window.eventBus) {
@@ -825,16 +833,16 @@ class SystemDataManager {
     }
 
     /**
-     * Limpiar datos antiguos
+     * Limpiar datos antiguos (optimizado para espacio)
      */
-    limpiarDatosAntiguos(dias = 30) {
+    limpiarDatosAntiguos(dias = 15) { // Reducido de 30 a 15 días
         const data = this.getAllData();
         const fechaLimite = new Date();
         fechaLimite.setDate(fechaLimite.getDate() - dias);
         
         let eliminados = 0;
         
-        // Limpiar actividad antigua
+        // Limpiar actividad antigua (más agresivo)
         if (data.actividadSistema) {
             const actividadOriginal = data.actividadSistema.length;
             data.actividadSistema = data.actividadSistema.filter(a => 
@@ -843,8 +851,26 @@ class SystemDataManager {
             eliminados += actividadOriginal - data.actividadSistema.length;
         }
         
-        this.saveAllData(data);
-        this.registrarActividad('Sistema', `Limpieza de datos antiguos: ${eliminados} registros eliminados`, 'info');
+        // Limpiar mensajes leídos antiguos
+        if (data.mensajes) {
+            const mensajesOriginal = data.mensajes.length;
+            data.mensajes = data.mensajes.filter(m => 
+                !m.leido || new Date(m.timestamp) > fechaLimite
+            );
+            eliminados += mensajesOriginal - data.mensajes.length;
+        }
+        
+        // Limpiar excusas resueltas antiguas
+        if (data.excusas) {
+            const excusasOriginal = data.excusas.length;
+            data.excusas = data.excusas.filter(e => 
+                e.estado !== 'respondido' || new Date(e.timestamp) > fechaLimite
+            );
+            eliminados += excusasOriginal - data.excusas.length;
+        }
+        
+        this.saveAllData(data, true); // Evitar registrar actividad de limpieza
+        console.log(`🧹 Limpieza completada: ${eliminados} registros eliminados`);
         
         return eliminados;
     }
@@ -1145,6 +1171,91 @@ class SystemDataManager {
         console.warn('📝 Use modificarDatoExistente() para corregir errores o agregarNotaAdministrativa() para añadir observaciones');
         
         return false;
+    }
+
+    /**
+     * Monitorear y optimizar uso de espacio
+     */
+    monitorearEspacio() {
+        try {
+            const data = localStorage.getItem('sge_system_data');
+            if (!data) return { size: 0, status: 'empty' };
+            
+            const sizeInBytes = new Blob([data]).size;
+            const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+            
+            let status = 'normal';
+            let recommendations = [];
+            
+            if (sizeInMB > 700) { // 700MB = 777MB considerando overhead
+                status = 'critical';
+                recommendations.push('Limpieza inmediata de datos antiguos requerida');
+                this.limpiarDatosAntiguos(7); // Limpieza agresiva de 7 días
+            } else if (sizeInMB > 500) {
+                status = 'warning';
+                recommendations.push('Se recomienda limpiar datos antiguos');
+                this.limpiarDatosAntiguos(10); // Limpieza de 10 días
+            } else if (sizeInMB > 300) {
+                status = 'caution';
+                recommendations.push('Monitorear el crecimiento de datos');
+            }
+            
+            const stats = {
+                size: sizeInMB,
+                sizeBytes: sizeInBytes,
+                status: status,
+                recommendations: recommendations,
+                timestamp: new Date().toISOString(),
+                breakdown: this.analizarDesgloseDatos()
+            };
+            
+            console.log(`📊 Espacio utilizado: ${sizeInMB}MB - Estado: ${status}`);
+            
+            return stats;
+        } catch (error) {
+            console.error('❌ Error monitoreando espacio:', error);
+            return { size: 0, status: 'error', error: error.message };
+        }
+    }
+
+    /**
+     * Analizar desglose de datos por sección
+     */
+    analizarDesgloseDatos() {
+        try {
+            const data = this.getAllData();
+            const breakdown = {};
+            
+            Object.keys(data).forEach(key => {
+                if (Array.isArray(data[key])) {
+                    const size = JSON.stringify(data[key]).length;
+                    breakdown[key] = {
+                        count: data[key].length,
+                        size: (size / 1024).toFixed(2) + ' KB'
+                    };
+                }
+            });
+            
+            return breakdown;
+        } catch (error) {
+            console.error('❌ Error analizando desglose:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Iniciar monitoreo automático de espacio
+     */
+    iniciarMonitoreoEspacio() {
+        // Monitorear cada 5 minutos
+        setInterval(() => {
+            this.monitorearEspacio();
+        }, 5 * 60 * 1000);
+        
+        // Monitoreo inicial
+        setTimeout(() => {
+            this.monitorearEspacio();
+        }, 1000);
     }
 
     /**

@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Comunicación entre Dashboards</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/unified-communication.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-section h3 i {
+            color: #3498db;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .results {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+        }
+        
+        .result-item.success {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+        
+        .result-item.error {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+        
+        .result-item.warning {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.success {
+            background: #27ae60;
+        }
+        
+        .status-indicator.error {
+            background: #e74c3c;
+        }
+        
+        .status-indicator.warning {
+            background: #f39c12;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ecf0f1;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .info-card h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+        }
+        
+        .navigation-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-network-wired"></i> Test de Comunicación entre Dashboards</h1>
+            <p>Verifica la comunicación bidireccional entre docente-dashboard.html y psicologia-dashboard.html</p>
+        </div>
+
+        <!-- Estado del Sistema -->
+        <div class="test-section">
+            <h3><i class="fas fa-heartbeat"></i> Estado del Sistema</h3>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="checkSystemStatus()">
+                    <i class="fas fa-check-circle"></i> Verificar Estado
+                </button>
+                <button class="btn btn-success" onclick="initializeSystem()">
+                    <i class="fas fa-play"></i> Inicializar Sistema
+                </button>
+                <button class="btn btn-warning" onclick="refreshStatus()">
+                    <i class="fas fa-sync"></i> Actualizar
+                </button>
+            </div>
+            <div id="systemStatus" class="results">
+                <div class="result-item">
+                    <span class="status-indicator warning"></span>
+                    Haz clic en "Verificar Estado" para comprobar el sistema
+                </div>
+            </div>
+        </div>
+
+        <!-- Test de Mensajes -->
+        <div class="test-section">
+            <h3><i class="fas fa-envelope"></i> Test de Mensajes</h3>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="testSendMessage()">
+                    <i class="fas fa-paper-plane"></i> Enviar Mensaje de Prueba
+                </button>
+                <button class="btn btn-success" onclick="testReceiveMessages()">
+                    <i class="fas fa-inbox"></i> Ver Mensajes Recibidos
+                </button>
+                <button class="btn btn-warning" onclick="testBidirectionalMessages()">
+                    <i class="fas fa-exchange-alt"></i> Test Bidireccional
+                </button>
+            </div>
+            <div id="messageResults" class="results">
+                <div class="result-item">
+                    <span class="status-indicator warning"></span>
+                    Haz clic en los botones para probar la comunicación de mensajes
+                </div>
+            </div>
+        </div>
+
+        <!-- Test de Archivos -->
+        <div class="test-section">
+            <h3><i class="fas fa-file"></i> Test de Archivos</h3>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="testSendFile()">
+                    <i class="fas fa-upload"></i> Enviar Archivo de Prueba
+                </button>
+                <button class="btn btn-success" onclick="testReceiveFiles()">
+                    <i class="fas fa-download"></i> Ver Archivos Recibidos
+                </button>
+                <button class="btn btn-warning" onclick="testFileSharing()">
+                    <i class="fas fa-share"></i> Test Compartir Archivo
+                </button>
+            </div>
+            <div id="fileResults" class="results">
+                <div class="result-item">
+                    <span class="status-indicator warning"></span>
+                    Haz clic en los botones para probar la comunicación de archivos
+                </div>
+            </div>
+        </div>
+
+        <!-- Test de Excusas -->
+        <div class="test-section">
+            <h3><i class="fas fa-note-medical"></i> Test de Excusas</h3>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="testCreateExcuse()">
+                    <i class="fas fa-plus"></i> Crear Excusa de Prueba
+                </button>
+                <button class="btn btn-success" onclick="testReceiveExcuses()">
+                    <i class="fas fa-list"></i> Ver Excusas Asignadas
+                </button>
+                <button class="btn btn-warning" onclick="testExcuseFlow()">
+                    <i class="fas fa-route"></i> Test Flujo Completo
+                </button>
+            </div>
+            <div id="excuseResults" class="results">
+                <div class="result-item">
+                    <span class="status-indicator warning"></span>
+                    Haz clic en los botones para probar la comunicación de excusas
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div class="test-section">
+            <h3><i class="fas fa-info-circle"></i> Información del Sistema</h3>
+            <div class="grid">
+                <div class="info-card">
+                    <h4><i class="fas fa-database"></i> Almacenamiento</h4>
+                    <div class="info-item">
+                        <span class="info-label">Mensajes:</span>
+                        <span class="info-value" id="totalMessages">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Archivos:</span>
+                        <span class="info-value" id="totalFiles">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Excusas:</span>
+                        <span class="info-value" id="totalExcuses">0</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4><i class="fas fa-users"></i> Usuarios de Prueba</h4>
+                    <div class="info-item">
+                        <span class="info-label">Docente:</span>
+                        <span class="info-value">prof_starling</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Psicóloga:</span>
+                        <span class="info-value">psi_marta_rodriguez</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Estado:</span>
+                        <span class="info-value" id="userStatus">No definido</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4><i class="fas fa-cogs"></i> Configuración</h4>
+                    <div class="info-item">
+                        <span class="info-label">Módulo:</span>
+                        <span class="info-value" id="currentModule">Test</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Sincronización:</span>
+                        <span class="info-value" id="syncStatus">Activa</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Última actualización:</span>
+                        <span class="info-value" id="lastUpdate">N/A</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegación -->
+        <div class="navigation-links">
+            <a href="docente-dashboard.html" class="nav-link">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Dashboard Docente
+            </a>
+            <a href="psicologia-dashboard.html" class="nav-link">
+                <i class="fas fa-user-md"></i>
+                Dashboard Psicología
+            </a>
+            <a href="index.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                Página Principal
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let testResults = [];
+        let currentUser = null;
+        
+        // Usuarios de prueba
+        const testUsers = {
+            docente: {
+                username: 'prof_starling',
+                name: 'Prof. Starling Encarnación',
+                role: 'docente'
+            },
+            psicologa: {
+                username: 'psi_marta_rodriguez',
+                name: 'Dra. Marta Rodríguez',
+                role: 'psicologa'
+            }
+        };
+
+        // Función para agregar resultados
+        function addResult(message, type = 'info', containerId = 'systemStatus') {
+            const container = document.getElementById(containerId);
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${type}`;
+            
+            const indicator = document.createElement('span');
+            indicator.className = `status-indicator ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            resultItem.innerHTML = `
+                <span class="status-indicator ${type}"></span>
+                <strong>[${timestamp}]</strong> ${message}
+            `;
+            
+            container.insertBefore(resultItem, container.firstChild);
+            
+            // Limitar a 10 resultados
+            while (container.children.length > 10) {
+                container.removeChild(container.lastChild);
+            }
+            
+            testResults.push({ message, type, timestamp, containerId });
+        }
+
+        // Verificar estado del sistema
+        function checkSystemStatus() {
+            addResult('🔍 Verificando estado del sistema...', 'warning');
+            
+            // Verificar unified communication
+            if (window.unifiedComm) {
+                addResult('✅ Sistema unificado disponible', 'success');
+                
+                const state = window.unifiedComm.getEstado();
+                addResult(`📊 Estado: ${state.inicializado ? 'Inicializado' : 'No inicializado'}`, 'success');
+                addResult(`📍 Módulo actual: ${state.moduloActual}`, 'info');
+                addResult(`👤 Usuario actual: ${state.usuarioActual?.username || 'No definido'}`, 'info');
+                
+                // Actualizar información del sistema
+                document.getElementById('totalMessages').textContent = state.totalMensajes;
+                document.getElementById('totalFiles').textContent = state.totalArchivos;
+                document.getElementById('totalExcuses').textContent = state.totalExcusas;
+                document.getElementById('currentModule').textContent = state.moduloActual;
+                document.getElementById('userStatus').textContent = state.usuarioActual?.username || 'No definido';
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                
+            } else {
+                addResult('❌ Sistema unificado no disponible', 'error');
+            }
+            
+            // Verificar localStorage
+            try {
+                const testKey = 'sge_test_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                addResult('✅ localStorage funcional', 'success');
+            } catch (error) {
+                addResult('❌ Error en localStorage: ' + error.message, 'error');
+            }
+            
+            addResult('🎯 Verificación de estado completada', 'success');
+        }
+
+        // Inicializar sistema
+        function initializeSystem() {
+            addResult('🚀 Inicializando sistema...', 'warning');
+            
+            try {
+                if (window.unifiedComm) {
+                    // Simular usuario actual
+                    currentUser = testUsers.docente;
+                    
+                    // Forzar re-inicialización
+                    window.unifiedComm.init();
+                    
+                    addResult('✅ Sistema inicializado correctamente', 'success');
+                    addResult(`👤 Usuario simulado: ${currentUser.name}`, 'info');
+                    
+                    // Actualizar estado
+                    setTimeout(() => {
+                        checkSystemStatus();
+                    }, 1000);
+                    
+                } else {
+                    addResult('❌ Sistema unificado no disponible para inicialización', 'error');
+                }
+            } catch (error) {
+                addResult('❌ Error inicializando sistema: ' + error.message, 'error');
+            }
+        }
+
+        // Actualizar estado
+        function refreshStatus() {
+            addResult('🔄 Actualizando estado...', 'warning');
+            setTimeout(() => {
+                checkSystemStatus();
+            }, 500);
+        }
+
+        // Test de envío de mensajes
+        function testSendMessage() {
+            if (!window.unifiedComm) {
+                addResult('❌ Sistema unificado no disponible', 'error', 'messageResults');
+                return;
+            }
+            
+            addResult('📤 Enviando mensaje de prueba...', 'warning', 'messageResults');
+            
+            try {
+                const message = {
+                    de: testUsers.docente.username,
+                    para: testUsers.psicologa.username,
+                    asunto: 'Mensaje de Prueba',
+                    contenido: 'Este es un mensaje de prueba del sistema de comunicación unificada.',
+                    tipo: 'test'
+                };
+                
+                const result = window.unifiedComm.guardarMensaje(message);
+                
+                if (result) {
+                    addResult(`✅ Mensaje enviado con ID: ${result.id}`, 'success', 'messageResults');
+                    addResult(`📧 De: ${result.de} → Para: ${result.para}`, 'info', 'messageResults');
+                    addResult(`📝 Asunto: ${result.asunto}`, 'info', 'messageResults');
+                } else {
+                    addResult('❌ Error al enviar mensaje', 'error', 'messageResults');
+                }
+            } catch (error) {
+                addResult('❌ Error enviando mensaje: ' + error.message, 'error', 'messageResults');
+            }
+        }
+
+        // Test de recepción de mensajes
+        function testReceiveMessages() {
+            if (!window.unifiedComm) {
+                addResult('❌ Sistema unificado no disponible', 'error', 'messageResults');
+                return;
+            }
+            
+            addResult('📥 Verificando mensajes recibidos...', 'warning', 'messageResults');
+            
+            try {
+                const messages = window.unifiedComm.obtenerMensajes(testUsers.psicologa.username, 'recibidos');
+                
+                addResult(`📊 Total mensajes recibidos: ${messages.length}`, 'info', 'messageResults');
+                
+                messages.forEach((msg, index) => {
+                    addResult(`📧 Mensaje ${index + 1}: De ${msg.de} - ${msg.asunto}`, 'success', 'messageResults');
+                });
+                
+                if (messages.length === 0) {
+                    addResult('⚠️ No hay mensajes recibidos', 'warning', 'messageResults');
+                }
+            } catch (error) {
+                addResult('❌ Error obteniendo mensajes: ' + error.message, 'error', 'messageResults');
+            }
+        }
+
+        // Test bidireccional de mensajes
+        function testBidirectionalMessages() {
+            addResult('🔄 Iniciando test bidireccional...', 'warning', 'messageResults');
+            
+            // Enviar mensaje de docente a psicóloga
+            setTimeout(() => {
+                testSendMessage();
+            }, 100);
+            
+            // Enviar mensaje de psicóloga a docente
+            setTimeout(() => {
+                try {
+                    const replyMessage = {
+                        de: testUsers.psicologa.username,
+                        para: testUsers.docente.username,
+                        asunto: 'Re: Mensaje de Prueba',
+                        contenido: 'Respuesta automática de prueba desde psicología.',
+                        tipo: 'respuesta'
+                    };
+                    
+                    const result = window.unifiedComm.guardarMensaje(replyMessage);
+                    
+                    if (result) {
+                        addResult(`✅ Respuesta enviada con ID: ${result.id}`, 'success', 'messageResults');
+                    }
+                } catch (error) {
+                    addResult('❌ Error enviando respuesta: ' + error.message, 'error', 'messageResults');
+                }
+            }, 1000);
+            
+            // Verificar mensajes en ambas direcciones
+            setTimeout(() => {
+                testReceiveMessages();
+                
+                setTimeout(() => {
+                    const docenteMessages = window.unifiedComm.obtenerMensajes(testUsers.docente.username, 'recibidos');
+                    addResult(`📊 Mensajes del docente: ${docenteMessages.length}`, 'info', 'messageResults');
+                    
+                    addResult('🎯 Test bidireccional completado', 'success', 'messageResults');
+                }, 500);
+            }, 2000);
+        }
+
+        // Test de envío de archivos
+        function testSendFile() {
+            if (!window.unifiedComm) {
+                addResult('❌ Sistema unificado no disponible', 'error', 'fileResults');
+                return;
+            }
+            
+            addResult('📤 Enviando archivo de prueba...', 'warning', 'fileResults');
+            
+            try {
+                // Crear archivo de prueba (texto simple)
+                const fileContent = 'Este es un archivo de prueba del sistema unificado.\n\nContenido de prueba:\n- Línea 1\n- Línea 2\n- Línea 3';
+                const base64Content = 'data:text/plain;base64,' + btoa(unescape(encodeURIComponent(fileContent)));
+                
+                const file = {
+                    de: testUsers.docente.username,
+                    para: testUsers.psicologa.username,
+                    nombre: 'archivo_prueba.txt',
+                    contenido: base64Content,
+                    tamaño: fileContent.length,
+                    tipo: 'text/plain',
+                    descripcion: 'Archivo de prueba para comunicación'
+                };
+                
+                const result = window.unifiedComm.guardarArchivo(file);
+                
+                if (result) {
+                    addResult(`✅ Archivo enviado con ID: ${result.id}`, 'success', 'fileResults');
+                    addResult(`📁 Nombre: ${result.nombre}`, 'info', 'fileResults');
+                    addResult(`📏 Tamaño: ${result.tamaño} bytes`, 'info', 'fileResults');
+                } else {
+                    addResult('❌ Error al enviar archivo', 'error', 'fileResults');
+                }
+            } catch (error) {
+                addResult('❌ Error enviando archivo: ' + error.message, 'error', 'fileResults');
+            }
+        }
+
+        // Test de recepción de archivos
+        function testReceiveFiles() {
+            if (!window.unifiedComm) {
+                addResult('❌ Sistema unificado no disponible', 'error', 'fileResults');
+                return;
+            }
+            
+            addResult('📥 Verificando archivos recibidos...', 'warning', 'fileResults');
+            
+            try {
+                const files = window.unifiedComm.obtenerArchivos(testUsers.psicologa.username, 'recibidos');
+                
+                addResult(`📊 Total archivos recibidos: ${files.length}`, 'info', 'fileResults');
+                
+                files.forEach((file, index) => {
+                    addResult(`📁 Archivo ${index + 1}: ${file.nombre} (${file.tamaño} bytes)`, 'success', 'fileResults');
+                });
+                
+                if (files.length === 0) {
+                    addResult('⚠️ No hay archivos recibidos', 'warning', 'fileResults');
+                }
+            } catch (error) {
+                addResult('❌ Error obteniendo archivos: ' + error.message, 'error', 'fileResults');
+            }
+        }
+
+        // Test de compartir archivo
+        function testFileSharing() {
+            addResult('🔄 Iniciando test de compartir archivo...', 'warning', 'fileResults');
+            
+            // Enviar archivo
+            setTimeout(() => {
+                testSendFile();
+            }, 100);
+            
+            // Verificar recepción
+            setTimeout(() => {
+                testReceiveFiles();
+                addResult('🎯 Test de compartir archivo completado', 'success', 'fileResults');
+            }, 2000);
+        }
+
+        // Test de crear excusa
+        function testCreateExcuse() {
+            if (!window.unifiedComm) {
+                addResult('❌ Sistema unificado no disponible', 'error', 'excuseResults');
+                return;
+            }
+            
+            addResult('📝 Creando excusa de prueba...', 'warning', 'excuseResults');
+            
+            try {
+                const excuse = {
+                    estudiante: 'Juan Pérez',
+                    profesor: testUsers.docente.username,
+                    motivo: 'Estudiante enfermo con certificado médico',
+                    fecha: new Date().toISOString().split('T')[0],
+                    descripcion: 'El estudiante presentó fiebre y síntomas gripales.'
+                };
+                
+                const result = window.unifiedComm.guardarExcusa(excuse);
+                
+                if (result) {
+                    addResult(`✅ Excusa creada con ID: ${result.id}`, 'success', 'excuseResults');
+                    addResult(`👨‍🎓 Estudiante: ${result.estudiante}`, 'info', 'excuseResults');
+                    addResult(`👩‍⚕️ Psicóloga asignada: ${result.psicologaAsignada}`, 'info', 'excuseResults');
+                    addResult(`📅 Estado: ${result.estado}`, 'info', 'excuseResults');
+                } else {
+                    addResult('❌ Error al crear excusa', 'error', 'excuseResults');
+                }
+            } catch (error) {
+                addResult('❌ Error creando excusa: ' + error.message, 'error', 'excuseResults');
+            }
+        }
+
+        // Test de recibir excusas
+        function testReceiveExcuses() {
+            if (!window.unifiedComm) {
+                addResult('❌ Sistema unificado no disponible', 'error', 'excuseResults');
+                return;
+            }
+            
+            addResult('📋 Verificando excusas asignadas...', 'warning', 'excuseResults');
+            
+            try {
+                const excuses = window.unifiedComm.obtenerExcusas(testUsers.psicologa.username, 'pendientes');
+                
+                addResult(`📊 Total excusas pendientes: ${excuses.length}`, 'info', 'excuseResults');
+                
+                excuses.forEach((excuse, index) => {
+                    addResult(`📝 Excusa ${index + 1}: ${excuse.estudiante} - ${excuse.motivo}`, 'success', 'excuseResults');
+                });
+                
+                if (excuses.length === 0) {
+                    addResult('⚠️ No hay excusas pendientes', 'warning', 'excuseResults');
+                }
+            } catch (error) {
+                addResult('❌ Error obteniendo excusas: ' + error.message, 'error', 'excuseResults');
+            }
+        }
+
+        // Test de flujo completo de excusas
+        function testExcuseFlow() {
+            addResult('🔄 Iniciando test de flujo completo...', 'warning', 'excuseResults');
+            
+            // Crear excusa
+            setTimeout(() => {
+                testCreateExcuse();
+            }, 100);
+            
+            // Verificar asignación
+            setTimeout(() => {
+                testReceiveExcuses();
+            }, 2000);
+            
+            // Completar test
+            setTimeout(() => {
+                addResult('🎯 Test de flujo completo completado', 'success', 'excuseResults');
+            }, 3000);
+        }
+
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('🚀 Página de test cargada', 'success');
+            
+            // Esperar a que el sistema unificado esté listo
+            setTimeout(() => {
+                checkSystemStatus();
+            }, 1000);
+            
+            // Actualizar información periódicamente
+            setInterval(() => {
+                if (window.unifiedComm) {
+                    const state = window.unifiedComm.getEstado();
+                    document.getElementById('totalMessages').textContent = state.totalMensajes;
+                    document.getElementById('totalFiles').textContent = state.totalArchivos;
+                    document.getElementById('totalExcuses').textContent = state.totalExcusas;
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
